@@ -1,0 +1,65 @@
+{
+  "name": "zindexer",
+  "description": "Fetches data from GitHub, Jira and pushes it to Elasticsearch",
+  "version": "0.0.1",
+  "author": "Francois Gerthoffert @Fgerthoffert",
+  "bin": {
+    "zindexer": "./bin/run"
+  },
+  "bugs": "https://github.com/zencrepes/zindexer/issues",
+  "dependencies": {
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/plugin-help": "^2",
+    "tslib": "^1"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1",
+    "@oclif/test": "^1",
+    "@types/chai": "^4",
+    "@types/mocha": "^5",
+    "@types/node": "^10",
+    "@typescript-eslint/eslint-plugin": "^2.11.0",
+    "@typescript-eslint/parser": "^2.11.0",
+    "chai": "^4",
+    "eslint": "^6.7.2",
+    "eslint-config-prettier": "^6.7.0",
+    "globby": "^10",
+    "mocha": "^5",
+    "nyc": "^13",
+    "prettier": "^1.19.1",
+    "ts-node": "^8",
+    "typescript": "^3.3"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/lib",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "homepage": "https://github.com/zencrepes/zindexer",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "Apache2",
+  "main": "lib/index.js",
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "zindexer",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "repository": "zencrepes/zindexer",
+  "scripts": {
+    "postpack": "rm -f oclif.manifest.json",
+    "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "version": "oclif-dev readme && git add README.md",
+    "lint": "eslint . --ext .js,.ts"
+  },
+  "types": "lib/index.d.ts"
+}

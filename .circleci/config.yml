@@ -1,0 +1,198 @@
+version: 2.1
+executors:
+  docker-publisher:
+    environment:
+      IMAGE_NAME: zencrepes/zindexer
+    docker:
+      - image: circleci/buildpack-deps:stretch
+
+jobs:
+  zindexer-node-latest: &zindexer-test
+    docker:
+      - image: node:latest
+    working_directory: ~/zindexer
+    steps:
+      - checkout
+      - restore_cache: &zindexer-restore_cache
+          keys:
+            - v1-npm-zindexer-{{checksum ".circleci/config.yml"}}-{{checksum "package-lock.json"}}
+            - v1-npm-zindexer-{{checksum ".circleci/config.yml"}}
+      - run:
+          name: Install dependencies
+          command: yarn
+      - run:
+          name: Linting
+          command: yarn lint
+      - run:
+          name: Display version
+          command: ./bin/run --version
+      - run:
+          name: Display help
+          command: ./bin/run --help
+      - persist_to_workspace:
+          root: .
+          paths: .
+
+  zindexer-node-10:
+    <<: *zindexer-test
+    docker:
+      - image: node:10
+  zindexer-cache:
+    <<: *zindexer-test
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: yarn
+      - save_cache:
+          key: v1-yarn-zindexer-{{checksum ".circleci/config.yml"}}-{{checksum "zindexer/package-lock.json"}}
+          paths:
+            - ~/zindexer/node_modules
+            - /usr/local/lib/node_modules
+
+  # Publish a new version of the zindexer to NPM
+  npm-publish:
+    docker:
+      - image: node:latest
+    working_directory: ~/zindexer
+    steps:
+      - checkout
+      #      - attach_workspace:
+      #          at: /tmp/workspace
+      - run:
+          name: Install dependencies
+          command: yarn
+      - run:
+          name: Install Typescript
+          command: npm -g install typescript
+      - run:
+          name: Install oclif-dev
+          command: npm -g install @oclif/dev-cli
+      - run:
+          name: Authenticate with NPM registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+      - run:
+          name: Updating NPM version with GitHub tag
+          command: |
+            IMAGE_TAG=${CIRCLE_TAG/v/''}
+            echo "Image tag is: $IMAGE_TAG"
+            npm version $IMAGE_TAG
+      - run:
+          name: Build the typescript app
+          command: tsc -b
+      - run:
+          name: Generate the oclif manifest
+          command: oclif-dev manifest
+      - run:
+          name: Update the oclif readme
+          command: oclif-dev readme
+      - run:
+          name: Purge oclif.manifest.json
+          command: rm -f oclif.manifest.json
+      - run:
+          name: Ls zindexer content
+          command: ls -lah ./
+      - run:
+          name: Publish to NPM registry
+          command: npm publish
+
+  # Test the package that was just published to npm
+  npm-test:
+    docker:
+      - image: node:latest
+    working_directory: ~/zindexer-npm
+    steps:
+      - run:
+          name: Install
+          command: npm install -g zindexer
+      - run:
+          name: Display version
+          command: zindexer --version
+      - run:
+          name: Display help
+          command: zindexer --help
+
+  # Build all three docker images
+  docker-build:
+    executor: docker-publisher
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build CLI Docker Image
+          command: docker build -t $IMAGE_NAME:latest .
+      - run:
+          name: Archive CLI Docker image
+          command: docker save -o image_zindexer.tar $IMAGE_NAME
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image_zindexer.tar
+
+  # Publish all three docker images
+  docker-publish:
+    executor: docker-publisher
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run:
+          name: Load archived Zindexer Docker image
+          command: docker load -i /tmp/workspace/image_zindexer.tar
+      - run:
+          name: Publish Zindexer Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_USERNAME"
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=${CIRCLE_TAG/v/''}
+            echo "Image tag is: $IMAGE_TAG"
+            docker tag $IMAGE_NAME:latest $IMAGE_NAME:$IMAGE_TAG
+            echo "Tagged the image"
+            docker push $IMAGE_NAME:latest
+            echo "Pushed latest"
+            docker push $IMAGE_NAME:$IMAGE_TAG
+            echo "Pushed tag"
+workflows:
+  version: 2
+  build-npm-from-tags:
+    jobs:
+      - npm-publish:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - npm-test:
+          requires:
+            - npm-publish
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+  build-docker-from-tags:
+    jobs:
+      - docker-build:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - docker-publish:
+          requires:
+            - docker-build
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+  lint-and-test:
+    jobs:
+      - zindexer-node-latest
+      - zindexer-node-10
+      - zindexer-cache:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
