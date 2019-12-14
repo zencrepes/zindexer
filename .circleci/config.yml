@@ -76,7 +76,7 @@ jobs:
           command: |
             IMAGE_TAG=${CIRCLE_TAG/v/''}
             echo "Image tag is: $IMAGE_TAG"
-            npm version $IMAGE_TAG
+            npm version $IMAGE_TAG --allow-same-version
       - run:
           name: Build the typescript app
           command: tsc -b
