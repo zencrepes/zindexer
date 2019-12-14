@@ -82,10 +82,10 @@ jobs:
           command: tsc -b
       - run:
           name: Generate the oclif manifest
-          command: cd cli && oclif-dev manifest
+          command: oclif-dev manifest
       - run:
           name: Update the oclif readme
-          command: cd cli && oclif-dev readme
+          command: oclif-dev readme
       - run:
           name: Purge oclif.manifest.json
           command: rm -f oclif.manifest.json
