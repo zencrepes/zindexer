@@ -154,7 +154,7 @@ jobs:
             echo "Pushed tag"
 workflows:
   version: 2
-  build-npm-from-tags:
+  build-npm-and-docker:
     jobs:
       - npm-publish:
           filters:
@@ -170,9 +170,9 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-  build-docker-from-tags:
-    jobs:
       - docker-build:
+          requires:
+            - npm-test
           filters:
             tags:
               only: /^v.*/
