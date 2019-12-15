@@ -23,6 +23,7 @@ export default abstract class extends Command {
       port: 9200,
       host: 'http://127.0.0.1',
       indices: {
+        sources: 'sources',
         repos: 'gh_repos',
         issues: 'gh_issues_',
         projects: 'gh_projects_',

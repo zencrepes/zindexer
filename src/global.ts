@@ -2,6 +2,7 @@ interface ConfigElasticsearch {
   port: number;
   host: string;
   indices: {
+    sources: string;
     repos: string;
     issues: string;
     projects: string;

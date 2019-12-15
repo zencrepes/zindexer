@@ -19,7 +19,7 @@ $ npm install -g zindexer
 $ zindexer COMMAND
 running command...
 $ zindexer (-v|--version|version)
-zindexer/0.0.1 darwin-x64 node-v12.7.0
+zindexer/0.0.1 darwin-x64 node-v12.13.0
 $ zindexer --help [COMMAND]
 USAGE
   $ zindexer COMMAND
@@ -30,6 +30,7 @@ USAGE
 <!-- commands -->
 * [`zindexer hello [FILE]`](#zindexer-hello-file)
 * [`zindexer help [COMMAND]`](#zindexer-help-command)
+* [`zindexer sources [FILE]`](#zindexer-sources-file)
 
 ## `zindexer hello [FILE]`
 
@@ -67,4 +68,20 @@ OPTIONS
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.2.3/src/commands/help.ts)_
+
+## `zindexer sources [FILE]`
+
+describe the command here
+
+```
+USAGE
+  $ zindexer sources [FILE]
+
+OPTIONS
+  -f, --force
+  -h, --help       show CLI help
+  -n, --name=name  name to print
+```
+
+_See code: [src/commands/sources.ts](https://github.com/zencrepes/zindexer/blob/v0.0.1/src/commands/sources.ts)_
 <!-- commandsstop -->
