@@ -1,6 +1,9 @@
-interface ConfigElasticsearch {
-  port: number;
-  host: string;
+export interface ConfigElasticsearch {
+  host: string | null;
+  sslCa: string | null;
+  cloudId: string | null;
+  username: string | null;
+  password: string | null;
   indices: {
     sources: string;
     repos: string;
@@ -68,6 +71,39 @@ export interface Issue {
   labels: Array<Label>;
   source: {
     type: 'JIRA' | 'GITHUB';
-    data: any;
+    data: any; // eslint-disable-line
   };
+}
+
+export interface JiraResponseProject {
+  expand: string;
+  self: string;
+  id: string;
+  key: string;
+  name: string;
+  avatarUrls: {};
+  projectCategory: {
+    self: string;
+    id: string;
+    name: string;
+    description: string;
+  };
+  projectTypeLey: string;
+}
+
+export interface ESSearchResponse<T> {
+  hits: {
+    hits: Array<{
+      _source: T;
+    }>;
+  };
+}
+
+export interface ESIndexSources {
+  uuid: string;
+  id: string;
+  type: string;
+  server?: string;
+  name: string;
+  active: boolean;
 }

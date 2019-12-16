@@ -20,8 +20,11 @@ export default abstract class extends Command {
 
   userConfig = {
     elasticsearch: {
-      port: 9200,
-      host: 'http://127.0.0.1',
+      host: 'http://127.0.0.1:9200',
+      cloudId: null,
+      username: null,
+      password: null,
+      sslCa: null,
       indices: {
         sources: 'sources',
         repos: 'gh_repos',
