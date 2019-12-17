@@ -66,7 +66,6 @@ export default class Sources extends Command {
     const { type, active, ggrab, gorg, grepo } = flags;
 
     const userConfig = this.userConfig;
-    console.log(userConfig);
 
     let dataSources: Array<ESIndexSources> = [];
     // 1- Grab data sources from either GitHub or Jira

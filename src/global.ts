@@ -9,6 +9,7 @@ export interface ConfigElasticsearch {
     repos: string;
     issues: string;
     projects: string;
+    jiraProjects: string;
     labels: string;
     milestones: string;
     prs: string;
@@ -22,7 +23,7 @@ interface ConfigGithub {
     maxNodes: number;
   };
 }
-interface ConfigJira {
+export interface ConfigJira {
   name: string;
   enabled: boolean;
   config: {
@@ -75,6 +76,7 @@ export interface Issue {
   };
 }
 
+// Single project data when getting list of projects from Jira
 export interface JiraResponseProject {
   expand: string;
   self: string;
@@ -106,4 +108,16 @@ export interface ESIndexSources {
   server?: string;
   name: string;
   active: boolean;
+}
+
+// Object containing all of Jira data related to a project
+export interface JiraProject {
+  id: string;
+  properties: any; // eslint-disable-line
+  roles: any; // eslint-disable-line
+  issueScheme: any; // eslint-disable-line
+  notificationsScheme: any; // eslint-disable-line
+  permissionsScheme: any; // eslint-disable-line
+  priorityScheme: any; // eslint-disable-line
+  securityLevel: any; // eslint-disable-line
 }

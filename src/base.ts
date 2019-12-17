@@ -30,6 +30,7 @@ export default abstract class extends Command {
         repos: 'gh_repos',
         issues: 'gh_issues_',
         projects: 'gh_projects_',
+        jiraProjects: 'j_projects_',
         labels: 'gh_labels_',
         milestones: 'gh_milestones_',
         prs: 'gh_prs_',
