@@ -29,6 +29,7 @@ export default abstract class extends Command {
         sources: 'sources',
         repos: 'gh_repos',
         issues: 'gh_issues_',
+        jiraIssues: 'j_issues_',
         projects: 'gh_projects_',
         jiraProjects: 'j_projects_',
         labels: 'gh_labels_',
@@ -59,6 +60,9 @@ export default abstract class extends Command {
             parentEpic: 'customfield_10314',
           },
           excludeDays: ['1900-01-01'],
+          fetch: {
+            maxNodes: 30,
+          },
         },
       },
     ],

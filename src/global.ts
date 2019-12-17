@@ -121,3 +121,11 @@ export interface JiraProject {
   priorityScheme: any; // eslint-disable-line
   securityLevel: any; // eslint-disable-line
 }
+
+export interface JiraIssue {
+  id: string;
+  key: string;
+  fields: {
+    updated: string;
+  };
+}

@@ -16,8 +16,6 @@ export default class JProjects extends Command {
     help: flags.help({ char: 'h' }),
   };
 
-  static args = [{ name: 'file' }];
-
   async run() {
     const userConfig = this.userConfig;
     const client = await esClient(userConfig.elasticsearch);
