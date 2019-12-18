@@ -129,3 +129,17 @@ export interface JiraIssue {
     updated: string;
   };
 }
+
+export interface GithubOrganization {
+  login: string;
+  id: string;
+  name?: string;
+  __typename?: string;
+}
+
+export interface GithubRepository {
+  name: string;
+  id: string;
+  org: GithubOrganization;
+  active: boolean;
+}

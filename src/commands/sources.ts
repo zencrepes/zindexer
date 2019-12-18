@@ -12,12 +12,13 @@ import {
   JiraResponseProject,
   ESSearchResponse,
   ESIndexSources,
+  GithubRepository,
 } from '../global';
 
-//import FetchAffiliated from '../utils/github/fetchAffiliated/index';
+import FetchAffiliated from '../utils/github/fetchAffiliated/index';
 import fetchProjects from '../utils/jira/fetchProjects/index';
-//import FetchOrg from '../utils/github/fetchOrg/index';
-//import FetchRepo from '../utils/github/fetchRepo/index';
+import FetchOrg from '../utils/github/fetchOrg/index';
+import FetchRepo from '../utils/github/fetchRepo/index';
 import ymlMappingsSources from '../schemas/sources';
 import esCheckIndex from '../utils/es/esCheckIndex';
 import esClient from '../utils/es/esClient';
@@ -90,11 +91,10 @@ export default class Sources extends Command {
         ];
         cli.action.stop(' done');
       }
-      console.log(dataSources);
     } else {
+      let fetchedRepos: Array<any> = []; // eslint-disable-line
       if (ggrab === 'affiliated') {
         this.log('Starting to fetch data from affiliated organizations');
-        /*
         const fetchData = new FetchAffiliated(
           this.log,
           this.error,
@@ -103,21 +103,42 @@ export default class Sources extends Command {
           userConfig.github.fetch.maxNodes,
           cli,
         );
-        const fetchedRepos = await fetchData.load();
-        */
+        fetchedRepos = await fetchData.load();
       } else if (ggrab === 'org' && gorg !== undefined) {
         this.log('Starting to fetch data from org: ' + gorg);
-        //        const fetchData = new FetchOrg(this.log, gh_token, gh_increment, cli);
-        //        fetchedRepos = await fetchData.load(org);
+        const fetchData = new FetchOrg(
+          this.log,
+          userConfig.github.token,
+          userConfig.github.fetch.maxNodes,
+          cli,
+        );
+        fetchedRepos = await fetchData.load(gorg);
       } else if (
         ggrab === 'repo' &&
         gorg !== undefined &&
         grepo !== undefined
       ) {
         this.log('Starting to fetch data from repo: ' + gorg + '/' + grepo);
-        //const fetchData = new FetchRepo(this.log, gh_token, gh_increment, cli);
-        //fetchedRepos = await fetchData.load(org, repo);
+        const fetchData = new FetchRepo(
+          this.log,
+          userConfig.github.token,
+          userConfig.github.fetch.maxNodes,
+          cli,
+        );
+        fetchedRepos = await fetchData.load(gorg, grepo);
       }
+      dataSources = [
+        ...dataSources,
+        ...fetchedRepos.map((p: GithubRepository) => {
+          return {
+            uuid: getUuid('GITHUB-' + p.id, 5),
+            id: p.id,
+            type: 'GITHUB',
+            name: p.org.login + '/' + p.name,
+            active: active,
+          };
+        }),
+      ];
     }
 
     // Check if index exists, create it if it does not

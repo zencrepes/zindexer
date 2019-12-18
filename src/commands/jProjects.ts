@@ -1,5 +1,6 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
+import * as jsYaml from 'js-yaml';
 
 import Command from '../base';
 import esClient from '../utils/es/esClient';
@@ -8,6 +9,9 @@ import { getId } from '../utils/misc/getId';
 import { ESIndexSources, ConfigJira, JiraProject } from '../global';
 import esGetActiveSources from '../utils/es/esGetActiveSources';
 import fetchData from '../utils/jira/fetchData';
+
+import YmlProjects from '../schemas/jiraProjects';
+import YmlSettings from '../schemas/settings';
 
 export default class JProjects extends Command {
   static description = 'Jira: Fetches project data from configured projects';
@@ -88,6 +92,22 @@ export default class JProjects extends Command {
       //Push the results back to Elastic Search
       const esIndex =
         userConfig.elasticsearch.indices.jiraProjects + getId(jiraServer.name);
+
+      // Test if the index exists, create if it does not
+      const testIndex = await client.indices.exists({ index: esIndex });
+      if (testIndex.body === false) {
+        cli.action.start(
+          'Elasticsearch Index ' + esIndex + ' does not exist, creating',
+        );
+        const mappings = await jsYaml.safeLoad(YmlProjects);
+        const settings = await jsYaml.safeLoad(YmlSettings);
+        await client.indices.create({
+          index: esIndex,
+          body: { settings, mappings },
+        });
+        cli.action.stop(' created');
+      }
+
       for (const [idx, esPayloadChunk] of esPayloadChunked.entries()) {
         cli.action.start(
           'Submitting data to ElasticSearch into ' +
