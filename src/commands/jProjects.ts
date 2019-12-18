@@ -14,7 +14,7 @@ import YmlProjects from '../schemas/jiraProjects';
 import YmlSettings from '../schemas/settings';
 
 export default class JProjects extends Command {
-  static description = 'Jira: Fetches project data from configured projects';
+  static description = 'Jira: Fetches project data from configured sources';
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -27,7 +27,7 @@ export default class JProjects extends Command {
     for (const jiraServer of userConfig.jira.filter(
       (p: ConfigJira) => p.enabled === true,
     )) {
-      const sources = await esGetActiveSources(client, userConfig);
+      const sources = await esGetActiveSources(client, userConfig, 'JIRA');
       if (sources.length === 0) {
         this.error(
           'The script could not find any active sources. Please configure sources first.',

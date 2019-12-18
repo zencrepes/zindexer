@@ -4,7 +4,11 @@ import { ApiResponse, Client } from '@elastic/elasticsearch';
 
 import { ESSearchResponse, ESIndexSources } from '../../global';
 
-const esGetActiveSources = async (client: Client, userConfig: Config) => {
+const esGetActiveSources = async (
+  client: Client,
+  userConfig: Config,
+  type: string,
+) => {
   // Ensure index exists in Elasticsearch
   cli.action.start(
     'Checking if index: ' +
@@ -41,10 +45,25 @@ const esGetActiveSources = async (client: Client, userConfig: Config) => {
       from: 0,
       size: 10000,
       query: {
-        match: {
-          active: {
-            query: true,
-          },
+        bool: {
+          filter: [
+            {
+              // eslint-disable-next-line
+              match_phrase: {
+                type: {
+                  query: type,
+                },
+              },
+            },
+            {
+              // eslint-disable-next-line
+              match_phrase: {
+                active: {
+                  query: true,
+                },
+              },
+            },
+          ],
         },
       },
     },

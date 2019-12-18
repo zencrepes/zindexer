@@ -27,7 +27,7 @@ export default abstract class extends Command {
       sslCa: null,
       indices: {
         sources: 'sources',
-        repos: 'gh_repos',
+        githubRepos: 'gh_repos',
         issues: 'gh_issues_',
         jiraIssues: 'j_issues_',
         projects: 'gh_projects_',

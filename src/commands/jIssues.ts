@@ -23,7 +23,7 @@ import esGetActiveSources from '../utils/es/esGetActiveSources';
 import fetchJqlPagination from '../utils/jira/fetchJql';
 
 export default class JIssues extends Command {
-  static description = 'Jira: Fetches issues data from configured projects';
+  static description = 'Jira: Fetches issues data from configured sources';
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -36,7 +36,7 @@ export default class JIssues extends Command {
     for (const jiraServer of userConfig.jira.filter(
       (p: ConfigJira) => p.enabled === true,
     )) {
-      const sources = await esGetActiveSources(client, userConfig);
+      const sources = await esGetActiveSources(client, userConfig, 'JIRA');
       if (sources.length === 0) {
         this.error(
           'The script could not find any active sources. Please configure sources first.',
@@ -106,7 +106,6 @@ export default class JIssues extends Command {
         );
         cli.action.stop(' done');
 
-        console.log(propjectIssues.length);
         //Break down the issues response in multiple batches
         const esPayloadChunked = await chunkArray(propjectIssues, 100);
         //Push the results back to Elastic Search

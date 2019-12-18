@@ -6,7 +6,7 @@ export interface ConfigElasticsearch {
   password: string | null;
   indices: {
     sources: string;
-    repos: string;
+    githubRepos: string;
     issues: string;
     projects: string;
     jiraProjects: string;

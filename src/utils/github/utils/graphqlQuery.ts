@@ -24,14 +24,19 @@ async function graphqlQuery(
     await sleep(sleepDuration + 10000);
     log('Ready to resume querying');
   }
-  const data = await client.query({
-    query: gql`
-      ${query}
-    `,
-    variables,
-    fetchPolicy: 'no-cache',
-    errorPolicy: 'ignore',
-  });
+  let data: any = {}; // eslint-disable-line
+  try {
+    data = await client.query({
+      query: gql`
+        ${query}
+      `,
+      variables,
+      fetchPolicy: 'no-cache',
+      errorPolicy: 'ignore',
+    });
+  } catch (error) {
+    log(error);
+  }
 
   if (
     data.data !== undefined &&
