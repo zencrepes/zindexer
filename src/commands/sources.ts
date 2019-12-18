@@ -7,6 +7,7 @@ import * as getUuid from 'uuid-by-string';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as jsYaml from 'js-yaml';
+import * as loadYamlFile from 'load-yaml-file';
 
 import {
   JiraResponseProject,
@@ -22,6 +23,7 @@ import FetchRepo from '../utils/github/fetchRepo/index';
 import ymlMappingsSources from '../schemas/sources';
 import esCheckIndex from '../utils/es/esCheckIndex';
 import esClient from '../utils/es/esClient';
+import esQueryData from '../utils/es/esQueryData';
 
 import chunkArray from '../utils/misc/chunkArray';
 
@@ -34,13 +36,19 @@ export default class Sources extends Command {
     type: flags.string({
       char: 't',
       options: ['JIRA', 'GITHUB'],
-      required: true,
+      required: false,
+      default: 'GITHUB',
       description: 'Type of source (JIRA or GitHUB)',
     }),
     active: flags.boolean({
       char: 'a',
       default: false,
       description: 'Automatically make the new sources active by default',
+    }),
+    refresh: flags.boolean({
+      char: 'r',
+      default: false,
+      description: 'Refresh active status from configuration file',
     }),
     ggrab: flags.string({
       char: 'g',
@@ -64,139 +72,206 @@ export default class Sources extends Command {
 
   async run() {
     const { flags } = this.parse(Sources);
-    const { type, active, ggrab, gorg, grepo } = flags;
+    const { type, active, ggrab, gorg, grepo, refresh } = flags;
 
     const userConfig = this.userConfig;
+    const client = await esClient(userConfig.elasticsearch);
 
     let dataSources: Array<ESIndexSources> = [];
+    let esPayload: Array<ESIndexSources> = [];
     // 1- Grab data sources from either GitHub or Jira
-    if (type === 'JIRA') {
-      this.log('Fetching data from server: About to fetch sources from JIRA');
-      //console.log(await fetchProjects(userConfig, 'JIRA-JAHIA'));
-      for (const jiraServer of userConfig.jira) {
-        cli.action.start('Fetching data from server: ' + jiraServer.name);
-        const jiraProjects = await fetchProjects(userConfig, jiraServer.name);
+    if (refresh === true) {
+      dataSources = await esQueryData(
+        client,
+        userConfig.elasticsearch.indices.sources,
+        {
+          from: 0,
+          size: 10000,
+          query: {
+            match_all: {}, // eslint-disable-line
+          },
+        },
+      );
+
+      //Math the data with the config file
+      cli.action.start(
+        'Grabbing sources configuration from file: ' +
+          path.join(this.config.configDir, 'sources.yml'),
+      );
+      let sourcesConfig: Array<object> = [];
+      if (fs.existsSync(path.join(this.config.configDir, 'sources.yml'))) {
+        sourcesConfig = await loadYamlFile(
+          path.join(this.config.configDir, 'sources.yml'),
+        );
+      } else {
+        this.error(
+          'Unable to find the repositories config file (' +
+            path.join(this.config.configDir, 'sources.yml') +
+            '), please run ghRepos first',
+          { exit: 1 },
+        );
+      }
+      cli.action.stop(' done');
+
+      cli.action.start(
+        'Comparing Elasticsearch data with flags in configuration file',
+      );
+      esPayload = dataSources.map(source => {
+        const cfgSource = _.find(
+          sourcesConfig,
+          (o: object) =>
+            // eslint-disable-next-line
+            (o as any)['JIRA/' + source.name] !== undefined ||
+            // eslint-disable-next-line
+            (o as any)['GITHUB/' + source.name] !== undefined,
+        );
+        if (cfgSource !== undefined) {
+          if (Object.values(cfgSource)[0] !== source.active) {
+            this.log(
+              'Changing: ' +
+                source.name +
+                ' from: ' +
+                source.active +
+                ' to: ' +
+                Object.values(cfgSource)[0],
+            );
+          }
+          return {
+            ...source,
+            active: Object.values(cfgSource)[0],
+          };
+        } else {
+          return source;
+        }
+      });
+      cli.action.stop(' done');
+
+      //      console.log(dataSources);
+    } else {
+      if (type === 'JIRA') {
+        this.log('Fetching data from server: About to fetch sources from JIRA');
+        //console.log(await fetchProjects(userConfig, 'JIRA-JAHIA'));
+        for (const jiraServer of userConfig.jira) {
+          cli.action.start('Fetching data from server: ' + jiraServer.name);
+          const jiraProjects = await fetchProjects(userConfig, jiraServer.name);
+          dataSources = [
+            ...dataSources,
+            ...jiraProjects.map((p: JiraResponseProject) => {
+              return {
+                uuid: getUuid('JIRA-' + p.key + '-' + p.name, 'SOURCES', 5),
+                id: p.key,
+                type: 'JIRA',
+                server: jiraServer.name,
+                name: p.name + '-' + p.key,
+                active: active,
+              };
+            }),
+          ];
+          cli.action.stop(' done');
+        }
+      } else {
+        let fetchedRepos: Array<any> = []; // eslint-disable-line
+        if (ggrab === 'affiliated') {
+          this.log('Starting to fetch data from affiliated organizations');
+          const fetchData = new FetchAffiliated(
+            this.log,
+            this.error,
+            userConfig.github.username,
+            userConfig.github.token,
+            userConfig.github.fetch.maxNodes,
+            cli,
+          );
+          fetchedRepos = await fetchData.load();
+        } else if (ggrab === 'org' && gorg !== undefined) {
+          this.log('Starting to fetch data from org: ' + gorg);
+          const fetchData = new FetchOrg(
+            this.log,
+            userConfig.github.token,
+            userConfig.github.fetch.maxNodes,
+            cli,
+          );
+          fetchedRepos = await fetchData.load(gorg);
+        } else if (
+          ggrab === 'repo' &&
+          gorg !== undefined &&
+          grepo !== undefined
+        ) {
+          this.log('Starting to fetch data from repo: ' + gorg + '/' + grepo);
+          const fetchData = new FetchRepo(
+            this.log,
+            userConfig.github.token,
+            userConfig.github.fetch.maxNodes,
+            cli,
+          );
+          fetchedRepos = await fetchData.load(gorg, grepo);
+        }
         dataSources = [
           ...dataSources,
-          ...jiraProjects.map((p: JiraResponseProject) => {
+          ...fetchedRepos.map((p: GithubRepository) => {
             return {
-              uuid: getUuid('JIRA-' + p.key + '-' + p.name, 'SOURCES', 5),
-              id: p.key,
-              type: 'JIRA',
-              server: jiraServer.name,
-              name: p.name + '-' + p.key,
+              uuid: getUuid('GITHUB-' + p.id, 5),
+              id: p.id,
+              type: 'GITHUB',
+              name: p.org.login + '/' + p.name,
               active: active,
             };
           }),
         ];
-        cli.action.stop(' done');
       }
-    } else {
-      let fetchedRepos: Array<any> = []; // eslint-disable-line
-      if (ggrab === 'affiliated') {
-        this.log('Starting to fetch data from affiliated organizations');
-        const fetchData = new FetchAffiliated(
-          this.log,
-          this.error,
-          userConfig.github.username,
-          userConfig.github.token,
-          userConfig.github.fetch.maxNodes,
-          cli,
-        );
-        fetchedRepos = await fetchData.load();
-      } else if (ggrab === 'org' && gorg !== undefined) {
-        this.log('Starting to fetch data from org: ' + gorg);
-        const fetchData = new FetchOrg(
-          this.log,
-          userConfig.github.token,
-          userConfig.github.fetch.maxNodes,
-          cli,
-        );
-        fetchedRepos = await fetchData.load(gorg);
-      } else if (
-        ggrab === 'repo' &&
-        gorg !== undefined &&
-        grepo !== undefined
-      ) {
-        this.log('Starting to fetch data from repo: ' + gorg + '/' + grepo);
-        const fetchData = new FetchRepo(
-          this.log,
-          userConfig.github.token,
-          userConfig.github.fetch.maxNodes,
-          cli,
-        );
-        fetchedRepos = await fetchData.load(gorg, grepo);
-      }
-      dataSources = [
-        ...dataSources,
-        ...fetchedRepos.map((p: GithubRepository) => {
-          return {
-            uuid: getUuid('GITHUB-' + p.id, 5),
-            id: p.id,
-            type: 'GITHUB',
-            name: p.org.login + '/' + p.name,
-            active: active,
-          };
-        }),
-      ];
-    }
 
-    // Check if index exists, create it if it does not
+      // Check if index exists, create it if it does not
+      await esCheckIndex(
+        client,
+        userConfig,
+        userConfig.elasticsearch.indices.sources,
+        ymlMappingsSources,
+      );
 
-    const client = await esClient(userConfig.elasticsearch);
+      cli.action.start(
+        'Grabbing data from ElasticSearch and merging with new data',
+      );
 
-    await esCheckIndex(
-      client,
-      userConfig,
-      userConfig.elasticsearch.indices.sources,
-      ymlMappingsSources,
-    );
-
-    cli.action.start(
-      'Grabbing data from ElasticSearch and merging with new data',
-    );
-
-    const esRepos: ApiResponse<ESSearchResponse<
-      ESIndexSources
-    >> = await client.search({
-      index: userConfig.elasticsearch.indices.sources,
-      body: {
-        from: 0,
-        size: 10000,
-        query: {
-          match_all: {}, // eslint-disable-line
+      const esRepos: ApiResponse<ESSearchResponse<
+        ESIndexSources
+      >> = await client.search({
+        index: userConfig.elasticsearch.indices.sources,
+        body: {
+          from: 0,
+          size: 10000,
+          query: {
+            match_all: {}, // eslint-disable-line
+          },
         },
-      },
-    });
-
-    const esPayload: Array<object> = [];
-    dataSources.map((source: ESIndexSources) => {
-      const existingRepo = _.find(esRepos.body.hits.hits, function(o) {
-        return o._source.id === source.id && o._source.name === source.name;
       });
-      const updatedRepo = { ...source };
-      if (existingRepo !== undefined) {
-        //If the repo exist, we are only looking for the active flag
-        updatedRepo.active = existingRepo._source.active;
-      } else {
-        updatedRepo.active = false;
-      }
-      if (active === true) {
-        updatedRepo.active = true;
-      }
-      //If submitting only one repository, assumption is that it should be active.
-      if (ggrab === 'repo') {
-        this.log('Activating repository: ' + gorg + '/' + grepo);
-        updatedRepo.active = true;
-      }
-      esPayload.push(updatedRepo);
-    });
-    cli.action.stop(' done');
-    this.log(
-      'About to submit (create or update) data about ' +
-        esPayload.length +
-        ' source(s) to Elasticsearch',
-    );
+
+      dataSources.map((source: ESIndexSources) => {
+        const existingRepo = _.find(esRepos.body.hits.hits, function(o) {
+          return o._source.id === source.id && o._source.name === source.name;
+        });
+        const updatedRepo = { ...source };
+        if (existingRepo !== undefined) {
+          //If the repo exist, we are only looking for the active flag
+          updatedRepo.active = existingRepo._source.active;
+        } else {
+          updatedRepo.active = false;
+        }
+        if (active === true) {
+          updatedRepo.active = true;
+        }
+        //If submitting only one repository, assumption is that it should be active.
+        if (ggrab === 'repo') {
+          this.log('Activating repository: ' + gorg + '/' + grepo);
+          updatedRepo.active = true;
+        }
+        esPayload.push(updatedRepo);
+      });
+      cli.action.stop(' done');
+      this.log(
+        'About to submit (create or update) data about ' +
+          esPayload.length +
+          ' source(s) to Elasticsearch',
+      );
+    }
 
     //Split the array in chunks of 100
     const esPayloadChunked = await chunkArray(esPayload, 100);

@@ -6,7 +6,10 @@
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-    "target": "es2017"
+    "target": "es2017",
+    "paths": {
+      "*": ["types/*"]
+    }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "types/*"]
 }
