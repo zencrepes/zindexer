@@ -8,6 +8,7 @@ export interface ConfigElasticsearch {
     sources: string;
     githubRepos: string;
     githubIssues: string;
+    githubPullrequests: string;
     issues: string;
     projects: string;
     jiraProjects: string;
@@ -148,4 +149,8 @@ export interface GithubRepository {
 
 export interface GithubIssue {
   id: string;
+}
+export interface GithubPullrequest {
+  id: string;
+  updatedAt: string;
 }

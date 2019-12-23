@@ -29,6 +29,7 @@ export default abstract class extends Command {
         sources: 'sources',
         githubRepos: 'gh_repos',
         githubIssues: 'gh_issues_',
+        githubPullrequests: 'gh_prs_',
         issues: 'gh_issues_',
         jiraIssues: 'j_issues_',
         projects: 'gh_projects_',
