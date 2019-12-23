@@ -7,6 +7,7 @@ export interface ConfigElasticsearch {
   indices: {
     sources: string;
     githubRepos: string;
+    githubIssues: string;
     issues: string;
     projects: string;
     jiraProjects: string;
@@ -15,7 +16,8 @@ export interface ConfigElasticsearch {
     prs: string;
   };
 }
-interface ConfigGithub {
+
+export interface ConfigGithub {
   enabled: boolean;
   username: string;
   token: string;
@@ -142,4 +144,8 @@ export interface GithubRepository {
   id: string;
   org: GithubOrganization;
   active: boolean;
+}
+
+export interface GithubIssue {
+  id: string;
 }

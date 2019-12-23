@@ -1,16 +1,10 @@
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import ApolloClient from 'apollo-client';
-import { ApolloLink, concat } from 'apollo-link';
-import { HttpLink } from 'apollo-link-http';
 import cli from 'cli-ux';
-//import {readFileSync} from 'fs'
-import fetch from 'node-fetch';
 
 import getSingleRepo from '../graphql/getSingleRepo';
 import graphqlQuery from '../utils/graphqlQuery';
 
 export default class FetchRepo {
-  githubToken: string;
+  gClient: any; // eslint-disable-line
   maxQueryIncrement: number;
   log: any; // eslint-disable-line
   cli: object;
@@ -23,10 +17,10 @@ export default class FetchRepo {
     remaining: number;
     resetAt: string | null;
   };
-  client: object;
 
-  constructor(log: object, ghToken: string, ghIncrement: number, cli: object) {
-    this.githubToken = ghToken;
+  // eslint-disable-next-line
+  constructor(gClient: any, log: object, ghIncrement: number, cli: object) {
+    this.gClient = gClient;
     this.maxQueryIncrement = ghIncrement;
 
     this.log = log;
@@ -42,40 +36,6 @@ export default class FetchRepo {
       remaining: 5000,
       resetAt: null,
     };
-
-    const httpLink = new HttpLink({
-      uri: 'https://api.github.com/graphql',
-      fetch: fetch as any, // eslint-disable-line
-    });
-    const cache = new InMemoryCache();
-    //const cache = new InMemoryCache().restore(window.__APOLLO_STATE__)
-
-    // eslint-disable-next-line
-    const authMiddleware = new ApolloLink((operation: any, forward: any) => {
-      // add the authorization to the headers
-      operation.setContext({
-        headers: {
-          authorization: this.githubToken ? `Bearer ${this.githubToken}` : '',
-        },
-      });
-      return forward(operation).map(
-        (response: {
-          errors: Array<object> | undefined;
-          data: { errors: Array<object> };
-        }) => {
-          if (response.errors !== undefined && response.errors.length > 0) {
-            response.data.errors = response.errors;
-          }
-          return response;
-        },
-      );
-    });
-
-    this.client = new ApolloClient({
-      link: concat(authMiddleware, httpLink),
-      //link: authLink.concat(link),
-      cache,
-    });
   }
 
   public async load(login: string, repo: string) {
@@ -83,7 +43,7 @@ export default class FetchRepo {
 
     cli.action.start('Loading repository: ' + login + '/' + repo);
     const data = await graphqlQuery(
-      this.client,
+      this.gClient,
       this.getSingleRepo,
       { org_name: login, repo_name: repo }, // eslint-disable-line
       this.rateLimit,

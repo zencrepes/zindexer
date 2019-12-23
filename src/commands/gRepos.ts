@@ -4,6 +4,7 @@ import * as jsYaml from 'js-yaml';
 
 import Command from '../base';
 import esClient from '../utils/es/esClient';
+import ghClient from '../utils/github/ghClient';
 import { GithubRepository } from '../global';
 import esGetActiveSources from '../utils/es/esGetActiveSources';
 
@@ -25,19 +26,20 @@ export default class GRepos extends Command {
 
   async run() {
     const userConfig = this.userConfig;
-    const client = await esClient(userConfig.elasticsearch);
+    const eClient = await esClient(userConfig.elasticsearch);
+    const gClient = await ghClient(userConfig.github);
 
-    const sources = await esGetActiveSources(client, userConfig, 'GITHUB');
+    const sources = await esGetActiveSources(eClient, userConfig, 'GITHUB');
     const githubChunks = await chunkArray(
       sources,
       userConfig.github.fetch.maxNodes,
     );
     const fetchData = new GetNodesById(
       this.log,
-      userConfig.github.token,
       userConfig.github.fetch.maxNodes,
       cli,
       getReposById,
+      gClient,
     );
     let fetchedRepos: Array<GithubRepository> = [];
     for (const githubChunk of githubChunks) {
@@ -56,14 +58,14 @@ export default class GRepos extends Command {
     }
 
     const esIndex = userConfig.elasticsearch.indices.githubRepos;
-    const testIndex = await client.indices.exists({ index: esIndex });
+    const testIndex = await eClient.indices.exists({ index: esIndex });
     if (testIndex.body === false) {
       cli.action.start(
         'Elasticsearch Index ' + esIndex + ' does not exist, creating',
       );
       const mappings = await jsYaml.safeLoad(YmlRepos);
       const settings = await jsYaml.safeLoad(YmlSettings);
-      await client.indices.create({
+      await eClient.indices.create({
         index: esIndex,
         body: { settings, mappings },
       });
@@ -97,7 +99,7 @@ export default class GRepos extends Command {
           JSON.stringify(rec) +
           '\n';
       }
-      await client.bulk({
+      await eClient.bulk({
         index: esIndex,
         refresh: 'wait_for',
         body: formattedData,

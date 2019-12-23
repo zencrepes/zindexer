@@ -10,7 +10,7 @@ import { Config } from './global';
 export default abstract class extends Command {
   static flags = {
     // eslint-disable-next-line
-    env_user_config: flags.string({
+    envUserConf: flags.string({
       required: false,
       env: 'USER_CONFIG',
       description:
@@ -28,6 +28,7 @@ export default abstract class extends Command {
       indices: {
         sources: 'sources',
         githubRepos: 'gh_repos',
+        githubIssues: 'gh_issues_',
         issues: 'gh_issues_',
         jiraIssues: 'j_issues_',
         projects: 'gh_projects_',
@@ -75,7 +76,7 @@ export default abstract class extends Command {
   async init() {
     const { flags } = this.parse();
     // eslint-disable-next-line
-    const { env_user_config } = flags;
+    const { envUserConf } = flags;
 
     if (process.env.CONFIG_DIR !== undefined) {
       this.config.configDir = process.env.CONFIG_DIR;
@@ -85,8 +86,8 @@ export default abstract class extends Command {
     fse.ensureDirSync(this.config.configDir + '/cache/');
 
     // eslint-disable-next-line
-    if (env_user_config !== undefined) {
-      this.setUserConfig(JSON.parse(env_user_config));
+    if (envUserConf !== undefined) {
+      this.setUserConfig(JSON.parse(envUserConf));
     } else {
       if (!fs.existsSync(path.join(this.config.configDir, 'config.yml'))) {
         fs.writeFileSync(

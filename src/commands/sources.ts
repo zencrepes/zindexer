@@ -23,6 +23,8 @@ import FetchRepo from '../utils/github/fetchRepo/index';
 import ymlMappingsSources from '../schemas/sources';
 import esCheckIndex from '../utils/es/esCheckIndex';
 import esClient from '../utils/es/esClient';
+import ghClient from '../utils/github/ghClient';
+
 import esQueryData from '../utils/es/esQueryData';
 
 import chunkArray from '../utils/misc/chunkArray';
@@ -46,7 +48,7 @@ export default class Sources extends Command {
       description: 'Automatically make the new sources active by default',
     }),
     refresh: flags.boolean({
-      char: 'r',
+      char: 'c',
       default: false,
       description: 'Refresh active status from configuration file',
     }),
@@ -75,14 +77,15 @@ export default class Sources extends Command {
     const { type, active, ggrab, gorg, grepo, refresh } = flags;
 
     const userConfig = this.userConfig;
-    const client = await esClient(userConfig.elasticsearch);
+    const eClient = await esClient(userConfig.elasticsearch);
+    const gClient = await ghClient(userConfig.github);
 
     let dataSources: Array<ESIndexSources> = [];
     let esPayload: Array<ESIndexSources> = [];
     // 1- Grab data sources from either GitHub or Jira
     if (refresh === true) {
       dataSources = await esQueryData(
-        client,
+        eClient,
         userConfig.elasticsearch.indices.sources,
         {
           from: 0,
@@ -174,10 +177,10 @@ export default class Sources extends Command {
         if (ggrab === 'affiliated') {
           this.log('Starting to fetch data from affiliated organizations');
           const fetchData = new FetchAffiliated(
+            gClient,
             this.log,
             this.error,
             userConfig.github.username,
-            userConfig.github.token,
             userConfig.github.fetch.maxNodes,
             cli,
           );
@@ -185,8 +188,8 @@ export default class Sources extends Command {
         } else if (ggrab === 'org' && gorg !== undefined) {
           this.log('Starting to fetch data from org: ' + gorg);
           const fetchData = new FetchOrg(
+            gClient,
             this.log,
-            userConfig.github.token,
             userConfig.github.fetch.maxNodes,
             cli,
           );
@@ -198,6 +201,7 @@ export default class Sources extends Command {
         ) {
           this.log('Starting to fetch data from repo: ' + gorg + '/' + grepo);
           const fetchData = new FetchRepo(
+            gClient,
             this.log,
             userConfig.github.token,
             userConfig.github.fetch.maxNodes,
@@ -221,7 +225,7 @@ export default class Sources extends Command {
 
       // Check if index exists, create it if it does not
       await esCheckIndex(
-        client,
+        eClient,
         userConfig,
         userConfig.elasticsearch.indices.sources,
         ymlMappingsSources,
@@ -233,7 +237,7 @@ export default class Sources extends Command {
 
       const esRepos: ApiResponse<ESSearchResponse<
         ESIndexSources
-      >> = await client.search({
+      >> = await eClient.search({
         index: userConfig.elasticsearch.indices.sources,
         body: {
           from: 0,
@@ -298,7 +302,7 @@ export default class Sources extends Command {
           JSON.stringify(rec) +
           '\n';
       }
-      await client.bulk({
+      await eClient.bulk({
         index: userConfig.elasticsearch.indices.sources,
         refresh: 'wait_for',
         body: formattedData,
@@ -308,7 +312,7 @@ export default class Sources extends Command {
 
     //Update the configuration by re-downloading all data from ElasticSearch to create the configuration file
     cli.action.start('Refreshing the repositories configuration file');
-    const esSources = await client.search({
+    const esSources = await eClient.search({
       index: userConfig.elasticsearch.indices.sources,
       body: {
         from: 0,
