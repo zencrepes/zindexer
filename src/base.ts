@@ -10,7 +10,7 @@ import { Config } from './global';
 export default abstract class extends Command {
   static flags = {
     // eslint-disable-next-line
-    env_user_config: flags.string({
+    envUserConf: flags.string({
       required: false,
       env: 'USER_CONFIG',
       description:
@@ -20,15 +20,22 @@ export default abstract class extends Command {
 
   userConfig = {
     elasticsearch: {
-      port: 9200,
-      host: 'http://127.0.0.1',
+      host: 'http://127.0.0.1:9200',
+      cloudId: null,
+      username: null,
+      password: null,
+      sslCa: null,
       indices: {
-        repos: 'gh_repos',
-        issues: 'gh_issues_',
-        projects: 'gh_projects_',
-        labels: 'gh_labels_',
-        milestones: 'gh_milestones_',
-        prs: 'gh_prs_',
+        sources: 'sources',
+        githubRepos: 'gh_repos',
+        githubIssues: 'gh_issues_',
+        githubPullrequests: 'gh_prs_',
+        githubProjects: 'gh_projects_',
+        githubMilestones: 'gh_milestones_',
+        githubLabels: 'gh_labels_',
+        githubReleases: 'gh_releases_',
+        jiraIssues: 'j_issues_',
+        jiraProjects: 'j_projects_',
       },
     },
     github: {
@@ -54,6 +61,9 @@ export default abstract class extends Command {
             parentEpic: 'customfield_10314',
           },
           excludeDays: ['1900-01-01'],
+          fetch: {
+            maxNodes: 30,
+          },
         },
       },
     ],
@@ -66,7 +76,7 @@ export default abstract class extends Command {
   async init() {
     const { flags } = this.parse();
     // eslint-disable-next-line
-    const { env_user_config } = flags;
+    const { envUserConf } = flags;
 
     if (process.env.CONFIG_DIR !== undefined) {
       this.config.configDir = process.env.CONFIG_DIR;
@@ -76,8 +86,8 @@ export default abstract class extends Command {
     fse.ensureDirSync(this.config.configDir + '/cache/');
 
     // eslint-disable-next-line
-    if (env_user_config !== undefined) {
-      this.setUserConfig(JSON.parse(env_user_config));
+    if (envUserConf !== undefined) {
+      this.setUserConfig(JSON.parse(envUserConf));
     } else {
       if (!fs.existsSync(path.join(this.config.configDir, 'config.yml'))) {
         fs.writeFileSync(

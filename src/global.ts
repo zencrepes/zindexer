@@ -1,16 +1,23 @@
-interface ConfigElasticsearch {
-  port: number;
-  host: string;
+export interface ConfigElasticsearch {
+  host: string | null;
+  sslCa: string | null;
+  cloudId: string | null;
+  username: string | null;
+  password: string | null;
   indices: {
-    repos: string;
-    issues: string;
-    projects: string;
-    labels: string;
-    milestones: string;
-    prs: string;
+    sources: string;
+    githubRepos: string;
+    githubIssues: string;
+    githubPullrequests: string;
+    githubProjects: string;
+    githubMilestones: string;
+    githubLabels: string;
+    githubReleases: string;
+    jiraProjects: string;
   };
 }
-interface ConfigGithub {
+
+export interface ConfigGithub {
   enabled: boolean;
   username: string;
   token: string;
@@ -18,7 +25,7 @@ interface ConfigGithub {
     maxNodes: number;
   };
 }
-interface ConfigJira {
+export interface ConfigJira {
   name: string;
   enabled: boolean;
   config: {
@@ -67,6 +74,87 @@ export interface Issue {
   labels: Array<Label>;
   source: {
     type: 'JIRA' | 'GITHUB';
-    data: any;
+    data: any; // eslint-disable-line
   };
+}
+
+// Single project data when getting list of projects from Jira
+export interface JiraResponseProject {
+  expand: string;
+  self: string;
+  id: string;
+  key: string;
+  name: string;
+  avatarUrls: {};
+  projectCategory: {
+    self: string;
+    id: string;
+    name: string;
+    description: string;
+  };
+  projectTypeLey: string;
+}
+
+export interface ESSearchResponse<T> {
+  hits: {
+    hits: Array<{
+      _source: T;
+    }>;
+  };
+}
+
+export interface ESIndexSources {
+  uuid: string;
+  id: string;
+  type: string;
+  server?: string;
+  name: string;
+  active: boolean;
+}
+
+// Object containing all of Jira data related to a project
+export interface JiraProject {
+  id: string;
+  properties: any; // eslint-disable-line
+  roles: any; // eslint-disable-line
+  issueScheme: any; // eslint-disable-line
+  notificationsScheme: any; // eslint-disable-line
+  permissionsScheme: any; // eslint-disable-line
+  priorityScheme: any; // eslint-disable-line
+  securityLevel: any; // eslint-disable-line
+}
+
+export interface JiraIssue {
+  id: string;
+  key: string;
+  fields: {
+    updated: string;
+  };
+}
+
+export interface GithubOrganization {
+  login: string;
+  id: string;
+  name?: string;
+  __typename?: string;
+}
+
+export interface GithubRepository {
+  name: string;
+  id: string;
+  org: GithubOrganization;
+  active: boolean;
+}
+
+export interface GithubIssue {
+  id: string;
+}
+export interface GithubPullrequest {
+  id: string;
+  updatedAt: string;
+}
+// Standard Github node interface
+export interface GithubNode {
+  id: string;
+  updatedAt: string;
 }
