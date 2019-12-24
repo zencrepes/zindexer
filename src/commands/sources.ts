@@ -48,9 +48,10 @@ export default class Sources extends Command {
       description: 'Automatically make the new sources active by default',
     }),
     refresh: flags.boolean({
-      char: 'c',
+      char: 'l',
       default: false,
-      description: 'Refresh active status from configuration file',
+      description:
+        'Load active status from status file: CONFIG_DIR/sources.yml',
     }),
     ggrab: flags.string({
       char: 'g',
