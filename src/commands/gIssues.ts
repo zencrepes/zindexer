@@ -4,15 +4,14 @@ import cli from 'cli-ux';
 import Command from '../base';
 import esClient from '../utils/es/esClient';
 import esGithubLatest from '../utils/es/esGithubLatest';
-import fetchIssues from '../utils/github/fetchIssues';
+import esPushNodes from '../utils/es/esPushNodes';
+import fetchNodesUpdated from '../utils/github/fetchNodesUpdated';
 import ghClient from '../utils/github/ghClient';
 
 import esGetActiveSources from '../utils/es/esGetActiveSources';
 import { getId } from '../utils/misc/getId';
 
-import chunkArray from '../utils/misc/chunkArray';
-
-import { GithubIssue } from '../global';
+import getIssues from '../utils/github/graphql/getIssues';
 
 export default class GIssues extends Command {
   static description = 'Github: Fetches issues data from configured sources';
@@ -28,8 +27,9 @@ export default class GIssues extends Command {
 
     const sources = await esGetActiveSources(eClient, userConfig, 'GITHUB');
 
-    const fetchData = new fetchIssues(
+    const fetchData = new fetchNodesUpdated(
       gClient,
+      getIssues,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -39,8 +39,8 @@ export default class GIssues extends Command {
       const issuesIndex = (
         userConfig.elasticsearch.indices.githubIssues + getId(currenSource.name)
       ).toLocaleLowerCase();
+      this.log('Processing source: ' + currenSource.name);
       const recentIssue = await esGithubLatest(eClient, issuesIndex);
-
       cli.action.start(
         'Grabbing issues for: ' +
           currenSource.name +
@@ -51,39 +51,7 @@ export default class GIssues extends Command {
       const fetchedIssues = await fetchData.load(currenSource.id, recentIssue);
       cli.action.stop(' done');
 
-      // Split the payload into multiple batches before pushing to elasticsearch
-
-      const esPayloadChunked = await chunkArray(fetchedIssues, 100);
-      // Push the data back to elasticsearch
-      for (const [idx, esPayloadChunk] of esPayloadChunked.entries()) {
-        cli.action.start(
-          'Submitting data to ElasticSearch (' +
-            (idx + 1) +
-            ' / ' +
-            esPayloadChunked.length +
-            ')',
-        );
-        let formattedData = '';
-        for (const rec of esPayloadChunk) {
-          formattedData =
-            formattedData +
-            JSON.stringify({
-              index: {
-                _index: issuesIndex,
-                _id: (rec as GithubIssue).id,
-              },
-            }) +
-            '\n' +
-            JSON.stringify(rec) +
-            '\n';
-        }
-        await eClient.bulk({
-          index: issuesIndex,
-          refresh: 'wait_for',
-          body: formattedData,
-        });
-        cli.action.stop(' done');
-      }
+      await esPushNodes(fetchedIssues, issuesIndex, eClient);
     }
   }
 }

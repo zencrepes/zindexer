@@ -9,12 +9,11 @@ export interface ConfigElasticsearch {
     githubRepos: string;
     githubIssues: string;
     githubPullrequests: string;
-    issues: string;
-    projects: string;
+    githubProjects: string;
+    githubMilestones: string;
+    githubLabels: string;
+    githubReleases: string;
     jiraProjects: string;
-    labels: string;
-    milestones: string;
-    prs: string;
   };
 }
 
@@ -151,6 +150,11 @@ export interface GithubIssue {
   id: string;
 }
 export interface GithubPullrequest {
+  id: string;
+  updatedAt: string;
+}
+// Standard Github node interface
+export interface GithubNode {
   id: string;
   updatedAt: string;
 }

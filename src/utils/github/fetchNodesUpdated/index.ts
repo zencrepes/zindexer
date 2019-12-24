@@ -5,21 +5,19 @@ import { createWriteStream } from 'fs';
 import * as path from 'path';
 import { performance } from 'perf_hooks';
 
-import getPullrequests from '../graphql/getPullrequests';
 import calculateQueryIncrement from '../utils/calculateQueryIncrement';
 import graphqlQuery from '../utils/graphqlQuery';
+import { GithubNode } from '../../../global';
 
-import { GithubPullrequest } from '../../../global';
-
-export default class FetchPullrequests {
+export default class FetchNodeUpdated {
   gClient: object;
   maxQueryIncrement: number;
   configDir: string;
   log: any; // eslint-disable-line
   cli: object;
-  fetchedPullrequests: Array<object>;
+  fetchedNodes: Array<object>;
   errorRetry: number;
-  getPullrequests: string;
+  graphQLQuery: string;
   rateLimit: {
     limit: number;
     cost: number;
@@ -30,6 +28,7 @@ export default class FetchPullrequests {
 
   constructor(
     gClient: object,
+    graphQLQuery: string,
     log: object,
     ghIncrement: number,
     configDir: string,
@@ -40,10 +39,9 @@ export default class FetchPullrequests {
 
     this.log = log;
     this.cli = cli;
-    this.fetchedPullrequests = [];
+    this.fetchedNodes = [];
     this.errorRetry = 0;
-    //this.getPullrequests = readFileSync(__dirname + '/../graphql/getPullrequests.graphql', 'utf8')
-    this.getPullrequests = getPullrequests;
+    this.graphQLQuery = graphQLQuery;
 
     this.rateLimit = {
       limit: 5000,
@@ -53,20 +51,17 @@ export default class FetchPullrequests {
     };
   }
 
-  public async load(
-    repoId: string,
-    recentPullrequest: GithubPullrequest | null,
-  ) {
-    this.fetchedPullrequests = [];
+  public async load(repoId: string, recentNode: GithubNode | null) {
+    this.fetchedNodes = [];
     //Create stream for writing issues to cache
     this.cacheStream = createWriteStream(
       path.join(this.configDir + '/cache/', repoId + '.ndjson'),
       { flags: 'a' },
     );
 
-    await this.getPullrequestsPagination(null, 5, repoId, recentPullrequest);
+    await this.getNodesPagination(null, 5, repoId, recentNode);
     this.cacheStream.end();
-    return this.fetchedPullrequests;
+    return this.fetchedNodes;
   }
 
   private sleep(ms: number) {
@@ -75,11 +70,11 @@ export default class FetchPullrequests {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  private async getPullrequestsPagination(
+  private async getNodesPagination(
     cursor: string | null,
     increment: number,
     repoId: string,
-    recentPullrequest: GithubPullrequest | null,
+    recentNode: GithubNode | null,
   ) {
     if (this.errorRetry <= 3) {
       let data: any = {}; // eslint-disable-line
@@ -88,7 +83,7 @@ export default class FetchPullrequests {
       try {
         data = await graphqlQuery(
           this.gClient,
-          this.getPullrequests,
+          this.graphQLQuery,
           {
             cursor,
             increment,
@@ -110,46 +105,37 @@ export default class FetchPullrequests {
           this.rateLimit = data.data.rateLimit;
         }
         //updateChip(data.data.rateLimit)
-        const lastCursor = await this.loadPullrequests(
-          data,
-          callDuration,
-          recentPullrequest,
-        );
+        const lastCursor = await this.loadNodes(data, callDuration, recentNode);
         const queryIncrement = calculateQueryIncrement(
-          this.fetchedPullrequests.length,
-          data.data.node.pullRequests.totalCount,
+          this.fetchedNodes.length,
+          data.data.node.ghNode.totalCount,
           this.maxQueryIncrement,
         );
         this.log(
           'Repo: ' +
             repoId +
             ' -> Fetched Count / Remote Count / Query Increment: ' +
-            this.fetchedPullrequests.length +
+            this.fetchedNodes.length +
             ' / ' +
-            data.data.node.pullRequests.totalCount +
+            data.data.node.ghNode.totalCount +
             ' / ' +
             queryIncrement,
         );
         if (queryIncrement > 0 && lastCursor !== null) {
-          await this.getPullrequestsPagination(
+          await this.getNodesPagination(
             lastCursor,
             queryIncrement,
             repoId,
-            recentPullrequest,
+            recentNode,
           );
         }
       } else {
         this.errorRetry = this.errorRetry + 1;
         this.log(
           'Error loading content, current count: ' + this.errorRetry,
-          recentPullrequest,
+          recentNode,
         );
-        await this.getPullrequestsPagination(
-          cursor,
-          increment,
-          repoId,
-          recentPullrequest,
-        );
+        await this.getNodesPagination(cursor, increment, repoId, recentNode);
       }
     } else {
       this.log('Got too many load errors, stopping');
@@ -157,25 +143,25 @@ export default class FetchPullrequests {
     }
   }
 
-  private async loadPullrequests(
+  private async loadNodes(
     data: any, // eslint-disable-line
     callDuration: number,
-    recentPullrequest: GithubPullrequest | null,
+    recentNode: GithubNode | null,
   ) {
     //    this.log('Loading from ' + OrgObj.login + ' organization')
     let lastCursor = null;
     let stopLoad = false;
 
-    if (data.data.node.pullRequests.edges.length > 0) {
+    if (data.data.node.ghNode.edges.length > 0) {
       const apiPerf = Math.round(
-        data.data.node.pullRequests.edges.length / (callDuration / 1000),
+        data.data.node.ghNode.edges.length / (callDuration / 1000),
       );
       this.log(
         'Latest call contained ' +
-          data.data.node.pullRequests.edges.length +
+          data.data.node.ghNode.edges.length +
           ' issues, oldest: ' +
           format(
-            parseISO(data.data.node.pullRequests.edges[0].node.updatedAt),
+            parseISO(data.data.node.ghNode.edges[0].node.updatedAt),
             'LLL do yyyy',
           ) +
           ' download rate: ' +
@@ -183,33 +169,33 @@ export default class FetchPullrequests {
           ' issues/s',
       );
     }
-    for (const currentPullrequest of data.data.node.pullRequests.edges) {
+    for (const currentIssue of data.data.node.ghNode.edges) {
       if (
-        recentPullrequest !== null &&
-        new Date(currentPullrequest.node.updatedAt).getTime() <
-          new Date(recentPullrequest.updatedAt).getTime()
+        recentNode !== null &&
+        new Date(currentIssue.node.updatedAt).getTime() <
+          new Date(recentNode.updatedAt).getTime()
       ) {
-        this.log('Pullrequest already loaded, stopping entire load');
-        // Pullrequests are loaded from newest to oldest, when it gets to a point where updated date of a loaded issue
+        this.log('Issue already loaded, stopping entire load');
+        // Issues are loaded from newest to oldest, when it gets to a point where updated date of a loaded issue
         // is equal to updated date of a local issue, it means there is no "new" content, but there might still be
         // issues that were not loaded for any reason. So the system only stops loaded if totalCount remote is equal
         //  to the total number of issues locally
         // Note Mar 21: This logic might be fine when the number of issues is relatively small, definitely problematic for large repositories.
         // Commenting it out for now, it will not keep looking in the past if load is interrupted for some reason.
-        //if (data.data.node.pullRequests.totalCount === cfgPullrequests.find({'repo.id': repoObj.id}).count()) {
+        //if (data.data.node.ghNode.totalCount === cfgIssues.find({'repo.id': repoObj.id}).count()) {
         //    stopLoad = true;
         //}
         stopLoad = true;
       } else {
-        const issueObj = JSON.parse(JSON.stringify(currentPullrequest.node)); //TODO - Replace this with something better to copy object ?
-        this.fetchedPullrequests.push(issueObj);
+        const issueObj = JSON.parse(JSON.stringify(currentIssue.node)); //TODO - Replace this with something better to copy object ?
+        this.fetchedNodes.push(issueObj);
 
         //Write the content to the cache file
         this.cacheStream.write(JSON.stringify(issueObj) + '\n');
 
-        lastCursor = currentPullrequest.cursor;
+        lastCursor = currentIssue.cursor;
       }
-      lastCursor = currentPullrequest.cursor;
+      lastCursor = currentIssue.cursor;
       if (stopLoad === true) {
         lastCursor = null;
       }

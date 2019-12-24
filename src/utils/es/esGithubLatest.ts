@@ -1,7 +1,7 @@
 import cli from 'cli-ux';
 import { ApiResponse, Client } from '@elastic/elasticsearch';
 
-import { ESSearchResponse, ESIndexSources } from '../../global';
+import { ESSearchResponse, GithubNode } from '../../global';
 
 const esGithubLatest = async (client: Client, esIndex: string) => {
   // Ensure index exists in Elasticsearch
@@ -25,7 +25,7 @@ const esGithubLatest = async (client: Client, esIndex: string) => {
   //Grab the latest node from an Elasticsearch index
   cli.action.start('Querying Elasticcearch');
   const esResults: ApiResponse<ESSearchResponse<
-    ESIndexSources
+    GithubNode
   >> = await client.search({
     index: esIndex,
     body: {
@@ -42,7 +42,7 @@ const esGithubLatest = async (client: Client, esIndex: string) => {
       ],
     },
   });
-  let recentIssue = null;
+  let recentIssue: GithubNode | null = null;
   if (esResults.body.hits.hits.length > 0) {
     recentIssue = esResults.body.hits.hits[0]._source;
   }

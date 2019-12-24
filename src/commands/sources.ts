@@ -47,7 +47,7 @@ export default class Sources extends Command {
       default: false,
       description: 'Automatically make the new sources active by default',
     }),
-    refresh: flags.boolean({
+    load: flags.boolean({
       char: 'l',
       default: false,
       description:
@@ -75,7 +75,7 @@ export default class Sources extends Command {
 
   async run() {
     const { flags } = this.parse(Sources);
-    const { type, active, ggrab, gorg, grepo, refresh } = flags;
+    const { type, active, ggrab, gorg, grepo, load } = flags;
 
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
@@ -84,7 +84,7 @@ export default class Sources extends Command {
     let dataSources: Array<ESIndexSources> = [];
     let esPayload: Array<ESIndexSources> = [];
     // 1- Grab data sources from either GitHub or Jira
-    if (refresh === true) {
+    if (load === true) {
       dataSources = await esQueryData(
         eClient,
         userConfig.elasticsearch.indices.sources,

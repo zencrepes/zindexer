@@ -8,7 +8,7 @@ const query = `
     }
     node(id: $repoId) {
       ... on Repository {
-        issues(first: $increment, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+        ghNode: issues(first: $increment, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
           totalCount
           edges {
           cursor

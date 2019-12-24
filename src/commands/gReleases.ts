@@ -11,11 +11,10 @@ import ghClient from '../utils/github/ghClient';
 import esGetActiveSources from '../utils/es/esGetActiveSources';
 import { getId } from '../utils/misc/getId';
 
-import getPullrequests from '../utils/github/graphql/getPullrequests';
+import getReleases from '../utils/github/graphql/getReleases';
 
-export default class GPullrequests extends Command {
-  static description =
-    'Github: Fetches Pullrequests data from configured sources';
+export default class GReleases extends Command {
+  static description = 'Github: Fetches releases data from configured sources';
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -30,36 +29,33 @@ export default class GPullrequests extends Command {
 
     const fetchData = new fetchNodesUpdated(
       gClient,
-      getPullrequests,
+      getReleases,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
     );
 
     for (const currenSource of sources) {
-      const pullrequestsIndex = (
-        userConfig.elasticsearch.indices.githubPullrequests +
+      const releasesIndex = (
+        userConfig.elasticsearch.indices.githubReleases +
         getId(currenSource.name)
       ).toLocaleLowerCase();
       this.log('Processing source: ' + currenSource.name);
-      const recentPullrequest = await esGithubLatest(
-        eClient,
-        pullrequestsIndex,
-      );
+      const recentRelease = await esGithubLatest(eClient, releasesIndex);
       cli.action.start(
-        'Grabbing pullrequests for: ' +
+        'Grabbing releases for: ' +
           currenSource.name +
           ' (ID: ' +
           currenSource.id +
           ')',
       );
-      const fetchedPullrequests = await fetchData.load(
+      const fetchedReleases = await fetchData.load(
         currenSource.id,
-        recentPullrequest,
+        recentRelease,
       );
       cli.action.stop(' done');
 
-      await esPushNodes(fetchedPullrequests, pullrequestsIndex, eClient);
+      await esPushNodes(fetchedReleases, releasesIndex, eClient);
     }
   }
 }

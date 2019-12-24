@@ -11,11 +11,11 @@ import ghClient from '../utils/github/ghClient';
 import esGetActiveSources from '../utils/es/esGetActiveSources';
 import { getId } from '../utils/misc/getId';
 
-import getPullrequests from '../utils/github/graphql/getPullrequests';
+import getMilestones from '../utils/github/graphql/getMilestones';
 
-export default class GPullrequests extends Command {
+export default class GMilestones extends Command {
   static description =
-    'Github: Fetches Pullrequests data from configured sources';
+    'Github: Fetches milestones data from configured sources';
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -30,36 +30,33 @@ export default class GPullrequests extends Command {
 
     const fetchData = new fetchNodesUpdated(
       gClient,
-      getPullrequests,
+      getMilestones,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
     );
 
     for (const currenSource of sources) {
-      const pullrequestsIndex = (
-        userConfig.elasticsearch.indices.githubPullrequests +
+      const milestonesIndex = (
+        userConfig.elasticsearch.indices.githubMilestones +
         getId(currenSource.name)
       ).toLocaleLowerCase();
       this.log('Processing source: ' + currenSource.name);
-      const recentPullrequest = await esGithubLatest(
-        eClient,
-        pullrequestsIndex,
-      );
+      const recentMilestone = await esGithubLatest(eClient, milestonesIndex);
       cli.action.start(
-        'Grabbing pullrequests for: ' +
+        'Grabbing milestones for: ' +
           currenSource.name +
           ' (ID: ' +
           currenSource.id +
           ')',
       );
-      const fetchedPullrequests = await fetchData.load(
+      const fetchedMilestones = await fetchData.load(
         currenSource.id,
-        recentPullrequest,
+        recentMilestone,
       );
       cli.action.stop(' done');
 
-      await esPushNodes(fetchedPullrequests, pullrequestsIndex, eClient);
+      await esPushNodes(fetchedMilestones, milestonesIndex, eClient);
     }
   }
 }
