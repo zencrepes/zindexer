@@ -3,19 +3,17 @@ import cli from 'cli-ux';
 
 import Command from '../base';
 import esClient from '../utils/es/esClient';
-import esGithubLatest from '../utils/es/esGithubLatest';
 import esPushNodes from '../utils/es/esPushNodes';
-import fetchNodesUpdated from '../utils/github/fetchNodesUpdated';
+import fetchNodesByQuery from '../utils/github/fetchNodesByQuery';
 import ghClient from '../utils/github/ghClient';
 
 import esGetActiveSources from '../utils/es/esGetActiveSources';
 import { getId } from '../utils/misc/getId';
 
-import getPullrequests from '../utils/github/graphql/getPullrequests';
+import getLabels from '../utils/github/graphql/getLabels';
 
-export default class GPullrequests extends Command {
-  static description =
-    'Github: Fetches Pullrequests data from configured sources';
+export default class GLabels extends Command {
+  static description = 'Github: Fetches labels attached to configured sources';
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -34,38 +32,30 @@ export default class GPullrequests extends Command {
 
     const sources = await esGetActiveSources(eClient, userConfig, 'GITHUB');
 
-    const fetchData = new fetchNodesUpdated(
+    const fetchData = new fetchNodesByQuery(
       gClient,
-      getPullrequests,
+      getLabels,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
     );
 
     for (const currenSource of sources) {
-      const pullrequestsIndex = (
-        userConfig.elasticsearch.indices.githubPullrequests +
-        getId(currenSource.name)
+      const labelsIndex = (
+        userConfig.elasticsearch.indices.githubLabels + getId(currenSource.name)
       ).toLocaleLowerCase();
       this.log('Processing source: ' + currenSource.name);
-      const recentPullrequest = await esGithubLatest(
-        eClient,
-        pullrequestsIndex,
-      );
       cli.action.start(
-        'Grabbing pullrequests for: ' +
+        'Grabbing labels for: ' +
           currenSource.name +
           ' (ID: ' +
           currenSource.id +
           ')',
       );
-      const fetchedPullrequests = await fetchData.load(
-        currenSource.id,
-        recentPullrequest,
-      );
+      const fetchedLabels = await fetchData.load({ repoId: currenSource.id });
       cli.action.stop(' done');
 
-      await esPushNodes(fetchedPullrequests, pullrequestsIndex, eClient);
+      await esPushNodes(fetchedLabels, labelsIndex, eClient);
     }
   }
 }

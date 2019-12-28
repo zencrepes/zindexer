@@ -1,23 +1,33 @@
-import { format, parseISO } from 'date-fns';
 import cli from 'cli-ux';
-
 import { createWriteStream } from 'fs';
 import * as path from 'path';
 import { performance } from 'perf_hooks';
 
+import getOrgs from '../graphql/getOrgs';
+import getRepos from '../graphql/getOrgRepos';
+import getUserRepos from '../graphql/getUserRepos';
 import calculateQueryIncrement from '../utils/calculateQueryIncrement';
 import graphqlQuery from '../utils/graphqlQuery';
-import { GithubNode } from '../../../global';
+import { getId } from '../../../utils/misc/getId';
 
-export default class FetchNodeUpdated {
+/*
+  Fetch an unknown quantity of nodes resulting of a query
+*/
+export default class FetchNodesByQuery {
   gClient: object;
-  maxQueryIncrement: number;
+  graphQLQuery: string;
   configDir: string;
+  maxQueryIncrement: number;
   log: any; // eslint-disable-line
   cli: object;
-  fetchedNodes: Array<object>;
+  fetchedNodes: Array<any>; // eslint-disable-line
+  error: any; // eslint-disable-line
   errorRetry: number;
-  graphQLQuery: string;
+  totalReposCount: number;
+  orgReposCount: any; // eslint-disable-line
+  getOrgs: string;
+  getRepos: string;
+  getUserRepos: string;
   rateLimit: {
     limit: number;
     cost: number;
@@ -34,14 +44,19 @@ export default class FetchNodeUpdated {
     configDir: string,
   ) {
     this.gClient = gClient;
+    this.graphQLQuery = graphQLQuery;
+    this.log = log;
     this.maxQueryIncrement = ghIncrement;
     this.configDir = configDir;
 
-    this.log = log;
     this.cli = cli;
-    this.fetchedNodes = [];
+    this.totalReposCount = 0;
+    this.orgReposCount = {};
     this.errorRetry = 0;
-    this.graphQLQuery = graphQLQuery;
+    this.getOrgs = getOrgs;
+    this.getRepos = getRepos;
+    this.getUserRepos = getUserRepos;
+    this.fetchedNodes = [];
 
     this.rateLimit = {
       limit: 5000,
@@ -51,16 +66,20 @@ export default class FetchNodeUpdated {
     };
   }
 
-  public async load(repoId: string, recentNode: GithubNode | null) {
+  public async load(queryParams: object) {
     this.fetchedNodes = [];
-    //Create stream for writing nodes to cache
+
     this.cacheStream = createWriteStream(
-      path.join(this.configDir + '/cache/', repoId + '.ndjson'),
+      path.join(
+        this.configDir + '/cache/',
+        getId(JSON.stringify(queryParams)) + '.ndjson',
+      ),
       { flags: 'a' },
     );
 
-    await this.getNodesPagination(null, 5, repoId, recentNode);
+    await this.getNodesPagination(null, 5, queryParams);
     this.cacheStream.end();
+
     return this.fetchedNodes;
   }
 
@@ -73,8 +92,7 @@ export default class FetchNodeUpdated {
   private async getNodesPagination(
     cursor: string | null,
     increment: number,
-    repoId: string,
-    recentNode: GithubNode | null,
+    queryParams: object,
   ) {
     if (this.errorRetry <= 3) {
       let data: any = {}; // eslint-disable-line
@@ -85,9 +103,9 @@ export default class FetchNodeUpdated {
           this.gClient,
           this.graphQLQuery,
           {
+            ...queryParams,
             cursor,
             increment,
-            repoId: repoId,
           },
           this.rateLimit,
           this.log,
@@ -105,19 +123,23 @@ export default class FetchNodeUpdated {
           this.rateLimit = data.data.rateLimit;
         }
         //updateChip(data.data.rateLimit)
-        const lastCursor = await this.loadNodes(data, callDuration, recentNode);
+        const ghNode =
+          data.data.viewer !== undefined
+            ? data.data.viewer.ghNode
+            : data.data.node.ghNode;
+        const lastCursor = await this.loadNodes(ghNode, callDuration);
         const queryIncrement = calculateQueryIncrement(
           this.fetchedNodes.length,
-          data.data.node.ghNode.totalCount,
+          ghNode.totalCount,
           this.maxQueryIncrement,
         );
         this.log(
-          'Repo: ' +
-            repoId +
+          'Params: ' +
+            JSON.stringify(queryParams) +
             ' -> Fetched Count / Remote Count / Query Increment: ' +
             this.fetchedNodes.length +
             ' / ' +
-            data.data.node.ghNode.totalCount +
+            ghNode.totalCount +
             ' / ' +
             queryIncrement,
         );
@@ -125,17 +147,13 @@ export default class FetchNodeUpdated {
           await this.getNodesPagination(
             lastCursor,
             queryIncrement,
-            repoId,
-            recentNode,
+            queryParams,
           );
         }
       } else {
         this.errorRetry = this.errorRetry + 1;
-        this.log(
-          'Error loading content, current count: ' + this.errorRetry,
-          recentNode,
-        );
-        await this.getNodesPagination(cursor, increment, repoId, recentNode);
+        this.log('Error loading content, current count: ' + this.errorRetry);
+        await this.getNodesPagination(cursor, increment, queryParams);
       }
     } else {
       this.log('Got too many load errors, stopping');
@@ -144,61 +162,28 @@ export default class FetchNodeUpdated {
   }
 
   private async loadNodes(
-    data: any, // eslint-disable-line
+    ghNode: any, // eslint-disable-line
     callDuration: number,
-    recentNode: GithubNode | null,
   ) {
     //    this.log('Loading from ' + OrgObj.login + ' organization')
     let lastCursor = null;
-    let stopLoad = false;
-
-    if (data.data.node.ghNode.edges.length > 0) {
-      const apiPerf = Math.round(
-        data.data.node.ghNode.edges.length / (callDuration / 1000),
-      );
+    if (ghNode.edges.length > 0) {
+      const apiPerf = Math.round(ghNode.edges.length / (callDuration / 1000));
       this.log(
         'Latest call contained ' +
-          data.data.node.ghNode.edges.length +
-          ' nodes, oldest: ' +
-          format(
-            parseISO(data.data.node.ghNode.edges[0].node.updatedAt),
-            'LLL do yyyy',
-          ) +
+          ghNode.edges.length +
           ' download rate: ' +
           apiPerf +
           ' nodes/s',
       );
     }
-    for (const currentNode of data.data.node.ghNode.edges) {
-      if (
-        recentNode !== null &&
-        new Date(currentNode.node.updatedAt).getTime() <
-          new Date(recentNode.updatedAt).getTime()
-      ) {
-        this.log('Issue already loaded, stopping entire load');
-        // Issues are loaded from newest to oldest, when it gets to a point where updated date of a loaded issue
-        // is equal to updated date of a local issue, it means there is no "new" content, but there might still be
-        // issues that were not loaded for any reason. So the system only stops loaded if totalCount remote is equal
-        //  to the total number of issues locally
-        // Note Mar 21: This logic might be fine when the number of issues is relatively small, definitely problematic for large repositories.
-        // Commenting it out for now, it will not keep looking in the past if load is interrupted for some reason.
-        //if (data.data.node.ghNode.totalCount === cfgIssues.find({'repo.id': repoObj.id}).count()) {
-        //    stopLoad = true;
-        //}
-        stopLoad = true;
-      } else {
-        const nodeObj = JSON.parse(JSON.stringify(currentNode.node)); //TODO - Replace this with something better to copy object ?
-        this.fetchedNodes.push(nodeObj);
+    for (const currentNode of ghNode.edges) {
+      const nodeObj = JSON.parse(JSON.stringify(currentNode.node)); //TODO - Replace this with something better to copy object ?
+      this.fetchedNodes.push(nodeObj);
+      //Write the content to the cache file
+      this.cacheStream.write(JSON.stringify(nodeObj) + '\n');
 
-        //Write the content to the cache file
-        this.cacheStream.write(JSON.stringify(nodeObj) + '\n');
-
-        lastCursor = currentNode.cursor;
-      }
       lastCursor = currentNode.cursor;
-      if (stopLoad === true) {
-        lastCursor = null;
-      }
     }
     return lastCursor;
   }

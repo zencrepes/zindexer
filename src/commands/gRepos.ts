@@ -15,13 +15,19 @@ import YmlSettings from '../schemas/settings';
 import getReposById from '../utils/github/graphql/getReposById';
 
 import chunkArray from '../utils/misc/chunkArray';
-import GetNodesById from '../utils/github/getNodesById';
+import FetchNodesByIds from '../utils/github/fetchNodesbyIds';
 
 export default class GRepos extends Command {
   static description = 'Github: Fetches repos data from configured sources';
 
   static flags = {
     help: flags.help({ char: 'h' }),
+    envUserConf: flags.string({
+      required: false,
+      env: 'USER_CONFIG',
+      description:
+        'User Configuration passed as an environment variable, takes precedence over config file',
+    }),
   };
 
   async run() {
@@ -34,7 +40,7 @@ export default class GRepos extends Command {
       sources,
       userConfig.github.fetch.maxNodes,
     );
-    const fetchData = new GetNodesById(
+    const fetchData = new FetchNodesByIds(
       this.log,
       userConfig.github.fetch.maxNodes,
       cli,

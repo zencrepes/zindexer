@@ -1,5 +1,5 @@
 const query = `
-  query ($repo_cursor: String, $increment: Int) {
+  query ($cursor: String, $increment: Int) {
     rateLimit {
       limit
       cost
@@ -7,7 +7,7 @@ const query = `
       resetAt
     }
     viewer {
-      organizations(first: $increment, after: $repo_cursor) {
+      ghNode: organizations(first: $increment, after: $cursor) {
         totalCount
         edges {
           cursor

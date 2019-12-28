@@ -1,9 +1,9 @@
 export interface ConfigElasticsearch {
-  host: string | null;
-  sslCa: string | null;
-  cloudId: string | null;
-  username: string | null;
-  password: string | null;
+  host: string;
+  sslCa: string;
+  cloudId: string;
+  username: string;
+  password: string;
   indices: {
     sources: string;
     githubRepos: string;
@@ -13,6 +13,7 @@ export interface ConfigElasticsearch {
     githubMilestones: string;
     githubLabels: string;
     githubReleases: string;
+    jiraIssues: string;
     jiraProjects: string;
   };
 }
@@ -39,6 +40,9 @@ export interface ConfigJira {
       parentEpic: string;
     };
     excludeDays: Array<string>;
+    fetch: {
+      maxNodes: number;
+    };
   };
 }
 export interface Config {
@@ -142,7 +146,7 @@ export interface GithubOrganization {
 export interface GithubRepository {
   name: string;
   id: string;
-  org: GithubOrganization;
+  owner: GithubOrganization;
   active: boolean;
 }
 

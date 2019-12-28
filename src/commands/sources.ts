@@ -14,16 +14,24 @@ import {
   ESSearchResponse,
   ESIndexSources,
   GithubRepository,
+  GithubOrganization,
 } from '../global';
 
-import FetchAffiliated from '../utils/github/fetchAffiliated/index';
 import fetchProjects from '../utils/jira/fetchProjects/index';
-import FetchOrg from '../utils/github/fetchOrg/index';
-import FetchRepo from '../utils/github/fetchRepo/index';
 import ymlMappingsSources from '../schemas/sources';
 import esCheckIndex from '../utils/es/esCheckIndex';
 import esClient from '../utils/es/esClient';
 import ghClient from '../utils/github/ghClient';
+
+import graphqlQuery from '../utils/github/utils/graphqlQuery';
+
+import getOrgs from '../utils/github/graphql/getOrgs';
+import getOrgRepos from '../utils/github/graphql/getOrgRepos';
+import getOrgByName from '../utils/github/graphql/getOrgByName';
+import getRepoByName from '../utils/github/graphql/getRepoByName';
+import getUserByLogin from '../utils/github/graphql/getUserByLogin';
+import getUserRepos from '../utils/github/graphql/getUserRepos';
+import fetchNodesByQuery from '../utils/github/fetchNodesByQuery';
 
 import esQueryData from '../utils/es/esQueryData';
 
@@ -34,6 +42,12 @@ export default class Sources extends Command {
 
   static flags = {
     help: flags.help({ char: 'h' }),
+    envUserConf: flags.string({
+      required: false,
+      env: 'USER_CONFIG',
+      description:
+        'User Configuration passed as an environment variable, takes precedence over config file',
+    }),
     // flag with a value (-n, --name=VALUE)
     type: flags.string({
       char: 't',
@@ -149,8 +163,6 @@ export default class Sources extends Command {
         }
       });
       cli.action.stop(' done');
-
-      //      console.log(dataSources);
     } else {
       if (type === 'JIRA') {
         this.log('Fetching data from server: About to fetch sources from JIRA');
@@ -176,39 +188,122 @@ export default class Sources extends Command {
       } else {
         let fetchedRepos: Array<any> = []; // eslint-disable-line
         if (ggrab === 'affiliated') {
-          this.log('Starting to fetch data from affiliated organizations');
-          const fetchData = new FetchAffiliated(
+          // Fetch repositories directly attached to the user
+          const userResponse = await graphqlQuery(
             gClient,
+            getUserByLogin,
+            { userLogin: userConfig.github.username },
+            {
+              limit: 5000,
+              cost: 1,
+              remaining: 5000,
+              resetAt: null,
+            },
             this.log,
-            this.error,
-            userConfig.github.username,
-            userConfig.github.fetch.maxNodes,
-            cli,
           );
-          fetchedRepos = await fetchData.load();
+          if (userResponse.data.user !== null) {
+            const fetchReposData = new fetchNodesByQuery(
+              gClient,
+              getUserRepos,
+              this.log,
+              userConfig.github.fetch.maxNodes,
+              this.config.configDir,
+            );
+            cli.action.start(
+              'Fetching repositories for user: ' + userResponse.data.user.login,
+            );
+            const fetched = await fetchReposData.load({
+              userId: userResponse.data.user.id,
+            });
+            fetchedRepos = [...fetchedRepos, ...fetched];
+            cli.action.stop(' done');
+          }
+
+          // Fetch affiliated organizations
+          const fetchOrgsData = new fetchNodesByQuery(
+            gClient,
+            getOrgs,
+            this.log,
+            userConfig.github.fetch.maxNodes,
+            this.config.configDir,
+          );
+          const orgs: Array<GithubOrganization> = await fetchOrgsData.load({});
+
+          const fetchReposData = new fetchNodesByQuery(
+            gClient,
+            getOrgRepos,
+            this.log,
+            userConfig.github.fetch.maxNodes,
+            this.config.configDir,
+          );
+          for (const currentOrg of orgs) {
+            cli.action.start(
+              'Fetching repositories for org: ' + currentOrg.login,
+            );
+            const fetched = await fetchReposData.load({ orgId: currentOrg.id });
+            fetchedRepos = [...fetchedRepos, ...fetched];
+            cli.action.stop(' done');
+          }
         } else if (ggrab === 'org' && gorg !== undefined) {
           this.log('Starting to fetch data from org: ' + gorg);
-          const fetchData = new FetchOrg(
+          // 1- Check if org actually exists
+          const orgResponse = await graphqlQuery(
             gClient,
+            getOrgByName,
+            { orgName: gorg }, // eslint-disable-line
+            {
+              limit: 5000,
+              cost: 1,
+              remaining: 5000,
+              resetAt: null,
+            },
             this.log,
-            userConfig.github.fetch.maxNodes,
-            cli,
           );
-          fetchedRepos = await fetchData.load(gorg);
+          if (orgResponse.data.organization !== null) {
+            const fetchReposData = new fetchNodesByQuery(
+              gClient,
+              getOrgRepos,
+              this.log,
+              userConfig.github.fetch.maxNodes,
+              this.config.configDir,
+            );
+            cli.action.start(
+              'Fetching repositories for org: ' +
+                orgResponse.data.organization.login,
+            );
+            const fetched = await fetchReposData.load({
+              orgId: orgResponse.data.organization.id,
+            });
+            fetchedRepos = [...fetchedRepos, ...fetched];
+            cli.action.stop(' done');
+          } else {
+            console.error('ERROR: Unable to find an org with name: ' + gorg);
+          }
         } else if (
           ggrab === 'repo' &&
           gorg !== undefined &&
           grepo !== undefined
         ) {
           this.log('Starting to fetch data from repo: ' + gorg + '/' + grepo);
-          const fetchData = new FetchRepo(
+          const repoResponse = await graphqlQuery(
             gClient,
+            getRepoByName,
+            { orgName: gorg, repoName: grepo }, // eslint-disable-line
+            {
+              limit: 5000,
+              cost: 1,
+              remaining: 5000,
+              resetAt: null,
+            },
             this.log,
-            userConfig.github.token,
-            userConfig.github.fetch.maxNodes,
-            cli,
           );
-          fetchedRepos = await fetchData.load(gorg, grepo);
+          if (repoResponse.data.repository !== null) {
+            fetchedRepos = [repoResponse.data.repository];
+          } else {
+            console.error(
+              'ERROR: Unable to find this repository: ' + gorg + '/' + grepo,
+            );
+          }
         }
         dataSources = [
           ...dataSources,
@@ -217,7 +312,7 @@ export default class Sources extends Command {
               uuid: getUuid('GITHUB-' + p.id, 5),
               id: p.id,
               type: 'GITHUB',
-              name: p.org.login + '/' + p.name,
+              name: p.owner.login + '/' + p.name,
               active: active,
             };
           }),
