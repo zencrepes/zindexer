@@ -142,7 +142,7 @@ export interface GithubOrganization {
 export interface GithubRepository {
   name: string;
   id: string;
-  org: GithubOrganization;
+  owner: GithubOrganization;
   active: boolean;
 }
 

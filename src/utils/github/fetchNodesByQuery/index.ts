@@ -1,23 +1,18 @@
 import cli from 'cli-ux';
-//import {readFileSync} from 'fs'
-import * as _ from 'lodash';
 import { createWriteStream } from 'fs';
 import * as path from 'path';
 import { performance } from 'perf_hooks';
 
 import getOrgs from '../graphql/getOrgs';
-import getRepos from '../graphql/getRepos';
+import getRepos from '../graphql/getOrgRepos';
 import getUserRepos from '../graphql/getUserRepos';
 import calculateQueryIncrement from '../utils/calculateQueryIncrement';
 import graphqlQuery from '../utils/graphqlQuery';
 import { getId } from '../../../utils/misc/getId';
 
-import { GithubOrganization, GithubRepository } from '../../../global';
-
 /*
   Fetch an unknown quantity of nodes resulting of a query
 */
-
 export default class FetchNodesByQuery {
   gClient: object;
   graphQLQuery: string;
@@ -25,10 +20,8 @@ export default class FetchNodesByQuery {
   maxQueryIncrement: number;
   log: any; // eslint-disable-line
   cli: object;
-  fetchedNodes: Array<object>;
+  fetchedNodes: Array<any>; // eslint-disable-line
   error: any; // eslint-disable-line
-  fetchedRepos: Array<GithubRepository>;
-  githubOrgs: Array<GithubOrganization>;
   errorRetry: number;
   totalReposCount: number;
   orgReposCount: any; // eslint-disable-line
@@ -57,8 +50,6 @@ export default class FetchNodesByQuery {
     this.configDir = configDir;
 
     this.cli = cli;
-    this.fetchedRepos = [];
-    this.githubOrgs = [];
     this.totalReposCount = 0;
     this.orgReposCount = {};
     this.errorRetry = 0;
@@ -132,10 +123,14 @@ export default class FetchNodesByQuery {
           this.rateLimit = data.data.rateLimit;
         }
         //updateChip(data.data.rateLimit)
-        const lastCursor = await this.loadNodes(data, callDuration);
+        const ghNode =
+          data.data.viewer !== undefined
+            ? data.data.viewer.ghNode
+            : data.data.node.ghNode;
+        const lastCursor = await this.loadNodes(ghNode, callDuration);
         const queryIncrement = calculateQueryIncrement(
           this.fetchedNodes.length,
-          data.data.node.ghNode.totalCount,
+          ghNode.totalCount,
           this.maxQueryIncrement,
         );
         this.log(
@@ -144,7 +139,7 @@ export default class FetchNodesByQuery {
             ' -> Fetched Count / Remote Count / Query Increment: ' +
             this.fetchedNodes.length +
             ' / ' +
-            data.data.node.ghNode.totalCount +
+            ghNode.totalCount +
             ' / ' +
             queryIncrement,
         );
@@ -167,28 +162,24 @@ export default class FetchNodesByQuery {
   }
 
   private async loadNodes(
-    data: any, // eslint-disable-line
+    ghNode: any, // eslint-disable-line
     callDuration: number,
   ) {
     //    this.log('Loading from ' + OrgObj.login + ' organization')
     let lastCursor = null;
-
-    if (data.data.node.ghNode.edges.length > 0) {
-      const apiPerf = Math.round(
-        data.data.node.ghNode.edges.length / (callDuration / 1000),
-      );
+    if (ghNode.edges.length > 0) {
+      const apiPerf = Math.round(ghNode.edges.length / (callDuration / 1000));
       this.log(
         'Latest call contained ' +
-          data.data.node.ghNode.edges.length +
+          ghNode.edges.length +
           ' download rate: ' +
           apiPerf +
           ' nodes/s',
       );
     }
-    for (const currentNode of data.data.node.ghNode.edges) {
+    for (const currentNode of ghNode.edges) {
       const nodeObj = JSON.parse(JSON.stringify(currentNode.node)); //TODO - Replace this with something better to copy object ?
       this.fetchedNodes.push(nodeObj);
-
       //Write the content to the cache file
       this.cacheStream.write(JSON.stringify(nodeObj) + '\n');
 

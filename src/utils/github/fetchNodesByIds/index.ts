@@ -1,6 +1,6 @@
 import graphqlQuery from '../utils/graphqlQuery';
 
-export default class fetchNodesByIds {
+export default class FetchNodesByIds {
   maxQueryIncrement: number;
   log: any; // eslint-disable-line
   cli: object;

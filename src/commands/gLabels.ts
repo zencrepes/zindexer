@@ -3,7 +3,6 @@ import cli from 'cli-ux';
 
 import Command from '../base';
 import esClient from '../utils/es/esClient';
-import esGithubLatest from '../utils/es/esGithubLatest';
 import esPushNodes from '../utils/es/esPushNodes';
 import fetchNodesByQuery from '../utils/github/fetchNodesByQuery';
 import ghClient from '../utils/github/ghClient';
