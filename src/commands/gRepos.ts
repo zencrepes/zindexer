@@ -15,7 +15,7 @@ import YmlSettings from '../schemas/settings';
 import getReposById from '../utils/github/graphql/getReposById';
 
 import chunkArray from '../utils/misc/chunkArray';
-import FetchNodesByIds from '../utils/github/fetchNodesbyIds';
+import FetchNodesByIds from '../utils/github/fetchNodesByIds';
 
 export default class GRepos extends Command {
   static description = 'Github: Fetches repos data from configured sources';
