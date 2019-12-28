@@ -12,6 +12,7 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
+    "@types/fs-extra": "^8.0.1",
     "@types/js-yaml": "^3.12.1",
     "@types/node-fetch": "^2.5.4",
     "apollo-cache-inmemory": "^1.6.5",

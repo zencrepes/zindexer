@@ -21,10 +21,10 @@ export default abstract class extends Command {
   userConfig = {
     elasticsearch: {
       host: 'http://127.0.0.1:9200',
-      cloudId: null,
-      username: null,
-      password: null,
-      sslCa: null,
+      sslCa: '',
+      cloudId: '',
+      username: '',
+      password: '',
       indices: {
         sources: 'sources',
         githubRepos: 'gh_repos',

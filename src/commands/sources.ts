@@ -42,6 +42,12 @@ export default class Sources extends Command {
 
   static flags = {
     help: flags.help({ char: 'h' }),
+    envUserConf: flags.string({
+      required: false,
+      env: 'USER_CONFIG',
+      description:
+        'User Configuration passed as an environment variable, takes precedence over config file',
+    }),
     // flag with a value (-n, --name=VALUE)
     type: flags.string({
       char: 't',
