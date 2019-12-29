@@ -86,9 +86,9 @@ jobs:
       - run:
           name: Update the oclif readme
           command: oclif-dev readme
-      - run:
-          name: Purge oclif.manifest.json
-          command: rm -f oclif.manifest.json
+      #      - run:
+      #          name: Purge oclif.manifest.json
+      #          command: rm -f oclif.manifest.json
       - run:
           name: Ls zindexer content
           command: ls -lah ./
