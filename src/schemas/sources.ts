@@ -15,5 +15,7 @@ properties:
     type: keyword
   name:
     type: keyword
+  uuid:
+    type: keyword
 `;
 export default yaml;

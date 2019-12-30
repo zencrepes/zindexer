@@ -6,6 +6,8 @@ import esClient from '../utils/es/esClient';
 import esPushNodes from '../utils/es/esPushNodes';
 import fetchNodesByQuery from '../utils/github/fetchNodesByQuery';
 import ghClient from '../utils/github/ghClient';
+import esCheckIndex from '../utils/es/esCheckIndex';
+import ymlMappingsGLabels from '../schemas/gLabels';
 
 import esGetActiveSources from '../utils/es/esGetActiveSources';
 import { getId } from '../utils/misc/getId';
@@ -41,9 +43,6 @@ export default class GLabels extends Command {
     );
 
     for (const currenSource of sources) {
-      const labelsIndex = (
-        userConfig.elasticsearch.indices.githubLabels + getId(currenSource.name)
-      ).toLocaleLowerCase();
       this.log('Processing source: ' + currenSource.name);
       cli.action.start(
         'Grabbing labels for: ' +
@@ -54,6 +53,13 @@ export default class GLabels extends Command {
       );
       const fetchedLabels = await fetchData.load({ repoId: currenSource.id });
       cli.action.stop(' done');
+
+      const labelsIndex = (
+        userConfig.elasticsearch.indices.githubLabels + getId(currenSource.name)
+      ).toLocaleLowerCase();
+
+      // Check if index exists, create it if it does not
+      await esCheckIndex(eClient, userConfig, labelsIndex, ymlMappingsGLabels);
 
       await esPushNodes(fetchedLabels, labelsIndex, eClient);
     }

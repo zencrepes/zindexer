@@ -9,6 +9,9 @@ import fetchNodesUpdated from '../utils/github/fetchNodesUpdated';
 import ghClient from '../utils/github/ghClient';
 
 import esGetActiveSources from '../utils/es/esGetActiveSources';
+import esCheckIndex from '../utils/es/esCheckIndex';
+import ymlMappingsGPullrequests from '../schemas/gPullrequests';
+
 import { getId } from '../utils/misc/getId';
 
 import getPullrequests from '../utils/github/graphql/getPullrequests';
@@ -64,6 +67,14 @@ export default class GPullrequests extends Command {
         recentPullrequest,
       );
       cli.action.stop(' done');
+
+      // Check if index exists, create it if it does not
+      await esCheckIndex(
+        eClient,
+        userConfig,
+        pullrequestsIndex,
+        ymlMappingsGPullrequests,
+      );
 
       await esPushNodes(fetchedPullrequests, pullrequestsIndex, eClient);
     }

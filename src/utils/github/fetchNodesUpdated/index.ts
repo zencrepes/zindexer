@@ -175,7 +175,7 @@ export default class FetchNodeUpdated {
         new Date(currentNode.node.updatedAt).getTime() <
           new Date(recentNode.updatedAt).getTime()
       ) {
-        this.log('Issue already loaded, stopping entire load');
+        this.log('Node already loaded, stopping entire load');
         // Issues are loaded from newest to oldest, when it gets to a point where updated date of a loaded issue
         // is equal to updated date of a local issue, it means there is no "new" content, but there might still be
         // issues that were not loaded for any reason. So the system only stops loaded if totalCount remote is equal

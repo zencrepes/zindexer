@@ -20,7 +20,9 @@ const esCheckIndex = async (
   }
   const testIndex = await client.indices.exists({ index: index });
   if (testIndex.body === false) {
-    cli.action.start('Elasticsearch Index gh_repos does not exist, creating');
+    cli.action.start(
+      'Elasticsearch Index ' + index + ' does not exist, creating',
+    );
     const mappings = await jsYaml.safeLoad(YmlMapping);
     const settings = await jsYaml.safeLoad(YmlSettings);
     //const mappings = await loadYamlFile(__dirname + '../schemas/repositories.yml')
