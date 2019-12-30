@@ -38,7 +38,7 @@ import esQueryData from '../utils/es/esQueryData';
 import chunkArray from '../utils/misc/chunkArray';
 
 export default class Sources extends Command {
-  static description = 'Manage sources of data';
+  static description = 'Manage data sources (GitHub or Jira)';
 
   static flags = {
     help: flags.help({ char: 'h' }),

@@ -8,7 +8,10 @@ import esPushNodes from '../utils/es/esPushNodes';
 import fetchNodesUpdated from '../utils/github/fetchNodesUpdated';
 import ghClient from '../utils/github/ghClient';
 
+import ymlMappingsGProjects from '../schemas/gProjects';
 import esGetActiveSources from '../utils/es/esGetActiveSources';
+import esCheckIndex from '../utils/es/esCheckIndex';
+
 import { getId } from '../utils/misc/getId';
 
 import getProjects from '../utils/github/graphql/getProjects';
@@ -60,6 +63,14 @@ export default class GProjects extends Command {
         recentProject,
       );
       cli.action.stop(' done');
+
+      // Check if index exists, create it if it does not
+      await esCheckIndex(
+        eClient,
+        userConfig,
+        projectsIndex,
+        ymlMappingsGProjects,
+      );
 
       await esPushNodes(fetchedProjects, projectsIndex, eClient);
     }
