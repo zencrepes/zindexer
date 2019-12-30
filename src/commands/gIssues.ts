@@ -10,6 +10,8 @@ import ghClient from '../utils/github/ghClient';
 
 import esGetActiveSources from '../utils/es/esGetActiveSources';
 import { getId } from '../utils/misc/getId';
+import esCheckIndex from '../utils/es/esCheckIndex';
+import ymlMappingsGIssues from '../schemas/gIssues';
 
 import getIssues from '../utils/github/graphql/getIssues';
 
@@ -56,6 +58,9 @@ export default class GIssues extends Command {
       );
       const fetchedIssues = await fetchData.load(currenSource.id, recentIssue);
       cli.action.stop(' done');
+
+      // Check if index exists, create it if it does not
+      await esCheckIndex(eClient, userConfig, issuesIndex, ymlMappingsGIssues);
 
       await esPushNodes(fetchedIssues, issuesIndex, eClient);
     }

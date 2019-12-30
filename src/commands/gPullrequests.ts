@@ -65,6 +65,14 @@ export default class GPullrequests extends Command {
       );
       cli.action.stop(' done');
 
+      // Check if index exists, create it if it does not
+      await esCheckIndex(
+        eClient,
+        userConfig,
+        pullrequestsIndex,
+        ymlMappingsGPullrequests,
+      );
+
       await esPushNodes(fetchedPullrequests, pullrequestsIndex, eClient);
     }
   }

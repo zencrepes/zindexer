@@ -10,6 +10,8 @@ import ghClient from '../utils/github/ghClient';
 
 import esGetActiveSources from '../utils/es/esGetActiveSources';
 import { getId } from '../utils/misc/getId';
+import esCheckIndex from '../utils/es/esCheckIndex';
+import ymlMappingsGReleases from '../schemas/gReleases';
 
 import getReleases from '../utils/github/graphql/getReleases';
 
@@ -60,6 +62,14 @@ export default class GReleases extends Command {
         recentRelease,
       );
       cli.action.stop(' done');
+
+      // Check if index exists, create it if it does not
+      await esCheckIndex(
+        eClient,
+        userConfig,
+        releasesIndex,
+        ymlMappingsGReleases,
+      );
 
       await esPushNodes(fetchedReleases, releasesIndex, eClient);
     }

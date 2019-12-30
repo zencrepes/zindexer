@@ -8,9 +8,8 @@ import ghClient from '../utils/github/ghClient';
 import { GithubRepository } from '../global';
 import esGetActiveSources from '../utils/es/esGetActiveSources';
 
-import YmlRepos from '../schemas/githubRepos';
-
-import YmlSettings from '../schemas/settings';
+import esCheckIndex from '../utils/es/esCheckIndex';
+import ymlMappingsGRepos from '../schemas/gRepos';
 
 import getReposById from '../utils/github/graphql/getReposById';
 
@@ -64,19 +63,8 @@ export default class GRepos extends Command {
     }
 
     const esIndex = userConfig.elasticsearch.indices.githubRepos;
-    const testIndex = await eClient.indices.exists({ index: esIndex });
-    if (testIndex.body === false) {
-      cli.action.start(
-        'Elasticsearch Index ' + esIndex + ' does not exist, creating',
-      );
-      const mappings = await jsYaml.safeLoad(YmlRepos);
-      const settings = await jsYaml.safeLoad(YmlSettings);
-      await eClient.indices.create({
-        index: esIndex,
-        body: { settings, mappings },
-      });
-      cli.action.stop(' created');
-    }
+    // Check if index exists, create it if it does not
+    await esCheckIndex(eClient, userConfig, esIndex, ymlMappingsGRepos);
 
     //Break down the issues response in multiple batches
     const esPayloadChunked = await chunkArray(fetchedRepos, 100);
