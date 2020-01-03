@@ -29,9 +29,11 @@ const esQueryData = async (
   cli.action.stop(' done');
 
   //Grab the active repositories from Elasticsearch
-  console.log('==== ES QUERY =====');
+  console.log('=====================================================');
+  console.log('ES INDEX: ' + esIndex);
+  console.log('ES QUERY:');
   console.log(JSON.stringify(esQuery));
-  console.log('===================');
+  console.log('=====================================================');
   cli.action.start('Querying Elasticcearch');
   const esRepos: ApiResponse<ESSearchResponse<
     ESIndexSources
