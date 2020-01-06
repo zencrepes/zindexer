@@ -2,15 +2,11 @@ import { flags } from '@oclif/command';
 import { ApiResponse } from '@elastic/elasticsearch';
 
 import cli from 'cli-ux';
-import * as jsYaml from 'js-yaml';
 
 import Command from '../base';
 import esClient from '../utils/es/esClient';
 import chunkArray from '../utils/misc/chunkArray';
 import { getId } from '../utils/misc/getId';
-
-import YmlIssues from '../schemas/jiraIssues';
-import YmlSettings from '../schemas/settings';
 
 import {
   ESIndexSources,

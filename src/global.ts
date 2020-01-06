@@ -6,6 +6,7 @@ export interface ConfigElasticsearch {
   password: string;
   indices: {
     sources: string;
+    types: string;
     githubRepos: string;
     githubIssues: string;
     githubPullrequests: string;

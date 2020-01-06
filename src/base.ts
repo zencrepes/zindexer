@@ -26,7 +26,8 @@ export default abstract class extends Command {
       username: '',
       password: '',
       indices: {
-        sources: 'sources',
+        sources: 'sources', // this index is used to store sources data
+        types: 'types', // this index is used to store data about available index types
         githubRepos: 'gh_repos',
         githubIssues: 'gh_issues_',
         githubPullrequests: 'gh_prs_',

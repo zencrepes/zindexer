@@ -36,6 +36,7 @@ import fetchNodesByQuery from '../utils/github/fetchNodesByQuery';
 import esQueryData from '../utils/es/esQueryData';
 
 import chunkArray from '../utils/misc/chunkArray';
+import syncDataTypes from '../utils/misc/syncDataTypes';
 
 export default class Sources extends Command {
   static description = 'Manage data sources (GitHub or Jira)';
@@ -94,6 +95,10 @@ export default class Sources extends Command {
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
     const gClient = await ghClient(userConfig.github);
+
+    cli.action.start('Syncing local types configuration with ES');
+    await syncDataTypes(eClient, userConfig);
+    cli.action.stop(' done');
 
     let dataSources: Array<ESIndexSources> = [];
     let esPayload: Array<ESIndexSources> = [];

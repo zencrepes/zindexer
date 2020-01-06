@@ -1,6 +1,5 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
-import * as jsYaml from 'js-yaml';
 
 import Command from '../base';
 import esClient from '../utils/es/esClient';
