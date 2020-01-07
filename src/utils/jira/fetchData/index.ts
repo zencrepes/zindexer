@@ -9,9 +9,11 @@ const fetchProjects = async (
 ) => {
   const jiraServer = userConfig.jira.find(j => j.name === serverName);
   if (jiraServer !== undefined) {
+    const serverUrl =
+      jiraServer.config.host + endpoint.replace(jiraServer.config.host, '');
     const response = await axios({
       method: 'get',
-      url: jiraServer.config.host + endpoint,
+      url: serverUrl,
       auth: {
         username: jiraServer.config.username,
         password: jiraServer.config.password,

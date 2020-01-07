@@ -43,36 +43,60 @@ export default class JProjects extends Command {
         (s: ESIndexSources) => s.server === jiraServer.name,
       )) {
         cli.action.start('Fetching data for project: ' + source.name);
+        console.log('Getting overall project data');
         const projectData = await fetchData(
           userConfig,
           source.server,
           '/rest/api/2/project/' + source.id,
         );
+        console.log('Getting project properties');
         const projectProperties = await fetchData(
           userConfig,
           source.server,
           '/rest/api/2/project/' + source.id + '/properties',
         );
-        const projectRoles = await fetchData(
+        console.log('Getting project roles');
+        const projectRolesRaw = await fetchData(
           userConfig,
           source.server,
           '/rest/api/2/project/' + source.id + '/role',
         );
+        const projectRoles: Array<object> = [];
+        for (const endpointValue of Object.values(projectRolesRaw)) {
+          console.log(
+            'Getting project roles - fetching additional data from: ' +
+              endpointValue,
+          );
+          const projectRoleData = await fetchData(
+            userConfig,
+            source.server,
+            String(endpointValue),
+          );
+          projectRoles.push(projectRoleData);
+        }
+
+        console.log('Getting notification scheme');
         const projectNotificationsScheme = await fetchData(
           userConfig,
           source.server,
           '/rest/api/2/project/' + source.id + '/notificationscheme',
         );
+
+        console.log('Getting permissions scheme');
         const projectPermissionsScheme = await fetchData(
           userConfig,
           source.server,
           '/rest/api/2/project/' + source.id + '/permissionscheme',
         );
+
+        console.log('Getting priority scheme');
         const projectPriorityScheme = await fetchData(
           userConfig,
           source.server,
           '/rest/api/2/project/' + source.id + '/priorityscheme',
         );
+
+        console.log('Getting project security level');
         const projectSecurityLevel = await fetchData(
           userConfig,
           source.server,
