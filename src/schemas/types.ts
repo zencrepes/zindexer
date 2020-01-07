@@ -3,10 +3,12 @@ const yaml = `
 _source:
   enabled: true
 properties:
+  key:
+    type: keyword
+  name:
+    type: keyword    
   active:
     type: boolean
-  type:
-    type: keyword
   index:
     type: keyword
 `;

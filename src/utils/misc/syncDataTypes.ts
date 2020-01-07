@@ -16,11 +16,9 @@ const syncDataTypes = async (eClient: any, userConfig: Config) => {
 
   // There can only be one key, so we give this key the value
   const esPayload: Array<any> = []; // eslint-disable-line
-  for (const [type, index] of Object.entries(
-    userConfig.elasticsearch.indices,
-  )) {
+  for (const [key, index] of Object.entries(userConfig.elasticsearch.indices)) {
     esPayload.push({
-      type,
+      key,
       index,
     });
   }
@@ -33,7 +31,7 @@ const syncDataTypes = async (eClient: any, userConfig: Config) => {
       JSON.stringify({
         index: {
           _index: userConfig.elasticsearch.indices.types,
-          _id: (rec as any).type, // eslint-disable-line
+          _id: (rec as any).key, // eslint-disable-line
         },
       }) +
       '\n' +
