@@ -11,7 +11,9 @@ const ghClient = async (githubConfig: ConfigGithub) => {
     uri: 'https://api.github.com/graphql',
     fetch: fetch as any, // eslint-disable-line
   });
-  const cache = new InMemoryCache();
+  const cache = new InMemoryCache({
+    addTypename: false,
+  });
   //const cache = new InMemoryCache().restore(window.__APOLLO_STATE__)
   // eslint-disable-next-line
   const authMiddleware = new ApolloLink((operation: any, forward: any) => {
