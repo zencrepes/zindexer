@@ -47,7 +47,7 @@ export default class GPullrequests extends Command {
 
     for (const currenSource of sources) {
       const pullrequestsIndex = (
-        userConfig.elasticsearch.indices.githubPullrequests +
+        userConfig.elasticsearch.dataIndices.githubPullrequests +
         getId(currenSource.name)
       ).toLocaleLowerCase();
       this.log('Processing source: ' + currenSource.name);

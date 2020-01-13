@@ -46,7 +46,7 @@ export default class GProjects extends Command {
 
     for (const currenSource of sources) {
       const projectsIndex = (
-        userConfig.elasticsearch.indices.githubProjects +
+        userConfig.elasticsearch.dataIndices.githubProjects +
         getId(currenSource.name)
       ).toLocaleLowerCase();
       this.log('Processing source: ' + currenSource.name);

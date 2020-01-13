@@ -55,7 +55,8 @@ export default class GLabels extends Command {
       cli.action.stop(' done');
 
       const labelsIndex = (
-        userConfig.elasticsearch.indices.githubLabels + getId(currenSource.name)
+        userConfig.elasticsearch.dataIndices.githubLabels +
+        getId(currenSource.name)
       ).toLocaleLowerCase();
 
       // Check if index exists, create it if it does not

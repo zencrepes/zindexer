@@ -3,20 +3,14 @@ const yaml = `
 _source:
   enabled: true
 properties:
-  __typename:
-    type: keyword
   active:
     type: boolean
   branchProtectionRules:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: integer
   codeOfConduct:
     properties:
-      __typename:
-        type: keyword
       body:
         type: text
         fields:
@@ -41,8 +35,6 @@ properties:
     type: integer
   defaultBranchRef:
     properties:
-      __typename:
-        type: keyword
       id:
         type: keyword
       name:
@@ -89,16 +81,10 @@ properties:
     type: boolean
   issues:
     properties:
-      __typename:
-        type: keyword
       edges:
         properties:
-          __typename:
-            type: keyword
           node:
             properties:
-              __typename:
-                type: keyword
               id:
                 type: keyword
               updatedAt:
@@ -107,22 +93,14 @@ properties:
         type: integer
   labels:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: integer
   languages:
     properties:
-      __typename:
-        type: keyword
       edges:
         properties:
-          __typename:
-            type: keyword
           node:
             properties:
-              __typename:
-                type: keyword
               color:
                 type: keyword
               id:
@@ -137,8 +115,6 @@ properties:
         type: integer
   milestones:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: integer
   name:
@@ -167,8 +143,6 @@ properties:
         type: keyword
   owner:
     properties:
-      __typename:
-        type: keyword
       id:
         type: keyword
       login:
@@ -177,8 +151,6 @@ properties:
         type: keyword
   primaryLanguage:
     properties:
-      __typename:
-        type: keyword
       color:
         type: keyword
       id:
@@ -191,22 +163,14 @@ properties:
             ignore_above: 256
   projects:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: integer
   pullRequests:
     properties:
-      __typename:
-        type: keyword
       edges:
         properties:
-          __typename:
-            type: keyword
           node:
             properties:
-              __typename:
-                type: keyword
               id:
                 type: keyword
               updatedAt:
@@ -219,24 +183,14 @@ properties:
     type: boolean
   refs:
     properties:
-      __typename:
-        type: keyword
       edges:
         properties:
-          __typename:
-            type: keyword
           node:
             properties:
-              __typename:
-                type: keyword
               target:
                 properties:
-                  __typename:
-                    type: keyword
                   author:
                     properties:
-                      __typename:
-                        type: keyword
                       date:
                         type: date
                       email:
@@ -247,12 +201,6 @@ properties:
                             ignore_above: 256
                       user:
                         properties:
-                          __typename:
-                            type: text
-                            fields:
-                              keyword:
-                                type: keyword
-                                ignore_above: 256
                           id:
                             type: keyword
                           login:
@@ -271,14 +219,10 @@ properties:
         type: long
   releases:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: integer
   repositoryTopics:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: long
   shortDescriptionHTML:
@@ -291,8 +235,6 @@ properties:
     type: boolean
   stargazers:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: long
   updatedAt:
@@ -301,14 +243,10 @@ properties:
     type: keyword
   vulnerabilityAlerts:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: long
   watchers:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: long  
 `;

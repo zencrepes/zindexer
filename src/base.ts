@@ -25,9 +25,11 @@ export default abstract class extends Command {
       cloudId: '',
       username: '',
       password: '',
-      indices: {
+      sysIndices: {
         sources: 'sources', // this index is used to store sources data
         types: 'types', // this index is used to store data about available index types
+      },
+      dataIndices: {
         githubRepos: 'gh_repos',
         githubIssues: 'gh_issues_',
         githubPullrequests: 'gh_prs_',
@@ -37,6 +39,12 @@ export default abstract class extends Command {
         githubReleases: 'gh_releases_',
         jiraIssues: 'j_issues_',
         jiraProjects: 'j_projects_',
+      },
+    },
+    arranger: {
+      project: 'zencrepes',
+      admin: {
+        graphQLEndpoint: 'http://localhost:5050/admin/graphql',
       },
     },
     github: {

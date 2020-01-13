@@ -119,7 +119,8 @@ export default class JProjects extends Command {
       const esPayloadChunked = await chunkArray(projects, 100);
       //Push the results back to Elastic Search
       const esIndex =
-        userConfig.elasticsearch.indices.jiraProjects + getId(jiraServer.name);
+        userConfig.elasticsearch.dataIndices.jiraProjects +
+        getId(jiraServer.name);
 
       // Check if index exists, create it if it does not
       await esCheckIndex(eClient, userConfig, esIndex, ymlMappingsJProjects);

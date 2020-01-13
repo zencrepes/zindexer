@@ -106,7 +106,7 @@ export default class Sources extends Command {
     if (load === true) {
       dataSources = await esQueryData(
         eClient,
-        userConfig.elasticsearch.indices.sources,
+        userConfig.elasticsearch.sysIndices.sources,
         {
           from: 0,
           size: 10000,
@@ -330,7 +330,7 @@ export default class Sources extends Command {
       await esCheckIndex(
         eClient,
         userConfig,
-        userConfig.elasticsearch.indices.sources,
+        userConfig.elasticsearch.sysIndices.sources,
         ymlMappingsSources,
       );
 
@@ -341,7 +341,7 @@ export default class Sources extends Command {
       const esRepos: ApiResponse<ESSearchResponse<
         ESIndexSources
       >> = await eClient.search({
-        index: userConfig.elasticsearch.indices.sources,
+        index: userConfig.elasticsearch.sysIndices.sources,
         body: {
           from: 0,
           size: 10000,
@@ -397,7 +397,7 @@ export default class Sources extends Command {
           formattedData +
           JSON.stringify({
             index: {
-              _index: userConfig.elasticsearch.indices.sources,
+              _index: userConfig.elasticsearch.sysIndices.sources,
               _id: (rec as ESIndexSources).uuid,
             },
           }) +
@@ -406,7 +406,7 @@ export default class Sources extends Command {
           '\n';
       }
       await eClient.bulk({
-        index: userConfig.elasticsearch.indices.sources,
+        index: userConfig.elasticsearch.sysIndices.sources,
         refresh: 'wait_for',
         body: formattedData,
       });
@@ -416,7 +416,7 @@ export default class Sources extends Command {
     //Update the configuration by re-downloading all data from ElasticSearch to create the configuration file
     cli.action.start('Refreshing the repositories configuration file');
     const esSources = await eClient.search({
-      index: userConfig.elasticsearch.indices.sources,
+      index: userConfig.elasticsearch.sysIndices.sources,
       body: {
         from: 0,
         size: 10000,

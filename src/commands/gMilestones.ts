@@ -46,7 +46,7 @@ export default class GMilestones extends Command {
 
     for (const currenSource of sources) {
       const milestonesIndex = (
-        userConfig.elasticsearch.indices.githubMilestones +
+        userConfig.elasticsearch.dataIndices.githubMilestones +
         getId(currenSource.name)
       ).toLocaleLowerCase();
       this.log('Processing source: ' + currenSource.name);

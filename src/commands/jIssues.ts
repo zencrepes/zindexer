@@ -53,7 +53,7 @@ export default class JIssues extends Command {
       )) {
         // Defines index name, one index per projet and per server
         const issuesIndex = (
-          userConfig.elasticsearch.indices.jiraIssues +
+          userConfig.elasticsearch.dataIndices.jiraIssues +
           getId(jiraServer.name) +
           '_' +
           source.id

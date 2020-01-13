@@ -61,7 +61,7 @@ export default class GRepos extends Command {
       cli.action.stop(' done');
     }
 
-    const esIndex = userConfig.elasticsearch.indices.githubRepos;
+    const esIndex = userConfig.elasticsearch.dataIndices.githubRepos;
     // Check if index exists, create it if it does not
     await esCheckIndex(eClient, userConfig, esIndex, ymlMappingsGRepos);
 

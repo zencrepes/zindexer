@@ -45,7 +45,8 @@ export default class GIssues extends Command {
 
     for (const currenSource of sources) {
       const issuesIndex = (
-        userConfig.elasticsearch.indices.githubIssues + getId(currenSource.name)
+        userConfig.elasticsearch.dataIndices.githubIssues +
+        getId(currenSource.name)
       ).toLocaleLowerCase();
       this.log('Processing source: ' + currenSource.name);
       const recentIssue = await esGithubLatest(eClient, issuesIndex);

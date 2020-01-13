@@ -3,20 +3,12 @@ const yaml = `
 _source:
   enabled: true
 properties:
-  __typename:
-    type: keyword
   assignees:
     properties:
-      __typename:
-        type: keyword
       edges:
         properties:
-          __typename:
-            type: keyword
           node:
             properties:
-              __typename:
-                type: keyword
               avatarUrl:
                 type: keyword
               id:
@@ -35,8 +27,6 @@ properties:
         type: long
   author:
     properties:
-      __typename:
-        type: keyword
       avatarUrl:
         type: keyword
       login:
@@ -49,8 +39,6 @@ properties:
     type: date
   comments:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: long
   createdAt:
@@ -61,16 +49,10 @@ properties:
     type: keyword
   labels:
     properties:
-      __typename:
-        type: keyword
       edges:
         properties:
-          __typename:
-            type: keyword
           node:
             properties:
-              __typename:
-                type: keyword
               color:
                 type: keyword
               description:
@@ -91,8 +73,6 @@ properties:
         type: long
   milestone:
     properties:
-      __typename:
-        type: keyword
       closedAt:
         type: date
       createdAt:
@@ -109,8 +89,6 @@ properties:
         type: keyword
       issues:
         properties:
-          __typename:
-            type: keyword
           totalCount:
             type: long
       number:
@@ -131,28 +109,18 @@ properties:
     type: long
   participants:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: long
   projectCards:
     properties:
-      __typename:
-        type: keyword
       edges:
         properties:
-          __typename:
-            type: keyword
           node:
             properties:
-              __typename:
-                type: keyword
               id:
                 type: keyword
               project:
                 properties:
-                  __typename:
-                    type: keyword
                   id:
                     type: keyword
                   name:
@@ -165,8 +133,6 @@ properties:
         type: long
   repository:
     properties:
-      __typename:
-        type: keyword
       databaseId:
         type: long
       id:
@@ -179,8 +145,6 @@ properties:
             ignore_above: 256
       owner:
         properties:
-          __typename:
-            type: keyword
           id:
             type: keyword
           login:

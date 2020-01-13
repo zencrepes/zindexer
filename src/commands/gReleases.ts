@@ -45,7 +45,7 @@ export default class GReleases extends Command {
 
     for (const currenSource of sources) {
       const releasesIndex = (
-        userConfig.elasticsearch.indices.githubReleases +
+        userConfig.elasticsearch.dataIndices.githubReleases +
         getId(currenSource.name)
       ).toLocaleLowerCase();
       this.log('Processing source: ' + currenSource.name);

@@ -10,13 +10,23 @@ const syncDataTypes = async (eClient: any, userConfig: Config) => {
   await esCheckIndex(
     eClient,
     userConfig,
-    userConfig.elasticsearch.indices.types,
+    userConfig.elasticsearch.sysIndices.types,
     ymlMappingsTypes,
   );
 
   // There can only be one key, so we give this key the value
   const esPayload: Array<any> = []; // eslint-disable-line
-  for (const [key, index] of Object.entries(userConfig.elasticsearch.indices)) {
+  for (const [key, index] of Object.entries(
+    userConfig.elasticsearch.sysIndices,
+  )) {
+    esPayload.push({
+      key,
+      index,
+    });
+  }
+  for (const [key, index] of Object.entries(
+    userConfig.elasticsearch.dataIndices,
+  )) {
     esPayload.push({
       key,
       index,
@@ -30,7 +40,7 @@ const syncDataTypes = async (eClient: any, userConfig: Config) => {
       formattedData +
       JSON.stringify({
         index: {
-          _index: userConfig.elasticsearch.indices.types,
+          _index: userConfig.elasticsearch.sysIndices.types,
           _id: (rec as any).key, // eslint-disable-line
         },
       }) +
@@ -39,7 +49,7 @@ const syncDataTypes = async (eClient: any, userConfig: Config) => {
       '\n';
   }
   await eClient.bulk({
-    index: userConfig.elasticsearch.indices.types,
+    index: userConfig.elasticsearch.sysIndices.types,
     refresh: 'wait_for',
     body: formattedData,
   });

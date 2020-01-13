@@ -25,7 +25,7 @@ properties:
                   __typename:
                     type: keyword
                   totalCount:
-                    type: short
+                    type: long
               databaseId:
                 type: integer
               id:
@@ -37,7 +37,7 @@ properties:
                     type: keyword
                     ignore_above: 256
       totalCount:
-        type: short
+        type: long
   createdAt:
     type: date
   databaseId:
@@ -91,7 +91,7 @@ properties:
       __typename:
         type: keyword
       totalCount:
-        type: short
+        type: long
   state:
     type: keyword
   updatedAt:

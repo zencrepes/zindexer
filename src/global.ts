@@ -4,9 +4,11 @@ export interface ConfigElasticsearch {
   cloudId: string;
   username: string;
   password: string;
-  indices: {
+  sysIndices: {
     sources: string;
     types: string;
+  };
+  dataIndices: {
     githubRepos: string;
     githubIssues: string;
     githubPullrequests: string;
@@ -27,6 +29,14 @@ export interface ConfigGithub {
     maxNodes: number;
   };
 }
+
+export interface ConfigArranger {
+  project: string;
+  admin: {
+    graphQLEndpoint: string;
+  };
+}
+
 export interface ConfigJira {
   name: string;
   enabled: boolean;
@@ -49,6 +59,7 @@ export interface ConfigJira {
 export interface Config {
   elasticsearch: ConfigElasticsearch;
   github: ConfigGithub;
+  arranger: ConfigArranger;
   jira: Array<ConfigJira>;
 }
 
