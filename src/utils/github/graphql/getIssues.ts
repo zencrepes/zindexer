@@ -13,7 +13,7 @@ const query = `
           edges {
           cursor
             node {
-              id
+              nodeId: id
               createdAt
               updatedAt
               closedAt
@@ -53,7 +53,7 @@ const query = `
                       willCloseTarget
                       source {
                         ... on Issue {
-                          __typename
+                          typename: __typename
                           id
                           number
                           title
@@ -61,7 +61,7 @@ const query = `
                           url
                         }
                         ... on PullRequest {
-                          __typename
+                          typename: __typename
                           id
                           number
                           title
@@ -71,7 +71,7 @@ const query = `
                       }
                       target {
                         ... on Issue {
-                          __typename
+                          typename: __typename
                           id
                           number
                           title
@@ -79,7 +79,7 @@ const query = `
                           url
                         }
                         ... on PullRequest {
-                          __typename
+                          typename: __typename
                           id
                           number
                           title

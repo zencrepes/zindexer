@@ -57,7 +57,7 @@ properties:
     type: date
   databaseId:
     type: long
-  id:
+  nodeId:
     type: keyword
   labels:
     properties:

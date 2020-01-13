@@ -43,7 +43,7 @@ properties:
         type: keyword
       databaseId:
         type: long
-      id:
+      nodeId:
         type: keyword
       name:
         type: text

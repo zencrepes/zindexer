@@ -148,7 +148,7 @@ properties:
         properties:
           watchCount:
             type: integer
-  id:
+  nodeId:
     type: keyword
   issueTypes:
     properties:

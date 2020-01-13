@@ -85,7 +85,7 @@ export default class GRepos extends Command {
           JSON.stringify({
             index: {
               _index: esIndex,
-              _id: (rec as GithubRepository).id,
+              _id: (rec as GithubRepository).nodeId,
             },
           }) +
           '\n' +

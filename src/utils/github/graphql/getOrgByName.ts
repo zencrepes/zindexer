@@ -7,7 +7,7 @@ const query = `
       resetAt
     }
     organization(login:$orgName) {
-      id
+      nodeId: id
       login
       url
     }

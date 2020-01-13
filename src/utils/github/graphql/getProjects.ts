@@ -13,7 +13,7 @@ const query = `
           edges {
             cursor
             node {
-              id
+              nodeId: id
               createdAt
               updatedAt
               closedAt

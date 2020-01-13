@@ -14,7 +14,7 @@ const query = `
           node {
             name
             login
-            id
+            nodeId: id
             repositories {
               totalCount
             }

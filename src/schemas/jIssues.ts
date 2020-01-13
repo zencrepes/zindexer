@@ -658,7 +658,7 @@ properties:
             type: integer
       workratio:
         type: long
-  id:
+  nodeId:
     type: keyword
   key:
     type: keyword

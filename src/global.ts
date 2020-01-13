@@ -120,6 +120,7 @@ export interface ESIndexSources {
 // Object containing all of Jira data related to a project
 export interface JiraProject {
   id: string;
+  nodeId: string;
   properties: any; // eslint-disable-line
   roles: any; // eslint-disable-line
   issueScheme: any; // eslint-disable-line
@@ -131,6 +132,7 @@ export interface JiraProject {
 
 export interface JiraIssue {
   id: string;
+  nodeId: string;
   key: string;
   fields: {
     updated: string;
@@ -139,27 +141,27 @@ export interface JiraIssue {
 
 export interface GithubOrganization {
   login: string;
-  id: string;
+  nodeId: string;
   name?: string;
   __typename?: string;
 }
 
 export interface GithubRepository {
   name: string;
-  id: string;
+  nodeId: string;
   owner: GithubOrganization;
   active: boolean;
 }
 
 export interface GithubIssue {
-  id: string;
+  nodeId: string;
 }
 export interface GithubPullrequest {
-  id: string;
+  nodeId: string;
   updatedAt: string;
 }
 // Standard Github node interface
 export interface GithubNode {
-  id: string;
+  nodeId: string;
   updatedAt: string;
 }

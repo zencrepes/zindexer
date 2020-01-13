@@ -118,17 +118,20 @@ export default class JIssues extends Command {
               ')',
           );
           let formattedData = '';
-          for (const rec of esPayloadChunk) {
+          for (let rec of esPayloadChunk) {
+            // Trick to replace id with nodeId
+            let updatedRec: any = { ...rec, nodeId: (rec as JiraIssue).id };
+            delete updatedRec.id;
             formattedData =
               formattedData +
               JSON.stringify({
                 index: {
                   _index: issuesIndex,
-                  _id: (rec as JiraIssue).id,
+                  _id: (updatedRec as JiraIssue).nodeId,
                 },
               }) +
               '\n' +
-              JSON.stringify(rec) +
+              JSON.stringify(updatedRec) +
               '\n';
           }
           await eClient.bulk({

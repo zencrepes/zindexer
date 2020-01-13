@@ -33,7 +33,7 @@ properties:
       keyword:
         type: keyword
         ignore_above: 256
-  id:
+  nodeId:
     type: keyword
   isDraft:
     type: boolean

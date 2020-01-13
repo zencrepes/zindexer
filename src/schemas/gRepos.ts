@@ -71,7 +71,7 @@ properties:
     type: boolean
   hasWikiEnabled:
     type: boolean
-  id:
+  nodeId:
     type: keyword
   isArchived:
     type: boolean

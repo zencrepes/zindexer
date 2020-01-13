@@ -218,7 +218,7 @@ export default class Sources extends Command {
               'Fetching repositories for user: ' + userResponse.data.user.login,
             );
             const fetched = await fetchReposData.load({
-              userId: userResponse.data.user.id,
+              userId: userResponse.data.user.nodeId,
             });
             fetchedRepos = [...fetchedRepos, ...fetched];
             cli.action.stop(' done');
@@ -245,7 +245,9 @@ export default class Sources extends Command {
             cli.action.start(
               'Fetching repositories for org: ' + currentOrg.login,
             );
-            const fetched = await fetchReposData.load({ orgId: currentOrg.id });
+            const fetched = await fetchReposData.load({
+              orgId: currentOrg.nodeId,
+            });
             fetchedRepos = [...fetchedRepos, ...fetched];
             cli.action.stop(' done');
           }
@@ -277,7 +279,7 @@ export default class Sources extends Command {
                 orgResponse.data.organization.login,
             );
             const fetched = await fetchReposData.load({
-              orgId: orgResponse.data.organization.id,
+              orgId: orgResponse.data.organization.nodeId,
             });
             fetchedRepos = [...fetchedRepos, ...fetched];
             cli.action.stop(' done');
@@ -314,8 +316,8 @@ export default class Sources extends Command {
           ...dataSources,
           ...fetchedRepos.map((p: GithubRepository) => {
             return {
-              uuid: getUuid('GITHUB-' + p.id, 5),
-              id: p.id,
+              uuid: getUuid('GITHUB-' + p.nodeId, 5),
+              id: p.nodeId,
               type: 'GITHUB',
               name: p.owner.login + '/' + p.name,
               active: active,

@@ -136,16 +136,20 @@ export default class JProjects extends Command {
         );
         let formattedData = '';
         for (const rec of esPayloadChunk) {
+          // Trick to replace id with nodeId
+          let updatedRec: any = { ...rec, nodeId: (rec as JiraProject).id };
+          delete updatedRec.id;
           formattedData =
             formattedData +
             JSON.stringify({
               index: {
                 _index: esIndex,
-                _id: getId(jiraServer.name) + (rec as JiraProject).id,
+                _id:
+                  getId(jiraServer.name) + (updatedRec as JiraProject).nodeId,
               },
             }) +
             '\n' +
-            JSON.stringify(rec) +
+            JSON.stringify(updatedRec) +
             '\n';
         }
         await eClient.bulk({
