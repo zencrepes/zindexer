@@ -1,6 +1,5 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
-import gql from 'graphql-tag';
 
 import Command from '../base';
 import arClient from '../utils/arranger/arClient';
@@ -36,21 +35,29 @@ export default class GIssues extends Command {
       projects.find((p: { id: string }) => p.id === projectId) !== undefined
     ) {
       this.log('Project: ' + projectId + ' already exists, deleting');
-      const deletedProject = await deleteProject(aClient, this.log, projectId);
+      await deleteProject(aClient, this.log, projectId);
     } else {
       this.log('Project: ' + projectId + ' does not exist');
     }
 
     this.log('Creating project: ' + projectId + ' in arranger');
-    const createdProject = await createProject(aClient, this.log, projectId);
+    await createProject(aClient, this.log, projectId);
 
     for (const [graphqlField, esIndex] of Object.entries(
       userConfig.elasticsearch.dataIndices,
     )) {
       if (
-        ['githubIssues', 'githubRepos', 'githubPullrequests'].find(
-          n => n === graphqlField,
-        ) !== undefined
+        [
+          'githubIssues',
+          'githubRepos',
+          'githubPullrequests',
+          'githubProjects',
+          'githubMilestones',
+          'githubLabels',
+          'githubReleases',
+          'jiraIssues',
+          'jiraProjects',
+        ].find(n => n === graphqlField) !== undefined
       ) {
         cli.action.start('Creating GraphQL node for datatype: ' + graphqlField);
         await createIndex(

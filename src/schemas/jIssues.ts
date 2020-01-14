@@ -9,16 +9,6 @@ properties:
         properties:
           active:
             type: boolean
-          avatarUrls:
-            properties:
-              16x16:
-                type: keyword
-              24x24:
-                type: keyword
-              32x32:
-                type: keyword
-              48x48:
-                type: keyword
           displayName:
             type: text
           emailAddress:
@@ -40,16 +30,6 @@ properties:
         properties:
           active:
             type: boolean
-          avatarUrls:
-            properties:
-              16x16:
-                type: keyword
-              24x24:
-                type: keyword
-              32x32:
-                type: keyword
-              48x48:
-                type: keyword
           displayName:
             type: text
           emailAddress:
@@ -430,16 +410,6 @@ properties:
             type: keyword
       project:
         properties:
-          avatarUrls:
-            properties:
-              16x16:
-                type: keyword
-              24x24:
-                type: keyword
-              32x32:
-                type: keyword
-              48x48:
-                type: keyword
           id:
             type: text
             fields:
@@ -464,16 +434,6 @@ properties:
         properties:
           active:
             type: boolean
-          avatarUrls:
-            properties:
-              16x16:
-                type: keyword
-              24x24:
-                type: keyword
-              32x32:
-                type: keyword
-              48x48:
-                type: keyword
           displayName:
             type: text
           emailAddress:

@@ -4,26 +4,16 @@ _source:
   enabled: true
 properties:
   # This is not a GitHub field, it is used by the system to define which repositories should be grabbed
-  __typename:
-    type: keyword
   body:
     type: text
   columns:
     properties:
-      __typename:
-        type: keyword
       edges:
         properties:
-          __typename:
-            type: keyword
           node:
             properties:
-              __typename:
-                type: keyword
               cards:
                 properties:
-                  __typename:
-                    type: keyword
                   totalCount:
                     type: long
               databaseId:
@@ -54,8 +44,6 @@ properties:
     type: integer
   owner:
     properties:
-      __typename:
-        type: keyword
       databaseId:
         type: integer
       id:
@@ -68,8 +56,6 @@ properties:
             ignore_above: 256
       owner:
         properties:
-          __typename:
-            type: keyword
           id:
             type: keyword
           login:
@@ -88,8 +74,6 @@ properties:
         type: keyword
   pendingCards:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: long
   state:

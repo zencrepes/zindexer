@@ -1,5 +1,3 @@
-import gql from 'graphql-tag';
-
 import graphqlQuery from '../utils/graphqlQuery';
 import gqlCreateProject from '../graphql/createProject';
 import { exit } from '@oclif/errors';

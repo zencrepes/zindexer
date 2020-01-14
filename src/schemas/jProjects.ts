@@ -11,16 +11,6 @@ properties:
       keyword:
         type: keyword
         ignore_above: 256
-  avatarUrls:
-    properties:
-      16x16:
-        type: keyword
-      24x24:
-        type: keyword
-      32x32:
-        type: keyword
-      48x48:
-        type: keyword
   description:
     type: text
     fields:
@@ -178,16 +168,6 @@ properties:
     properties:
       active:
         type: boolean
-      avatarUrls:
-        properties:
-          16x16:
-            type: keyword
-          24x24:
-            type: keyword
-          32x32:
-            type: keyword
-          48x48:
-            type: keyword
       displayName:
         type: text
         fields:
@@ -254,24 +234,6 @@ properties:
     type: keyword
   properties:
     type: object
-  roles:
-    properties:
-      Administrators:
-        type: keyword
-      Assignable:
-        type: keyword
-      Contributors:
-        type: keyword
-      Email:
-        type: keyword
-      External developers:
-        type: keyword
-      Jahia employees:
-        type: keyword
-      Tempo Project Managers:
-        type: keyword
-      Users:
-        type: keyword
   securityLevel:
     type: object
 `;

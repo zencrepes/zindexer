@@ -1,5 +1,3 @@
-import gql from 'graphql-tag';
-
 import graphqlQuery from '../utils/graphqlQuery';
 import gqlGetProjects from '../graphql/getProjects';
 

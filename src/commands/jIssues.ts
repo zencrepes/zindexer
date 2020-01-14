@@ -118,10 +118,26 @@ export default class JIssues extends Command {
               ')',
           );
           let formattedData = '';
-          for (let rec of esPayloadChunk) {
+          for (const rec of esPayloadChunk) {
             // Trick to replace id with nodeId
-            let updatedRec: any = { ...rec, nodeId: (rec as JiraIssue).id };
+            // eslint-disable-next-line
+            const updatedRec: any = { ...rec, nodeId: (rec as JiraIssue).id };
             delete updatedRec.id;
+
+            // Jira uses a numerical object key not compatible with arranger, simply removing it
+            if (updatedRec.fields.assignee !== null) {
+              delete updatedRec.fields.assignee.avatarUrls;
+            }
+            if (updatedRec.fields.creator.avatarUrls !== undefined) {
+              delete updatedRec.fields.creator.avatarUrls;
+            }
+            if (updatedRec.fields.project.avatarUrls !== undefined) {
+              delete updatedRec.fields.project.avatarUrls;
+            }
+            if (updatedRec.fields.reporter.avatarUrls !== undefined) {
+              delete updatedRec.fields.reporter.avatarUrls;
+            }
+
             formattedData =
               formattedData +
               JSON.stringify({

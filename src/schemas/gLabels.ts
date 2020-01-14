@@ -3,8 +3,6 @@ const yaml = `
 _source:
   enabled: true
 properties:
-  __typename:
-    type: keyword
   color:
     type: keyword
   createdAt:
@@ -15,14 +13,12 @@ properties:
       keyword:
         type: keyword
         ignore_above: 256
-  id:
+  nodeId:
     type: keyword
   isDefault:
     type: boolean
   issues:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: long
   name:
@@ -33,14 +29,10 @@ properties:
         ignore_above: 256
   pullRequests:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: long
   repository:
     properties:
-      __typename:
-        type: keyword
       databaseId:
         type: long
       nodeId:
@@ -53,8 +45,6 @@ properties:
             ignore_above: 256
       owner:
         properties:
-          __typename:
-            type: keyword
           id:
             type: keyword
           login:

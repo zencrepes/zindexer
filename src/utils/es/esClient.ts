@@ -6,7 +6,6 @@ import { ConfigElasticsearch } from '../../global';
 
 function esClient(configElasticsearch: ConfigElasticsearch) {
   const { host, sslCa, cloudId, username, password } = configElasticsearch;
-  console.log(configElasticsearch);
   if (
     cloudId !== undefined &&
     cloudId !== null &&
@@ -33,7 +32,6 @@ function esClient(configElasticsearch: ConfigElasticsearch) {
       },
     });
   } else {
-    console.log(host);
     return new Client({
       node: host,
     });

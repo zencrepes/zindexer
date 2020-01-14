@@ -3,12 +3,8 @@ const yaml = `
 _source:
   enabled: true
 properties:
-  __typename:
-    type: keyword
   author:
     properties:
-      __typename:
-        type: keyword
       company:
         type: text
         fields:

@@ -3,8 +3,6 @@ const yaml = `
 _source:
   enabled: true
 properties:
-  __typename:
-    type: keyword
   closedAt:
     type: date
   createdAt:
@@ -21,22 +19,16 @@ properties:
     type: keyword
   issues:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: long
   number:
     type: long
   pullRequests:
     properties:
-      __typename:
-        type: keyword
       totalCount:
         type: long
   repository:
     properties:
-      __typename:
-        type: keyword
       databaseId:
         type: long
       id:
@@ -49,8 +41,6 @@ properties:
             ignore_above: 256
       owner:
         properties:
-          __typename:
-            type: keyword
           id:
             type: keyword
           login:
