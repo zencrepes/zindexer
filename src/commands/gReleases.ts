@@ -72,6 +72,17 @@ export default class GReleases extends Command {
       );
 
       await esPushNodes(fetchedReleases, releasesIndex, eClient);
+
+      // Create an alias used for group querying
+      cli.action.start(
+        'Creating the Elasticsearch index alias: ' +
+          userConfig.elasticsearch.dataIndices.githubReleases,
+      );
+      await eClient.indices.putAlias({
+        index: userConfig.elasticsearch.dataIndices.githubReleases + '*',
+        name: userConfig.elasticsearch.dataIndices.githubReleases,
+      });
+      cli.action.stop(' done');
     }
   }
 }

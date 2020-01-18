@@ -169,6 +169,17 @@ export default class JProjects extends Command {
           body: formattedData,
         });
         cli.action.stop(' done');
+
+        // Create an alias used for group querying
+        cli.action.start(
+          'Creating the Elasticsearch index alias: ' +
+            userConfig.elasticsearch.dataIndices.jiraProjects,
+        );
+        await eClient.indices.putAlias({
+          index: userConfig.elasticsearch.dataIndices.jiraProjects + '*',
+          name: userConfig.elasticsearch.dataIndices.jiraProjects,
+        });
+        cli.action.stop(' done');
       }
     }
   }

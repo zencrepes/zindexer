@@ -10,7 +10,7 @@ import deleteProject from '../utils/arranger/deleteProject';
 import createIndex from '../utils/arranger/createIndex';
 
 export default class GIssues extends Command {
-  static description = 'Configure Arranger indices';
+  static description = 'Setup the indices for use with Arranger';
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -36,6 +36,7 @@ export default class GIssues extends Command {
     ) {
       this.log('Project: ' + projectId + ' already exists, deleting');
       await deleteProject(aClient, this.log, projectId);
+      //      await sleep(3000);
     } else {
       this.log('Project: ' + projectId + ' does not exist');
     }
@@ -65,7 +66,7 @@ export default class GIssues extends Command {
           this.log,
           projectId,
           graphqlField,
-          esIndex + '*', // Adding '*' to alias across all indices of the same datatype
+          esIndex, // Adding '*' to alias across all indices of the same datatype
         );
         cli.action.stop();
       }

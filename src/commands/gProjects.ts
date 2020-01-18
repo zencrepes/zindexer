@@ -73,6 +73,17 @@ export default class GProjects extends Command {
       );
 
       await esPushNodes(fetchedProjects, projectsIndex, eClient);
+
+      // Create an alias used for group querying
+      cli.action.start(
+        'Creating the Elasticsearch index alias: ' +
+          userConfig.elasticsearch.dataIndices.githubProjects,
+      );
+      await eClient.indices.putAlias({
+        index: userConfig.elasticsearch.dataIndices.githubProjects + '*',
+        name: userConfig.elasticsearch.dataIndices.githubProjects,
+      });
+      cli.action.stop(' done');
     }
   }
 }

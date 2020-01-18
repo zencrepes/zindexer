@@ -73,6 +73,17 @@ export default class GMilestones extends Command {
       );
 
       await esPushNodes(fetchedMilestones, milestonesIndex, eClient);
+
+      // Create an alias used for group querying
+      cli.action.start(
+        'Creating the Elasticsearch index alias: ' +
+          userConfig.elasticsearch.dataIndices.githubMilestones,
+      );
+      await eClient.indices.putAlias({
+        index: userConfig.elasticsearch.dataIndices.githubMilestones + '*',
+        name: userConfig.elasticsearch.dataIndices.githubMilestones,
+      });
+      cli.action.stop(' done');
     }
   }
 }

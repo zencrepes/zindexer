@@ -8,11 +8,10 @@ async function deleteProject(
   projectId: string,
 ) {
   const data = await graphqlQuery(client, gqlDeleteProject, { projectId }, log);
-
-  if (data.data.deleteProject.length === 0) {
+  if (data.data.deleteProject.length >= 0) {
     return true;
   }
-  log('ERROR: Unable to create project');
+  log('ERROR: Unable to delete project');
   exit();
 }
 export default deleteProject;

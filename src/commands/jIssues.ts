@@ -156,6 +156,17 @@ export default class JIssues extends Command {
             body: formattedData,
           });
           cli.action.stop(' done');
+
+          // Create an alias used for group querying
+          cli.action.start(
+            'Creating the Elasticsearch index alias: ' +
+              userConfig.elasticsearch.dataIndices.jiraIssues,
+          );
+          await eClient.indices.putAlias({
+            index: userConfig.elasticsearch.dataIndices.jiraIssues + '*',
+            name: userConfig.elasticsearch.dataIndices.jiraIssues,
+          });
+          cli.action.stop(' done');
         }
       }
     }

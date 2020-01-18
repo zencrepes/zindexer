@@ -77,6 +77,17 @@ export default class GPullrequests extends Command {
       );
 
       await esPushNodes(fetchedPullrequests, pullrequestsIndex, eClient);
+
+      // Create an alias used for group querying
+      cli.action.start(
+        'Creating the Elasticsearch index alias: ' +
+          userConfig.elasticsearch.dataIndices.githubPullrequests,
+      );
+      await eClient.indices.putAlias({
+        index: userConfig.elasticsearch.dataIndices.githubPullrequests + '*',
+        name: userConfig.elasticsearch.dataIndices.githubPullrequests,
+      });
+      cli.action.stop(' done');
     }
   }
 }

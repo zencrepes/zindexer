@@ -64,6 +64,17 @@ export default class GIssues extends Command {
       await esCheckIndex(eClient, userConfig, issuesIndex, ymlMappingsGIssues);
 
       await esPushNodes(fetchedIssues, issuesIndex, eClient);
+
+      // Create an alias used for group querying
+      cli.action.start(
+        'Creating the Elasticsearch index alias: ' +
+          userConfig.elasticsearch.dataIndices.githubIssues,
+      );
+      await eClient.indices.putAlias({
+        index: userConfig.elasticsearch.dataIndices.githubIssues + '*',
+        name: userConfig.elasticsearch.dataIndices.githubIssues,
+      });
+      cli.action.stop(' done');
     }
   }
 }

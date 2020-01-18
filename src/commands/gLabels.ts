@@ -63,6 +63,17 @@ export default class GLabels extends Command {
       await esCheckIndex(eClient, userConfig, labelsIndex, ymlMappingsGLabels);
 
       await esPushNodes(fetchedLabels, labelsIndex, eClient);
+
+      // Create an alias used for group querying
+      cli.action.start(
+        'Creating the Elasticsearch index alias: ' +
+          userConfig.elasticsearch.dataIndices.githubLabels,
+      );
+      await eClient.indices.putAlias({
+        index: userConfig.elasticsearch.dataIndices.githubLabels + '*',
+        name: userConfig.elasticsearch.dataIndices.githubLabels,
+      });
+      cli.action.stop(' done');
     }
   }
 }
