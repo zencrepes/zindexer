@@ -16,20 +16,22 @@ const syncDataTypes = async (eClient: any, userConfig: Config) => {
 
   // There can only be one key, so we give this key the value
   const esPayload: Array<any> = []; // eslint-disable-line
-  for (const [key, index] of Object.entries(
+  for (const [key, esIndex] of Object.entries(
     userConfig.elasticsearch.sysIndices,
   )) {
     esPayload.push({
       key,
-      index,
+      esIndex,
+      type: 'system',
     });
   }
-  for (const [key, index] of Object.entries(
+  for (const [key, esIndex] of Object.entries(
     userConfig.elasticsearch.dataIndices,
   )) {
     esPayload.push({
       key,
-      index,
+      esIndex,
+      type: 'data',
     });
   }
 

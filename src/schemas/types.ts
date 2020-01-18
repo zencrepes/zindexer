@@ -9,7 +9,9 @@ properties:
     type: keyword    
   active:
     type: boolean
-  index:
+  esIndex:
     type: keyword
+  type:
+    type: keyword    
 `;
 export default yaml;
