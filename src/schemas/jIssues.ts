@@ -11,6 +11,10 @@ properties:
             type: boolean
           displayName:
             type: text
+            fields:
+              keyword:
+                type: keyword
+                ignore_above: 256            
           emailAddress:
             type: keyword
           key:

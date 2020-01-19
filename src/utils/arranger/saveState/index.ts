@@ -1,24 +1,30 @@
 import graphqlQuery from '../utils/graphqlQuery';
-import gqlCreateIndex from '../graphql/createIndex';
 import { exit } from '@oclif/errors';
 
-async function createIndex(
+async function saveAggsState(
   client: any, // eslint-disable-line
   log: any, // eslint-disable-line
   projectId: string,
   graphqlField: string,
-  esIndex: string,
+  gqlQuery: string,
+  state: any,
 ) {
+  /*
+  console.log(gqlQuery);
+  console.log('---');
+  console.log(state);
+*/
   const data = await graphqlQuery(
     client,
-    gqlCreateIndex,
-    { projectId, graphqlField, esIndex },
+    gqlQuery,
+    { projectId, graphqlField, state },
     log,
   );
-  if (data.data.newIndex !== undefined) {
+  if (data.data !== undefined) {
     return true;
   }
+
   log('ERROR: Unable to create index');
   exit();
 }
-export default createIndex;
+export default saveAggsState;
