@@ -7,13 +7,8 @@ async function saveAggsState(
   projectId: string,
   graphqlField: string,
   gqlQuery: string,
-  state: any,
+  state: any, // eslint-disable-line
 ) {
-  /*
-  console.log(gqlQuery);
-  console.log('---');
-  console.log(state);
-*/
   const data = await graphqlQuery(
     client,
     gqlQuery,
