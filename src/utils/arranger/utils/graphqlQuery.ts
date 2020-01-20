@@ -18,6 +18,7 @@ async function graphqlQuery(
     });
   } catch (error) {
     log(error);
+    console.log(error.networkError.result.errors);
   }
 
   if (

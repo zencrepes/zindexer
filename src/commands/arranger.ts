@@ -13,8 +13,10 @@ import saveState from '../utils/arranger/saveState';
 import gqlSaveAggsState from '../utils/arranger/graphql/saveAggsState';
 import gqlSaveColumnsState from '../utils/arranger/graphql/saveColumnsState';
 import gqlSaveMatchBoxState from '../utils/arranger/graphql/saveMatchBoxState';
+import gqlSaveExtendedMapping from '../utils/arranger/graphql/saveExtendedMapping';
 
 import { arrangerConfig as jiraIssuesArrangerConfig } from '../utils/arranger/arConfig/jiraIssues';
+import { arrangerConfig as jiraPropjectsArrangerConfig } from '../utils/arranger/arConfig/jiraProjects';
 
 export default class GIssues extends Command {
   static description = 'Setup the indices for use with Arranger';
@@ -40,6 +42,7 @@ export default class GIssues extends Command {
     // eslint-disable-next-line
     const arrangerConfig: any = {
       jiraIssues: jiraIssuesArrangerConfig,
+      jiraProjects: jiraPropjectsArrangerConfig,
     };
 
     //By default if project exists, we first delete it.
@@ -58,60 +61,57 @@ export default class GIssues extends Command {
     for (const [graphqlField, esIndex] of Object.entries(
       userConfig.elasticsearch.dataIndices,
     )) {
-      if (
-        [
-          'githubIssues',
-          'githubRepos',
-          'githubPullrequests',
-          'githubProjects',
-          'githubMilestones',
-          'githubLabels',
-          'githubReleases',
-          'jiraIssues',
-          'jiraProjects',
-        ].find(n => n === graphqlField) !== undefined
-      ) {
-        cli.action.start('Creating GraphQL node for datatype: ' + graphqlField);
-        await createIndex(aClient, this.log, projectId, graphqlField, esIndex);
-        cli.action.stop();
+      cli.action.start('Creating GraphQL node for datatype: ' + graphqlField);
+      await createIndex(aClient, this.log, projectId, graphqlField, esIndex);
+      cli.action.stop();
 
-        if (arrangerConfig[graphqlField] !== undefined) {
-          cli.action.start(
-            'Pushing Arranger configuration for datatype: ' + graphqlField,
+      if (arrangerConfig[graphqlField] !== undefined) {
+        cli.action.start(
+          'Pushing Arranger configuration for datatype: ' + graphqlField,
+        );
+
+        if (arrangerConfig[graphqlField].aggsState !== undefined) {
+          await saveState(
+            aClient,
+            this.log,
+            projectId,
+            graphqlField,
+            gqlSaveAggsState,
+            arrangerConfig[graphqlField].aggsState,
           );
-
-          if (arrangerConfig[graphqlField].aggsState !== undefined) {
-            await saveState(
-              aClient,
-              this.log,
-              projectId,
-              graphqlField,
-              gqlSaveAggsState,
-              arrangerConfig[graphqlField].aggsState,
-            );
-          }
-          if (arrangerConfig[graphqlField].columnsState !== undefined) {
-            await saveState(
-              aClient,
-              this.log,
-              projectId,
-              graphqlField,
-              gqlSaveColumnsState,
-              arrangerConfig[graphqlField].columnsState,
-            );
-          }
-          if (arrangerConfig[graphqlField].matchBoxState !== undefined) {
-            await saveState(
-              aClient,
-              this.log,
-              projectId,
-              graphqlField,
-              gqlSaveMatchBoxState,
-              arrangerConfig[graphqlField].matchBoxState,
-            );
-          }
-          cli.action.stop();
         }
+        if (arrangerConfig[graphqlField].columnsState !== undefined) {
+          await saveState(
+            aClient,
+            this.log,
+            projectId,
+            graphqlField,
+            gqlSaveColumnsState,
+            arrangerConfig[graphqlField].columnsState,
+          );
+        }
+        if (arrangerConfig[graphqlField].matchBoxState !== undefined) {
+          await saveState(
+            aClient,
+            this.log,
+            projectId,
+            graphqlField,
+            gqlSaveMatchBoxState,
+            arrangerConfig[graphqlField].matchBoxState,
+          );
+        }
+        if (arrangerConfig[graphqlField].extendedMapping !== undefined) {
+          await saveState(
+            aClient,
+            this.log,
+            projectId,
+            graphqlField,
+            gqlSaveExtendedMapping,
+            arrangerConfig[graphqlField].extendedMapping,
+          );
+        }
+
+        cli.action.stop();
       }
     }
   }

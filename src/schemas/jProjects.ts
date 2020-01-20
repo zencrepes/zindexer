@@ -6,140 +6,39 @@ properties:
   archived:
     type: boolean
   assigneeType:
-    type: text
-    fields:
-      keyword:
+    type: keyword
+  components:
+    properties:
+      id:
         type: keyword
-        ignore_above: 256
+      isAssigneeTypeValid:
+        type: boolean
+      name:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      self:
+        type: keyword
   description:
     type: text
     fields:
       keyword:
         type: keyword
         ignore_above: 256
-  fields:
-    properties:
-      assignee:
-        properties:
-          active:
-            type: boolean
-          displayName:
-            type: text
-            fields:
-              keyword:
-                type: keyword
-                ignore_above: 256
-          emailAddress:
-            type: keyword
-          key:
-            type: keyword
-          name:
-            type: text
-            fields:
-              keyword:
-                type: keyword
-                ignore_above: 256
-          timeZone:
-            type: keyword
-      components:
-        type: nested
-        properties:
-          name:
-            type: keyword
-      created:
-        type: date
-      creator:
-        properties:
-          active:
-            type: boolean
-          displayName:
-            type: text
-            fields:
-              keyword:
-                type: keyword
-                ignore_above: 256
-          emailAddress:
-            type: keyword
-          key:
-            type: keyword
-          name:
-            type: text
-            fields:
-              keyword:
-                type: keyword
-                ignore_above: 256
-          timeZone:
-            type: keyword
-      issuetype:
-        properties:
-          name:
-            type: keyword
-      priority:
-        properties:
-          name:
-            type: keyword
-      project:
-        properties:
-          key:
-            type: keyword
-          name:
-            type: text
-            fields:
-              keyword:
-                type: keyword
-                ignore_above: 256
-          projectCategory:
-            properties:
-              name:
-                type: keyword
-      reporter:
-        properties:
-          active:
-            type: boolean
-          displayName:
-            type: text
-            fields:
-              keyword:
-                type: keyword
-                ignore_above: 256
-          emailAddress:
-            type: keyword
-          key:
-            type: keyword
-          name:
-            type: text
-            fields:
-              keyword:
-                type: keyword
-                ignore_above: 256
-          timeZone:
-            type: keyword
-      resolution:
-        properties:
-          descripton:
-            type: text
-          name:
-            type: keyword
-      resolutiondate:
-        type: date
-      status:
-        properties:
-          name:
-            type: keyword
-          statusCategory:
-            properties:
-              key:
-                type: keyword
-              name:
-                type: keyword
-      updated:
-        type: date
-      watches:
-        properties:
-          watchCount:
-            type: integer
-  nodeId:
-    type: keyword
+  email:
+    type: text
+    fields:
+      keyword:
+        type: keyword
+        ignore_above: 256
+  expand:
+    type: text
+    fields:
+      keyword:
+        type: keyword
+        ignore_above: 256
   issueTypes:
     properties:
       avatarId:
@@ -160,10 +59,16 @@ properties:
           keyword:
             type: keyword
             ignore_above: 256
+      self:
+        type: keyword
       subtask:
         type: boolean
   key:
-    type: keyword
+    type: text
+    fields:
+      keyword:
+        type: keyword
+        ignore_above: 256
   lead:
     properties:
       active:
@@ -177,19 +82,143 @@ properties:
       key:
         type: keyword
       name:
-        type: text
-        fields:
-          keyword:
-            type: keyword
-            ignore_above: 256
+        type: keyword
+      self:
+        type: keyword
   name:
     type: text
     fields:
       keyword:
         type: keyword
         ignore_above: 256
+  nodeId:
+    type: keyword
   notificationsScheme:
     properties:
+      description:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      expand:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      id:
+        type: long
+      name:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      self:
+        type: keyword
+  permissionsScheme:
+    properties:
+      expand:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      id:
+        type: long
+      name:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      self:
+        type: keyword
+  priorityScheme:
+    properties:
+      defaultOptionId:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      defaultScheme:
+        type: boolean
+      expand:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      id:
+        type: long
+      name:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      optionIds:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      self:
+        type: keyword
+  projectCategory:
+    properties:
+      description:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      id:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      name:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      self:
+        type: keyword
+  projectTypeKey:
+    type: text
+    fields:
+      keyword:
+        type: keyword
+        ignore_above: 256
+  properties:
+    type: object
+  roles:
+    properties:
+      actors:
+        properties:
+          avatarUrl:
+            type: keyword
+          displayName:
+            type: text
+            fields:
+              keyword:
+                type: keyword
+                ignore_above: 256
+          id:
+            type: long
+          name:
+            type: text
+            fields:
+              keyword:
+                type: keyword
+                ignore_above: 256
+          type:
+            type: keyword
       description:
         type: text
         fields:
@@ -204,37 +233,35 @@ properties:
           keyword:
             type: keyword
             ignore_above: 256
-  permissionsScheme:
-    properties:
-      id:
-        type: long
-      name:
-        type: text
-        fields:
-          keyword:
-            type: keyword
-            ignore_above: 256
-  priorityScheme:
-    properties:
-      defaultOptionId:
+      self:
         type: keyword
-      defaultScheme:
-        type: boolean
-      id:
-        type: long
-      name:
-        type: text
-        fields:
-          keyword:
-            type: keyword
-            ignore_above: 256
-      optionIds:
-        type: keyword
-  projectTypeKey:
-    type: keyword
-  properties:
-    type: object
   securityLevel:
     type: object
+  self:
+    type: keyword
+  versions:
+    properties:
+      archived:
+        type: boolean
+      id:
+        type: keyword
+      name:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      overdue:
+        type: boolean
+      projectId:
+        type: long
+      releaseDate:
+        type: date
+      released:
+        type: boolean
+      self:
+        type: keyword
+      userReleaseDate:
+        type: keyword
 `;
 export default yaml;
