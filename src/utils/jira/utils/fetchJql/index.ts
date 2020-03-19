@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { Config, JiraIssue } from '../../../global';
+import { Config, JiraIssue } from '../../../../global';
 
 const fetchJql = async (
   userConfig: Config,

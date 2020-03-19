@@ -17,11 +17,11 @@ import {
   GithubOrganization,
 } from '../global';
 
-import fetchProjects from '../utils/jira/fetchProjects/index';
-import ymlMappingsSources from '../schemas/sources';
+import fetchProjects from '../utils/jira/utils/fetchProjects/index';
+import ymlMappingsSources from '../utils/mappings/sources';
 import esCheckIndex from '../utils/es/esCheckIndex';
 import esClient from '../utils/es/esClient';
-import ghClient from '../utils/github/ghClient';
+import ghClient from '../utils/github/utils/ghClient';
 
 import graphqlQuery from '../utils/github/utils/graphqlQuery';
 
@@ -31,7 +31,7 @@ import getOrgByName from '../utils/github/graphql/getOrgByName';
 import getRepoByName from '../utils/github/graphql/getRepoByName';
 import getUserByLogin from '../utils/github/graphql/getUserByLogin';
 import getUserRepos from '../utils/github/graphql/getUserRepos';
-import fetchNodesByQuery from '../utils/github/fetchNodesByQuery';
+import fetchNodesByQuery from '../utils/github/utils/fetchNodesByQuery';
 
 import esQueryData from '../utils/es/esQueryData';
 

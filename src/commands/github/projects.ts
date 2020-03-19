@@ -1,22 +1,22 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
 
-import Command from '../base';
-import esClient from '../utils/es/esClient';
-import esGithubLatest from '../utils/es/esGithubLatest';
-import esPushNodes from '../utils/es/esPushNodes';
-import fetchNodesUpdated from '../utils/github/fetchNodesUpdated';
-import ghClient from '../utils/github/ghClient';
+import Command from '../../base';
+import esClient from '../../utils/es/esClient';
+import esGithubLatest from '../../utils/es/esGithubLatest';
+import esPushNodes from '../../utils/es/esPushNodes';
+import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
+import ghClient from '../../utils/github/utils/ghClient';
 
-import ymlMappingsGProjects from '../schemas/gProjects';
-import esGetActiveSources from '../utils/es/esGetActiveSources';
-import esCheckIndex from '../utils/es/esCheckIndex';
+import esGetActiveSources from '../../utils/es/esGetActiveSources';
+import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import { getId } from '../utils/misc/getId';
+import { getId } from '../../utils/misc/getId';
 
-import getProjects from '../utils/github/graphql/getProjects';
+import fetchGql from '../../utils/github/projects/fetchGql';
+import esMapping from '../../utils/github/projects/esMapping';
 
-export default class GProjects extends Command {
+export default class Projects extends Command {
   static description = 'Github: Fetches projects data from configured sources';
 
   static flags = {
@@ -38,7 +38,7 @@ export default class GProjects extends Command {
 
     const fetchData = new fetchNodesUpdated(
       gClient,
-      getProjects,
+      fetchGql,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -65,12 +65,7 @@ export default class GProjects extends Command {
       cli.action.stop(' done');
 
       // Check if index exists, create it if it does not
-      await esCheckIndex(
-        eClient,
-        userConfig,
-        projectsIndex,
-        ymlMappingsGProjects,
-      );
+      await esCheckIndex(eClient, userConfig, projectsIndex, esMapping);
 
       await esPushNodes(fetchedProjects, projectsIndex, eClient);
 

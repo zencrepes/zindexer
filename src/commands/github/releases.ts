@@ -1,21 +1,21 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
 
-import Command from '../base';
-import esClient from '../utils/es/esClient';
-import esGithubLatest from '../utils/es/esGithubLatest';
-import esPushNodes from '../utils/es/esPushNodes';
-import fetchNodesUpdated from '../utils/github/fetchNodesUpdated';
-import ghClient from '../utils/github/ghClient';
+import Command from '../../base';
+import esClient from '../../utils/es/esClient';
+import esGithubLatest from '../../utils/es/esGithubLatest';
+import esPushNodes from '../../utils/es/esPushNodes';
+import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
+import ghClient from '../../utils/github/utils/ghClient';
 
-import esGetActiveSources from '../utils/es/esGetActiveSources';
-import { getId } from '../utils/misc/getId';
-import esCheckIndex from '../utils/es/esCheckIndex';
-import ymlMappingsGReleases from '../schemas/gReleases';
+import esGetActiveSources from '../../utils/es/esGetActiveSources';
+import { getId } from '../../utils/misc/getId';
+import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import getReleases from '../utils/github/graphql/getReleases';
+import fetchGql from '../../utils/github/releases/fetchGql';
+import esMapping from '../../utils/github/releases/esMapping';
 
-export default class GReleases extends Command {
+export default class Releases extends Command {
   static description = 'Github: Fetches releases data from configured sources';
 
   static flags = {
@@ -37,7 +37,7 @@ export default class GReleases extends Command {
 
     const fetchData = new fetchNodesUpdated(
       gClient,
-      getReleases,
+      fetchGql,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -64,12 +64,7 @@ export default class GReleases extends Command {
       cli.action.stop(' done');
 
       // Check if index exists, create it if it does not
-      await esCheckIndex(
-        eClient,
-        userConfig,
-        releasesIndex,
-        ymlMappingsGReleases,
-      );
+      await esCheckIndex(eClient, userConfig, releasesIndex, esMapping);
 
       await esPushNodes(fetchedReleases, releasesIndex, eClient);
 

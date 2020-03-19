@@ -1,17 +1,19 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
 
-import Command from '../base';
-import esClient from '../utils/es/esClient';
-import chunkArray from '../utils/misc/chunkArray';
-import { getId } from '../utils/misc/getId';
-import { ESIndexSources, ConfigJira, JiraProject } from '../global';
-import ymlMappingsJProjects from '../schemas/jProjects';
-import esGetActiveSources from '../utils/es/esGetActiveSources';
-import esCheckIndex from '../utils/es/esCheckIndex';
-import fetchData from '../utils/jira/fetchData';
+import Command from '../../base';
+import esClient from '../../utils/es/esClient';
+import chunkArray from '../../utils/misc/chunkArray';
+import { getId } from '../../utils/misc/getId';
+import { ESIndexSources, ConfigJira, JiraProject } from '../../global';
 
-export default class JProjects extends Command {
+import esMapping from '../../utils/jira/projects/esMapping';
+
+import esGetActiveSources from '../../utils/es/esGetActiveSources';
+import esCheckIndex from '../../utils/es/esCheckIndex';
+import fetchData from '../../utils/jira/utils/fetchData';
+
+export default class Projects extends Command {
   static description = 'Jira: Fetches project data from configured sources';
 
   static flags = {
@@ -123,7 +125,7 @@ export default class JProjects extends Command {
         getId(jiraServer.name);
 
       // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, esIndex, ymlMappingsJProjects);
+      await esCheckIndex(eClient, userConfig, esIndex, esMapping);
 
       for (const [idx, esPayloadChunk] of esPayloadChunked.entries()) {
         cli.action.start(

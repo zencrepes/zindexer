@@ -1,21 +1,21 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
 
-import Command from '../base';
-import esClient from '../utils/es/esClient';
-import esGithubLatest from '../utils/es/esGithubLatest';
-import esPushNodes from '../utils/es/esPushNodes';
-import fetchNodesUpdated from '../utils/github/fetchNodesUpdated';
-import ghClient from '../utils/github/ghClient';
+import Command from '../../base';
+import esClient from '../../utils/es/esClient';
+import esGithubLatest from '../../utils/es/esGithubLatest';
+import esPushNodes from '../../utils/es/esPushNodes';
+import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
+import ghClient from '../../utils/github/utils/ghClient';
 
-import esGetActiveSources from '../utils/es/esGetActiveSources';
-import { getId } from '../utils/misc/getId';
-import esCheckIndex from '../utils/es/esCheckIndex';
-import ymlMappingsGMilestones from '../schemas/gMilestones';
+import esGetActiveSources from '../../utils/es/esGetActiveSources';
+import { getId } from '../../utils/misc/getId';
+import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import getMilestones from '../utils/github/graphql/getMilestones';
+import esMapping from '../../utils/github/milestones/esMapping';
+import fetchGql from '../../utils/github/milestones/fetchGql';
 
-export default class GMilestones extends Command {
+export default class Milestones extends Command {
   static description =
     'Github: Fetches milestones data from configured sources';
 
@@ -38,7 +38,7 @@ export default class GMilestones extends Command {
 
     const fetchData = new fetchNodesUpdated(
       gClient,
-      getMilestones,
+      fetchGql,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -65,12 +65,7 @@ export default class GMilestones extends Command {
       cli.action.stop(' done');
 
       // Check if index exists, create it if it does not
-      await esCheckIndex(
-        eClient,
-        userConfig,
-        milestonesIndex,
-        ymlMappingsGMilestones,
-      );
+      await esCheckIndex(eClient, userConfig, milestonesIndex, esMapping);
 
       await esPushNodes(fetchedMilestones, milestonesIndex, eClient);
 

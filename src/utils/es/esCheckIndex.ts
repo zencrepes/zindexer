@@ -3,7 +3,7 @@ import { Config } from '../../global';
 import * as jsYaml from 'js-yaml';
 import { ApiResponse, Client } from '@elastic/elasticsearch';
 
-import YmlSettings from '../../schemas/settings';
+import YmlSettings from '../mappings/settings';
 
 const esCheckIndex = async (
   client: Client,

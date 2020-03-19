@@ -1,5 +1,5 @@
 import { Config } from '../../global';
-import ymlMappingsTypes from '../../schemas/types';
+import ymlMappingsTypes from '../mappings/types';
 import esCheckIndex from '../../utils/es/esCheckIndex';
 
 // Synchronize data types between config file and Elasticsearch

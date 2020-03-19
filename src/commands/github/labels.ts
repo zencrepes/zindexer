@@ -1,20 +1,20 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
 
-import Command from '../base';
-import esClient from '../utils/es/esClient';
-import esPushNodes from '../utils/es/esPushNodes';
-import fetchNodesByQuery from '../utils/github/fetchNodesByQuery';
-import ghClient from '../utils/github/ghClient';
-import esCheckIndex from '../utils/es/esCheckIndex';
-import ymlMappingsGLabels from '../schemas/gLabels';
+import Command from '../../base';
+import esClient from '../../utils/es/esClient';
+import esPushNodes from '../../utils/es/esPushNodes';
+import fetchNodesByQuery from '../../utils/github/utils/fetchNodesByQuery';
+import ghClient from '../../utils/github/utils/ghClient';
+import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import esGetActiveSources from '../utils/es/esGetActiveSources';
-import { getId } from '../utils/misc/getId';
+import esGetActiveSources from '../../utils/es/esGetActiveSources';
+import { getId } from '../../utils/misc/getId';
 
-import getLabels from '../utils/github/graphql/getLabels';
+import esMapping from '../../utils/github/labels/esMapping';
+import fetchGql from '../../utils/github/labels/fetchGql';
 
-export default class GLabels extends Command {
+export default class Labels extends Command {
   static description = 'Github: Fetches labels attached to configured sources';
 
   static flags = {
@@ -36,7 +36,7 @@ export default class GLabels extends Command {
 
     const fetchData = new fetchNodesByQuery(
       gClient,
-      getLabels,
+      fetchGql,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -60,7 +60,7 @@ export default class GLabels extends Command {
       ).toLocaleLowerCase();
 
       // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, labelsIndex, ymlMappingsGLabels);
+      await esCheckIndex(eClient, userConfig, labelsIndex, esMapping);
 
       await esPushNodes(fetchedLabels, labelsIndex, eClient);
 

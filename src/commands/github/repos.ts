@@ -1,21 +1,21 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
 
-import Command from '../base';
-import esClient from '../utils/es/esClient';
-import ghClient from '../utils/github/ghClient';
-import { GithubRepository } from '../global';
-import esGetActiveSources from '../utils/es/esGetActiveSources';
+import Command from '../../base';
+import esClient from '../../utils/es/esClient';
+import ghClient from '../../utils/github/utils/ghClient';
+import { GithubRepository } from '../../global';
+import esGetActiveSources from '../../utils/es/esGetActiveSources';
+import FetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
 
-import esCheckIndex from '../utils/es/esCheckIndex';
-import ymlMappingsGRepos from '../schemas/gRepos';
+import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import getReposById from '../utils/github/graphql/getReposById';
+import ymlEsMapping from '../../utils/github/repos/esMapping';
+import fetchGql from '../../utils/github/repos/fetchGql';
 
-import chunkArray from '../utils/misc/chunkArray';
-import FetchNodesByIds from '../utils/github/fetchNodesByIds';
+import chunkArray from '../../utils/misc/chunkArray';
 
-export default class GRepos extends Command {
+export default class Repos extends Command {
   static description = 'Github: Fetches repos data from configured sources';
 
   static flags = {
@@ -42,7 +42,7 @@ export default class GRepos extends Command {
       this.log,
       userConfig.github.fetch.maxNodes,
       cli,
-      getReposById,
+      fetchGql,
       gClient,
     );
     let fetchedRepos: Array<GithubRepository> = [];
@@ -63,7 +63,7 @@ export default class GRepos extends Command {
 
     const esIndex = userConfig.elasticsearch.dataIndices.githubRepos;
     // Check if index exists, create it if it does not
-    await esCheckIndex(eClient, userConfig, esIndex, ymlMappingsGRepos);
+    await esCheckIndex(eClient, userConfig, esIndex, ymlEsMapping);
 
     //Break down the issues response in multiple batches
     const esPayloadChunked = await chunkArray(fetchedRepos, 100);

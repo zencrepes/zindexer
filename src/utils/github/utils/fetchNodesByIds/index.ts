@@ -1,4 +1,4 @@
-import graphqlQuery from '../utils/graphqlQuery';
+import graphqlQuery from '../graphqlQuery';
 
 export default class FetchNodesByIds {
   maxQueryIncrement: number;

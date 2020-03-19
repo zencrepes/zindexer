@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { Config } from '../../../global';
+import { Config } from '../../../../global';
 
 const fetchProjects = async (
   userConfig: Config,

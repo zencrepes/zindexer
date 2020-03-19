@@ -4,7 +4,7 @@ import { ApolloLink, concat } from 'apollo-link';
 import { HttpLink } from 'apollo-link-http';
 import fetch from 'node-fetch';
 
-import { ConfigGithub } from '../../../global';
+import { ConfigGithub } from '../../../../global';
 
 const ghClient = async (githubConfig: ConfigGithub) => {
   const httpLink = new HttpLink({

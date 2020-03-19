@@ -1,21 +1,21 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
 
-import Command from '../base';
-import esClient from '../utils/es/esClient';
-import esGithubLatest from '../utils/es/esGithubLatest';
-import esPushNodes from '../utils/es/esPushNodes';
-import fetchNodesUpdated from '../utils/github/fetchNodesUpdated';
-import ghClient from '../utils/github/ghClient';
+import Command from '../../base';
+import esClient from '../../utils/es/esClient';
+import esGithubLatest from '../../utils/es/esGithubLatest';
+import esPushNodes from '../../utils/es/esPushNodes';
+import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
+import ghClient from '../../utils/github/utils/ghClient';
 
-import esGetActiveSources from '../utils/es/esGetActiveSources';
-import { getId } from '../utils/misc/getId';
-import esCheckIndex from '../utils/es/esCheckIndex';
-import ymlMappingsGIssues from '../schemas/gIssues';
+import esGetActiveSources from '../../utils/es/esGetActiveSources';
+import { getId } from '../../utils/misc/getId';
+import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import getIssues from '../utils/github/graphql/getIssues';
+import ymlEsMapping from '../../utils/github/issues/esMapping';
+import fetchGql from '../../utils/github/issues/fetchGql';
 
-export default class GIssues extends Command {
+export default class Issues extends Command {
   static description = 'Github: Fetches issues data from configured sources';
 
   static flags = {
@@ -37,7 +37,7 @@ export default class GIssues extends Command {
 
     const fetchData = new fetchNodesUpdated(
       gClient,
-      getIssues,
+      fetchGql,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -61,7 +61,7 @@ export default class GIssues extends Command {
       cli.action.stop(' done');
 
       // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, issuesIndex, ymlMappingsGIssues);
+      await esCheckIndex(eClient, userConfig, issuesIndex, ymlEsMapping);
 
       await esPushNodes(fetchedIssues, issuesIndex, eClient);
 

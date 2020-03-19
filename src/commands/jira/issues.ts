@@ -3,25 +3,25 @@ import { ApiResponse } from '@elastic/elasticsearch';
 
 import cli from 'cli-ux';
 
-import Command from '../base';
-import esClient from '../utils/es/esClient';
-import chunkArray from '../utils/misc/chunkArray';
-import { getId } from '../utils/misc/getId';
+import Command from '../../base';
+import esClient from '../../utils/es/esClient';
+import chunkArray from '../../utils/misc/chunkArray';
+import { getId } from '../../utils/misc/getId';
 
 import {
   ESIndexSources,
   ESSearchResponse,
   ConfigJira,
   JiraIssue,
-} from '../global';
-import esGetActiveSources from '../utils/es/esGetActiveSources';
+} from '../../global';
+import esGetActiveSources from '../../utils/es/esGetActiveSources';
 
-import ymlMappingsJIssues from '../schemas/jIssues';
-import esCheckIndex from '../utils/es/esCheckIndex';
+import esMapping from '../../utils/jira/issues/esMapping';
+import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import fetchJqlPagination from '../utils/jira/fetchJql';
+import fetchJqlPagination from '../../utils/jira/utils/fetchJql';
 
-export default class JIssues extends Command {
+export default class Issues extends Command {
   static description = 'Jira: Fetches issues data from configured sources';
 
   static flags = {
@@ -60,12 +60,7 @@ export default class JIssues extends Command {
         ).toLocaleLowerCase();
 
         // Check if index exists, create it if it does not
-        await esCheckIndex(
-          eClient,
-          userConfig,
-          issuesIndex,
-          ymlMappingsJIssues,
-        );
+        await esCheckIndex(eClient, userConfig, issuesIndex, esMapping);
 
         //B - Find the most recent issue
         const searchResult: ApiResponse<ESSearchResponse<

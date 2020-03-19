@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { Config } from '../../../global';
+import { Config } from '../../../../global';
 
 const fetchProjects = async (userConfig: Config, serverName: string) => {
   const jiraServer = userConfig.jira.find(j => j.name === serverName);
