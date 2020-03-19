@@ -61,7 +61,7 @@ export default class Pipelines extends Command {
           pipeline.nodeId = pipeline.id;
           delete pipeline.id;
         }
-        return pipeline;
+        return { ...pipeline, source: currenSource };
       });
       await esPushNodes(pipelines, pipelinesIndex, eClient);
 

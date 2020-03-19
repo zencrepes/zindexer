@@ -8,10 +8,10 @@ import { getId } from '../../utils/misc/getId';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
 
-import esMappingWorkflowSummary from '../../utils/circleci/insights/esMapping';
-import esMappingWorkflowRuns from '../../utils/circleci/insights/esMapping';
-import esMappingWorkflowJobsSummary from '../../utils/circleci/insights/esMapping';
-import esMappingWorkflowJobsRuns from '../../utils/circleci/insights/esMapping';
+import esMappingWorkflowSummary from '../../utils/circleci/insights/esMappingWorkflowSummary';
+import esMappingWorkflowRuns from '../../utils/circleci/insights/esMappingWorkflowRuns';
+import esMappingWorkflowJobsSummary from '../../utils/circleci/insights/esMappingWorkflowSummary';
+import esMappingWorkflowJobsRuns from '../../utils/circleci/insights/esMappingWorkflowSummary';
 
 import esCheckIndex from '../../utils/es/esCheckIndex';
 import esPushNodes from '../../utils/es/esPushNodes';
@@ -19,13 +19,13 @@ import esPushNodes from '../../utils/es/esPushNodes';
 import fetchData from '../../utils/circleci/utils/fetchData';
 
 // eslint-disable-next-line
-const generateNodeId = (items: any, source: object) => {
+const generateNodeId = (items: any) => {
   const updatedItems = items.map((item: { id?: string; nodeId: string }) => {
     if (item.id !== undefined) {
       item.nodeId = item.id;
       delete item.id;
     }
-    return { ...item, source };
+    return item;
   });
   return updatedItems;
 };
@@ -77,7 +77,14 @@ export default class Insights extends Command {
       );
 
       // Before pushing nodes to ES, we replace id by nodeId
-      const workflows = generateNodeId(fetchedWorkflows, currentSource);
+      let workflows = generateNodeId(fetchedWorkflows);
+      // eslint-disable-next-line
+      workflows = workflows.map((item: any) => {
+        return {
+          ...item,
+          source: currentSource,
+        };
+      });
       await esPushNodes(workflows, workflowsSummaryIndex, eClient);
 
       // 2- Fetch all runs for a particular workflow
@@ -93,7 +100,7 @@ export default class Insights extends Command {
           userConfig.circleci.token,
           [],
         );
-        wfRuns = generateNodeId(wfRuns, currentSource);
+        wfRuns = generateNodeId(wfRuns);
         // eslint-disable-next-line
         wfRuns = wfRuns.map((wf: any) => {
           return { ...wf, workflow };
