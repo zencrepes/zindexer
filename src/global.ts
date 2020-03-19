@@ -18,6 +18,12 @@ export interface ConfigElasticsearch {
     githubReleases: string;
     jiraIssues: string;
     jiraProjects: string;
+    circleciPipelines: string;
+    circleciEnvvars: string;
+    circleciInsightsWorkflowsSummary: string;
+    circleciInsightsWorkflowsRuns: string;
+    circleciInsightsJobsSummary: string;
+    circleciInsightsJobsRuns: string;
   };
 }
 
@@ -28,6 +34,11 @@ export interface ConfigGithub {
   fetch: {
     maxNodes: number;
   };
+}
+
+export interface ConfigCircleci {
+  enabled: boolean;
+  token: string;
 }
 
 export interface ConfigArranger {
@@ -59,6 +70,7 @@ export interface ConfigJira {
 export interface Config {
   elasticsearch: ConfigElasticsearch;
   github: ConfigGithub;
+  circleci: ConfigCircleci;
   arranger: ConfigArranger;
   jira: Array<ConfigJira>;
 }

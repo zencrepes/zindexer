@@ -12,7 +12,7 @@ import esGetActiveSources from '../../utils/es/esGetActiveSources';
 import { getId } from '../../utils/misc/getId';
 import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import ymlEsMapping from '../../utils/github/issues/esMapping';
+import esMapping from '../../utils/github/issues/esMapping';
 import fetchGql from '../../utils/github/issues/fetchGql';
 
 export default class Issues extends Command {
@@ -61,7 +61,7 @@ export default class Issues extends Command {
       cli.action.stop(' done');
 
       // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, issuesIndex, ymlEsMapping);
+      await esCheckIndex(eClient, userConfig, issuesIndex, esMapping);
 
       await esPushNodes(fetchedIssues, issuesIndex, eClient);
 

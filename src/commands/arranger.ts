@@ -19,7 +19,7 @@ import { arrangerConfig as jiraIssuesArrangerConfig } from '../utils/arranger/ar
 import { arrangerConfig as jiraPropjectsArrangerConfig } from '../utils/arranger/arConfig/jiraProjects';
 
 export default class GIssues extends Command {
-  static description = 'Setup the indices for use with Arranger';
+  static description = '(EXPERIMENTAL) Setup the indices for use with Arranger';
 
   static flags = {
     help: flags.help({ char: 'h' }),

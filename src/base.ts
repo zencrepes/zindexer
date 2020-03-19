@@ -39,6 +39,12 @@ export default abstract class extends Command {
         githubReleases: 'gh_releases_',
         jiraIssues: 'j_issues_',
         jiraProjects: 'j_projects_',
+        circleciPipelines: 'cci_pipelines_',
+        circleciEnvvars: 'cci_envvars_',
+        circleciInsightsWorkflowsSummary: 'cci_insights_wfsum_',
+        circleciInsightsWorkflowsRuns: 'cci_insights_wfruns_',
+        circleciInsightsJobsSummary: 'cci_insights_jobssum_',
+        circleciInsightsJobsRuns: 'cci_insights_jobsruns_',
       },
     },
     arranger: {
@@ -54,6 +60,10 @@ export default abstract class extends Command {
       fetch: {
         maxNodes: 30,
       },
+    },
+    circleci: {
+      enabled: true,
+      token: 'YOUR_TOKEN',
     },
     jira: [
       {
