@@ -39,42 +39,48 @@ export default class Pipelines extends Command {
         { exit: 1 },
       );
     }
-    for (const currenSource of sources) {
+    for (const currentSource of sources) {
+      console.log('Processing source: ' + currentSource.name);
+
       const pipelinesIndex = (
         userConfig.elasticsearch.dataIndices.circleciPipelines +
-        getId(currenSource.name)
+        getId(currentSource.name)
       ).toLocaleLowerCase();
 
       const fetchedPipelines = await fetchData(
-        'project/gh/' + currenSource.name + '/pipeline',
+        'project/gh/' + currentSource.name + '/pipeline',
         userConfig.circleci.token,
         [],
       );
 
-      // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, pipelinesIndex, esMapping);
+      if (fetchedPipelines.length > 0) {
+        // Check if index exists, create it if it does not
+        await esCheckIndex(eClient, userConfig, pipelinesIndex, esMapping);
 
-      // Before pushing nodes to ES, we replace id by nodeId
-      // eslint-disable-next-line
-      const pipelines = fetchedPipelines.map((pipeline: any) => {
-        if (pipeline.id !== undefined) {
-          pipeline.nodeId = pipeline.id;
-          delete pipeline.id;
-        }
-        return { ...pipeline, source: currenSource };
-      });
-      await esPushNodes(pipelines, pipelinesIndex, eClient);
-
-      // Create an alias used for group querying
-      cli.action.start(
-        'Creating the Elasticsearch index alias: ' +
-          userConfig.elasticsearch.dataIndices.circleciPipelines,
-      );
-      await eClient.indices.putAlias({
-        index: userConfig.elasticsearch.dataIndices.circleciPipelines + '*',
-        name: userConfig.elasticsearch.dataIndices.circleciPipelines,
-      });
-      cli.action.stop(' done');
+        // Before pushing nodes to ES, we replace id by nodeId
+        // eslint-disable-next-line
+        const pipelines = fetchedPipelines.map((pipeline: any) => {
+          if (pipeline.id !== undefined) {
+            pipeline.nodeId = pipeline.id;
+            delete pipeline.id;
+          }
+          return {
+            ...pipeline,
+            source: currentSource,
+          };
+        });
+        await esPushNodes(pipelines, pipelinesIndex, eClient);
+      }
     }
+    // Create an alias used for group querying
+    cli.action.start(
+      'Creating the Elasticsearch index alias: ' +
+        userConfig.elasticsearch.dataIndices.circleciPipelines,
+    );
+    await eClient.indices.putAlias({
+      index: userConfig.elasticsearch.dataIndices.circleciPipelines + '*',
+      name: userConfig.elasticsearch.dataIndices.circleciPipelines,
+    });
+    cli.action.stop(' done');
   }
 }

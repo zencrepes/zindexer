@@ -36,7 +36,10 @@ export default class Envvars extends Command {
     // For each new value returned by CCI API, an random string is generated and stored in an array
     // This allow users to identify if same value are present across multiple sources but does not reveal anything
     // about the value itself.
-    const obfuscatedPass: Array<{ value: string; random: string }> = [];
+    const obfuscatedPass: Array<{
+      value: string;
+      random: string;
+    }> = [];
 
     // Get active sources from Github only
     const sources = await esGetActiveSources(eClient, userConfig, 'GITHUB');
@@ -47,6 +50,7 @@ export default class Envvars extends Command {
       );
     }
     for (const currentSource of sources) {
+      console.log('Processing source: ' + currentSource.name);
       const envvarIndex = (
         userConfig.elasticsearch.dataIndices.circleciEnvvars +
         getId(currentSource.name)
@@ -81,20 +85,21 @@ export default class Envvars extends Command {
         };
       });
 
-      // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, envvarIndex, esMapping);
-      await esPushNodes(items, envvarIndex, eClient);
-
-      // Create an alias used for group querying
-      cli.action.start(
-        'Creating the Elasticsearch index alias: ' +
-          userConfig.elasticsearch.dataIndices.circleciEnvvars,
-      );
-      await eClient.indices.putAlias({
-        index: userConfig.elasticsearch.dataIndices.circleciEnvvars + '*',
-        name: userConfig.elasticsearch.dataIndices.circleciEnvvars,
-      });
-      cli.action.stop(' done');
+      if (items.length > 0) {
+        // Check if index exists, create it if it does not
+        await esCheckIndex(eClient, userConfig, envvarIndex, esMapping);
+        await esPushNodes(items, envvarIndex, eClient);
+      }
     }
+    // Create an alias used for group querying
+    cli.action.start(
+      'Creating the Elasticsearch index alias: ' +
+        userConfig.elasticsearch.dataIndices.circleciEnvvars,
+    );
+    await eClient.indices.putAlias({
+      index: userConfig.elasticsearch.dataIndices.circleciEnvvars + '*',
+      name: userConfig.elasticsearch.dataIndices.circleciEnvvars,
+    });
+    cli.action.stop(' done');
   }
 }

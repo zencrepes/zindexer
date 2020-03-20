@@ -22,5 +22,6 @@ analysis:
       side: front
       type: edge_ngram
 index.mapping.nested_fields.limit: 100
+number_of_shards: 1
 `;
 export default yaml;

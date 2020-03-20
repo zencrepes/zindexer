@@ -25,8 +25,6 @@ const esCheckIndex = async (
     );
     const mappings = await jsYaml.safeLoad(YmlMapping);
     const settings = await jsYaml.safeLoad(YmlSettings);
-    //const mappings = await loadYamlFile(__dirname + '../schemas/repositories.yml')
-    //const settings = await loadYamlFile(__dirname + '../schemas/settings.yml')
     await client.indices.create({
       index: index,
       body: { settings, mappings },

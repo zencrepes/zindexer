@@ -56,6 +56,8 @@ export default class Insights extends Command {
       );
     }
     for (const currentSource of sources) {
+      console.log('Processing source: ' + currentSource.name);
+
       // 1- Get Workflow insights
       const workflowsSummaryIndex = (
         userConfig.elasticsearch.dataIndices.circleciInsightsWorkflowsSummary +
@@ -68,14 +70,6 @@ export default class Insights extends Command {
         [],
       );
 
-      // Check if index exists, create it if it does not
-      await esCheckIndex(
-        eClient,
-        userConfig,
-        workflowsSummaryIndex,
-        esMappingWorkflowSummary,
-      );
-
       // Before pushing nodes to ES, we replace id by nodeId
       let workflows = generateNodeId(fetchedWorkflows);
       // eslint-disable-next-line
@@ -85,7 +79,16 @@ export default class Insights extends Command {
           source: currentSource,
         };
       });
-      await esPushNodes(workflows, workflowsSummaryIndex, eClient);
+      if (workflows.length > 0) {
+        // Check if index exists, create it if it does not
+        await esCheckIndex(
+          eClient,
+          userConfig,
+          workflowsSummaryIndex,
+          esMappingWorkflowSummary,
+        );
+        await esPushNodes(workflows, workflowsSummaryIndex, eClient);
+      }
 
       // 2- Fetch all runs for a particular workflow
 
@@ -163,53 +166,60 @@ export default class Insights extends Command {
       }
 
       // Push workflows Runs
-      const workflowsRunsIndex = (
-        userConfig.elasticsearch.dataIndices.circleciInsightsWorkflowsRuns +
-        getId(currentSource.name)
-      ).toLocaleLowerCase();
+      if (workflowRuns.length > 0) {
+        const workflowsRunsIndex = (
+          userConfig.elasticsearch.dataIndices.circleciInsightsWorkflowsRuns +
+          getId(currentSource.name)
+        ).toLocaleLowerCase();
 
-      await esCheckIndex(
-        eClient,
-        userConfig,
-        workflowsRunsIndex,
-        esMappingWorkflowRuns,
-      );
+        await esCheckIndex(
+          eClient,
+          userConfig,
+          workflowsRunsIndex,
+          esMappingWorkflowRuns,
+        );
 
-      await esPushNodes(workflowRuns, workflowsRunsIndex, eClient);
+        await esPushNodes(workflowRuns, workflowsRunsIndex, eClient);
+      }
 
       // Push workflow Jobs Summary
-      const workflowsJobsSummaryIndex = (
-        userConfig.elasticsearch.dataIndices.circleciInsightsJobsSummary +
-        getId(currentSource.name)
-      ).toLocaleLowerCase();
+      if (workflowJobsSummary.length > 0) {
+        const workflowsJobsSummaryIndex = (
+          userConfig.elasticsearch.dataIndices.circleciInsightsJobsSummary +
+          getId(currentSource.name)
+        ).toLocaleLowerCase();
 
-      await esCheckIndex(
-        eClient,
-        userConfig,
-        workflowsJobsSummaryIndex,
-        esMappingWorkflowJobsSummary,
-      );
+        await esCheckIndex(
+          eClient,
+          userConfig,
+          workflowsJobsSummaryIndex,
+          esMappingWorkflowJobsSummary,
+        );
 
-      await esPushNodes(
-        workflowJobsSummary,
-        workflowsJobsSummaryIndex,
-        eClient,
-      );
+        await esPushNodes(
+          workflowJobsSummary,
+          workflowsJobsSummaryIndex,
+          eClient,
+        );
+      }
 
       // Push workflow Jobs Runs
-      const workflowsJobsRunsIndex = (
-        userConfig.elasticsearch.dataIndices.circleciInsightsJobsRuns +
-        getId(currentSource.name)
-      ).toLocaleLowerCase();
 
-      await esCheckIndex(
-        eClient,
-        userConfig,
-        workflowsJobsRunsIndex,
-        esMappingWorkflowJobsRuns,
-      );
+      if (workflowJobsRuns.length > 0) {
+        const workflowsJobsRunsIndex = (
+          userConfig.elasticsearch.dataIndices.circleciInsightsJobsRuns +
+          getId(currentSource.name)
+        ).toLocaleLowerCase();
 
-      await esPushNodes(workflowJobsRuns, workflowsJobsRunsIndex, eClient);
+        await esCheckIndex(
+          eClient,
+          userConfig,
+          workflowsJobsRunsIndex,
+          esMappingWorkflowJobsRuns,
+        );
+
+        await esPushNodes(workflowJobsRuns, workflowsJobsRunsIndex, eClient);
+      }
     }
 
     // Create an alias used for group querying
