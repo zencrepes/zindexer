@@ -56,7 +56,7 @@ export default class Insights extends Command {
       );
     }
     for (const currentSource of sources) {
-      console.log('Processing source: ' + currentSource.name);
+      console.log('Processing insights for source: ' + currentSource.name);
 
       // 1- Get Workflow insights
       const workflowsSummaryIndex = (

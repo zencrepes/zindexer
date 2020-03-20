@@ -50,7 +50,7 @@ export default class Envvars extends Command {
       );
     }
     for (const currentSource of sources) {
-      console.log('Processing source: ' + currentSource.name);
+      console.log('Processing envvards for source: ' + currentSource.name);
       const envvarIndex = (
         userConfig.elasticsearch.dataIndices.circleciEnvvars +
         getId(currentSource.name)

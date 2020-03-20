@@ -40,7 +40,7 @@ export default class Pipelines extends Command {
       );
     }
     for (const currentSource of sources) {
-      console.log('Processing source: ' + currentSource.name);
+      console.log('Processing pipelines for source: ' + currentSource.name);
 
       const pipelinesIndex = (
         userConfig.elasticsearch.dataIndices.circleciPipelines +
