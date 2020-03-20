@@ -53,7 +53,7 @@ jobs:
   # Publish a new version of the zindexer to NPM
   npm-publish:
     docker:
-      - image: node:latest
+      - image: node:12
     working_directory: ~/zindexer
     steps:
       - checkout
@@ -99,7 +99,7 @@ jobs:
   # Test the package that was just published to npm
   npm-test:
     docker:
-      - image: node:latest
+      - image: node:12
     working_directory: ~/zindexer-npm
     steps:
       - run:
