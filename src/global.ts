@@ -4,9 +4,11 @@ export interface ConfigElasticsearch {
   cloudId: string;
   username: string;
   password: string;
-  indices: {
+  sysIndices: {
     sources: string;
     types: string;
+  };
+  dataIndices: {
     githubRepos: string;
     githubIssues: string;
     githubPullrequests: string;
@@ -16,6 +18,12 @@ export interface ConfigElasticsearch {
     githubReleases: string;
     jiraIssues: string;
     jiraProjects: string;
+    circleciPipelines: string;
+    circleciEnvvars: string;
+    circleciInsightsWorkflowsSummary: string;
+    circleciInsightsWorkflowsRuns: string;
+    circleciInsightsJobsSummary: string;
+    circleciInsightsJobsRuns: string;
   };
 }
 
@@ -27,6 +35,19 @@ export interface ConfigGithub {
     maxNodes: number;
   };
 }
+
+export interface ConfigCircleci {
+  enabled: boolean;
+  token: string;
+}
+
+export interface ConfigArranger {
+  project: string;
+  admin: {
+    graphQLEndpoint: string;
+  };
+}
+
 export interface ConfigJira {
   name: string;
   enabled: boolean;
@@ -49,6 +70,8 @@ export interface ConfigJira {
 export interface Config {
   elasticsearch: ConfigElasticsearch;
   github: ConfigGithub;
+  circleci: ConfigCircleci;
+  arranger: ConfigArranger;
   jira: Array<ConfigJira>;
 }
 
@@ -120,6 +143,7 @@ export interface ESIndexSources {
 // Object containing all of Jira data related to a project
 export interface JiraProject {
   id: string;
+  nodeId: string;
   properties: any; // eslint-disable-line
   roles: any; // eslint-disable-line
   issueScheme: any; // eslint-disable-line
@@ -131,6 +155,7 @@ export interface JiraProject {
 
 export interface JiraIssue {
   id: string;
+  nodeId: string;
   key: string;
   fields: {
     updated: string;
@@ -139,27 +164,27 @@ export interface JiraIssue {
 
 export interface GithubOrganization {
   login: string;
-  id: string;
+  nodeId: string;
   name?: string;
   __typename?: string;
 }
 
 export interface GithubRepository {
   name: string;
-  id: string;
+  nodeId: string;
   owner: GithubOrganization;
   active: boolean;
 }
 
 export interface GithubIssue {
-  id: string;
+  nodeId: string;
 }
 export interface GithubPullrequest {
-  id: string;
+  nodeId: string;
   updatedAt: string;
 }
 // Standard Github node interface
 export interface GithubNode {
-  id: string;
+  nodeId: string;
   updatedAt: string;
 }

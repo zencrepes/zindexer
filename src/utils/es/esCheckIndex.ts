@@ -3,7 +3,7 @@ import { Config } from '../../global';
 import * as jsYaml from 'js-yaml';
 import { ApiResponse, Client } from '@elastic/elasticsearch';
 
-import YmlSettings from '../../schemas/settings';
+import YmlSettings from '../mappings/settings';
 
 const esCheckIndex = async (
   client: Client,
@@ -25,8 +25,6 @@ const esCheckIndex = async (
     );
     const mappings = await jsYaml.safeLoad(YmlMapping);
     const settings = await jsYaml.safeLoad(YmlSettings);
-    //const mappings = await loadYamlFile(__dirname + '../schemas/repositories.yml')
-    //const settings = await loadYamlFile(__dirname + '../schemas/settings.yml')
     await client.indices.create({
       index: index,
       body: { settings, mappings },

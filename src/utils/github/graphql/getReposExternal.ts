@@ -7,7 +7,7 @@ const query = `
       resetAt
     }
     organization(login: $org_name) {
-      id
+      nodeId: id
       login
       name
       repositories(first: $increment, after: $repo_cursor) {

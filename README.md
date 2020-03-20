@@ -1,6 +1,6 @@
 # zindexer
 
-Fetches data from GitHub, Jira and pushes it to an Elasticsearch instance.
+Fetches data from GitHub, Jira, CircleCI (and more to come) and pushes it to an Elasticsearch instance.
 
 _This project aims at replacing ZenCrepes's [github-indexer](https://github.com/zencrepes/github-indexer), adding abilities to fetch data from Jira (thus the need for a rename). _
 
@@ -23,7 +23,7 @@ _This project aims at replacing ZenCrepes's [github-indexer](https://github.com/
 
 <!-- introduction -->
 
-This script has been created to easily export Data from GitHub & Jira and import it into an Elasticsearch instance.
+This script has been created to easily export Data from GitHub, Jira, CircleCI & more and import it into an Elasticsearch instance to be later used for data analystics (via ZenCrepes, Kibana or other)
 
 Whenever possible (i.e. issues, milestones, projects), it loads data sorted by the updated date in descending order (most recent first) and will stop as soon as it find the same node already in Elasticsearch. This way, first load takes some time, then you can just cron it to keep your Elasticsearch instance up to date.
 
@@ -101,15 +101,19 @@ Refer to the following sections to understand how to configure and use the tool.
 
 The configuration file is a yaml file, it can be provided as part of the container (or by mounting a folder containing the configuration into ~/.config/zindexer/) or passed (as a whole) as an environment variable.
 
+If you are just starting and are running a default Elasticsearch instance as detailed above, you only need to configure github, circleci and/or jira credentials. All the other parameters should be good enough with default values.
+
 ```yaml
 elasticsearch:
   host: 'http://127.0.0.1:9200'
-  cloudId: null
-  username: null
-  password: null
-  sslCa: null
-  indices:
+  sslCa: ''
+  cloudId: ''
+  username: ''
+  password: ''
+  sysIndices:
     sources: sources
+    types: types
+  dataIndices:
     githubRepos: gh_repos
     githubIssues: gh_issues_
     githubPullrequests: gh_prs_
@@ -119,19 +123,32 @@ elasticsearch:
     githubReleases: gh_releases_
     jiraIssues: j_issues_
     jiraProjects: j_projects_
+    circleciPipelines: cci_pipelines_
+    circleciEnvvars: cci_envvars_
+    circleciInsightsWorkflowsSummary: cci_insights_wfsum_
+    circleciInsightsWorkflowsRuns: cci_insights_wfruns_
+    circleciInsightsJobsSummary: cci_insights_jobssum_
+    circleciInsightsJobsRuns: cci_insights_jobsruns_
+arranger:
+  project: zencrepes
+  admin:
+    graphQLEndpoint: 'http://localhost:5050/admin/graphql'
 github:
   enabled: true
   username: YOUR_USERNAME
   token: YOUR_TOKEN
   fetch:
     maxNodes: 30
+circleci:
+  enabled: true
+  token: YOUR_TOKEN
 jira:
-  - name: SERVER_1
+  - name: JAHIA
     enabled: true
     config:
-      username: username
-      password: password
-      host: 'https://jira.myhost.org'
+      username: YOUR_USERNAME
+      password: YOUR_PASSWORD
+      host: 'https://jira.mydomain.com'
       fields:
         points: customfield_10114
         originalPoints: customfield_11115

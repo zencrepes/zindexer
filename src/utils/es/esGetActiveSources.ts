@@ -12,7 +12,7 @@ const esGetActiveSources = async (
   // Ensure index exists in Elasticsearch
   cli.action.start(
     'Checking if index: ' +
-      userConfig.elasticsearch.indices.sources +
+      userConfig.elasticsearch.sysIndices.sources +
       ' exists',
   );
 
@@ -23,12 +23,12 @@ const esGetActiveSources = async (
     process.exit(1);
   }
   const testIndex = await client.indices.exists({
-    index: userConfig.elasticsearch.indices.sources,
+    index: userConfig.elasticsearch.sysIndices.sources,
   });
   if (testIndex.body === false) {
     console.error(
       'Index: ' +
-        userConfig.elasticsearch.indices.sources +
+        userConfig.elasticsearch.sysIndices.sources +
         ' does not exists, please configure repositories first',
       { exit: 1 },
     );
@@ -40,7 +40,7 @@ const esGetActiveSources = async (
   const esRepos: ApiResponse<ESSearchResponse<
     ESIndexSources
   >> = await client.search({
-    index: userConfig.elasticsearch.indices.sources,
+    index: userConfig.elasticsearch.sysIndices.sources,
     body: {
       from: 0,
       size: 10000,

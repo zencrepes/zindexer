@@ -1,5 +1,5 @@
 import { Config } from '../../global';
-import ymlMappingsTypes from '../../schemas/types';
+import ymlMappingsTypes from '../mappings/types';
 import esCheckIndex from '../../utils/es/esCheckIndex';
 
 // Synchronize data types between config file and Elasticsearch
@@ -10,18 +10,28 @@ const syncDataTypes = async (eClient: any, userConfig: Config) => {
   await esCheckIndex(
     eClient,
     userConfig,
-    userConfig.elasticsearch.indices.types,
+    userConfig.elasticsearch.sysIndices.types,
     ymlMappingsTypes,
   );
 
   // There can only be one key, so we give this key the value
   const esPayload: Array<any> = []; // eslint-disable-line
-  for (const [type, index] of Object.entries(
-    userConfig.elasticsearch.indices,
+  for (const [key, esIndex] of Object.entries(
+    userConfig.elasticsearch.sysIndices,
   )) {
     esPayload.push({
-      type,
-      index,
+      key,
+      esIndex,
+      type: 'system',
+    });
+  }
+  for (const [key, esIndex] of Object.entries(
+    userConfig.elasticsearch.dataIndices,
+  )) {
+    esPayload.push({
+      key,
+      esIndex,
+      type: 'data',
     });
   }
 
@@ -32,8 +42,8 @@ const syncDataTypes = async (eClient: any, userConfig: Config) => {
       formattedData +
       JSON.stringify({
         index: {
-          _index: userConfig.elasticsearch.indices.types,
-          _id: (rec as any).type, // eslint-disable-line
+          _index: userConfig.elasticsearch.sysIndices.types,
+          _id: (rec as any).key, // eslint-disable-line
         },
       }) +
       '\n' +
@@ -41,7 +51,7 @@ const syncDataTypes = async (eClient: any, userConfig: Config) => {
       '\n';
   }
   await eClient.bulk({
-    index: userConfig.elasticsearch.indices.types,
+    index: userConfig.elasticsearch.sysIndices.types,
     refresh: 'wait_for',
     body: formattedData,
   });

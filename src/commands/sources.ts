@@ -17,11 +17,11 @@ import {
   GithubOrganization,
 } from '../global';
 
-import fetchProjects from '../utils/jira/fetchProjects/index';
-import ymlMappingsSources from '../schemas/sources';
+import fetchProjects from '../utils/jira/utils/fetchProjects/index';
+import ymlMappingsSources from '../utils/mappings/sources';
 import esCheckIndex from '../utils/es/esCheckIndex';
 import esClient from '../utils/es/esClient';
-import ghClient from '../utils/github/ghClient';
+import ghClient from '../utils/github/utils/ghClient';
 
 import graphqlQuery from '../utils/github/utils/graphqlQuery';
 
@@ -31,7 +31,7 @@ import getOrgByName from '../utils/github/graphql/getOrgByName';
 import getRepoByName from '../utils/github/graphql/getRepoByName';
 import getUserByLogin from '../utils/github/graphql/getUserByLogin';
 import getUserRepos from '../utils/github/graphql/getUserRepos';
-import fetchNodesByQuery from '../utils/github/fetchNodesByQuery';
+import fetchNodesByQuery from '../utils/github/utils/fetchNodesByQuery';
 
 import esQueryData from '../utils/es/esQueryData';
 
@@ -106,7 +106,7 @@ export default class Sources extends Command {
     if (load === true) {
       dataSources = await esQueryData(
         eClient,
-        userConfig.elasticsearch.indices.sources,
+        userConfig.elasticsearch.sysIndices.sources,
         {
           from: 0,
           size: 10000,
@@ -218,7 +218,7 @@ export default class Sources extends Command {
               'Fetching repositories for user: ' + userResponse.data.user.login,
             );
             const fetched = await fetchReposData.load({
-              userId: userResponse.data.user.id,
+              userId: userResponse.data.user.nodeId,
             });
             fetchedRepos = [...fetchedRepos, ...fetched];
             cli.action.stop(' done');
@@ -245,7 +245,9 @@ export default class Sources extends Command {
             cli.action.start(
               'Fetching repositories for org: ' + currentOrg.login,
             );
-            const fetched = await fetchReposData.load({ orgId: currentOrg.id });
+            const fetched = await fetchReposData.load({
+              orgId: currentOrg.nodeId,
+            });
             fetchedRepos = [...fetchedRepos, ...fetched];
             cli.action.stop(' done');
           }
@@ -277,7 +279,7 @@ export default class Sources extends Command {
                 orgResponse.data.organization.login,
             );
             const fetched = await fetchReposData.load({
-              orgId: orgResponse.data.organization.id,
+              orgId: orgResponse.data.organization.nodeId,
             });
             fetchedRepos = [...fetchedRepos, ...fetched];
             cli.action.stop(' done');
@@ -314,8 +316,8 @@ export default class Sources extends Command {
           ...dataSources,
           ...fetchedRepos.map((p: GithubRepository) => {
             return {
-              uuid: getUuid('GITHUB-' + p.id, 5),
-              id: p.id,
+              uuid: getUuid('GITHUB-' + p.nodeId, 5),
+              id: p.nodeId,
               type: 'GITHUB',
               name: p.owner.login + '/' + p.name,
               active: active,
@@ -328,7 +330,7 @@ export default class Sources extends Command {
       await esCheckIndex(
         eClient,
         userConfig,
-        userConfig.elasticsearch.indices.sources,
+        userConfig.elasticsearch.sysIndices.sources,
         ymlMappingsSources,
       );
 
@@ -339,7 +341,7 @@ export default class Sources extends Command {
       const esRepos: ApiResponse<ESSearchResponse<
         ESIndexSources
       >> = await eClient.search({
-        index: userConfig.elasticsearch.indices.sources,
+        index: userConfig.elasticsearch.sysIndices.sources,
         body: {
           from: 0,
           size: 10000,
@@ -395,7 +397,7 @@ export default class Sources extends Command {
           formattedData +
           JSON.stringify({
             index: {
-              _index: userConfig.elasticsearch.indices.sources,
+              _index: userConfig.elasticsearch.sysIndices.sources,
               _id: (rec as ESIndexSources).uuid,
             },
           }) +
@@ -404,7 +406,7 @@ export default class Sources extends Command {
           '\n';
       }
       await eClient.bulk({
-        index: userConfig.elasticsearch.indices.sources,
+        index: userConfig.elasticsearch.sysIndices.sources,
         refresh: 'wait_for',
         body: formattedData,
       });
@@ -414,7 +416,7 @@ export default class Sources extends Command {
     //Update the configuration by re-downloading all data from ElasticSearch to create the configuration file
     cli.action.start('Refreshing the repositories configuration file');
     const esSources = await eClient.search({
-      index: userConfig.elasticsearch.indices.sources,
+      index: userConfig.elasticsearch.sysIndices.sources,
       body: {
         from: 0,
         size: 10000,

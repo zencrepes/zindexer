@@ -25,9 +25,11 @@ export default abstract class extends Command {
       cloudId: '',
       username: '',
       password: '',
-      indices: {
+      sysIndices: {
         sources: 'sources', // this index is used to store sources data
         types: 'types', // this index is used to store data about available index types
+      },
+      dataIndices: {
         githubRepos: 'gh_repos',
         githubIssues: 'gh_issues_',
         githubPullrequests: 'gh_prs_',
@@ -37,6 +39,18 @@ export default abstract class extends Command {
         githubReleases: 'gh_releases_',
         jiraIssues: 'j_issues_',
         jiraProjects: 'j_projects_',
+        circleciPipelines: 'cci_pipelines_',
+        circleciEnvvars: 'cci_envvars_',
+        circleciInsightsWorkflowsSummary: 'cci_insights_wfsum_',
+        circleciInsightsWorkflowsRuns: 'cci_insights_wfruns_',
+        circleciInsightsJobsSummary: 'cci_insights_jobssum_',
+        circleciInsightsJobsRuns: 'cci_insights_jobsruns_',
+      },
+    },
+    arranger: {
+      project: 'zencrepes',
+      admin: {
+        graphQLEndpoint: 'http://localhost:5050/admin/graphql',
       },
     },
     github: {
@@ -46,6 +60,10 @@ export default abstract class extends Command {
       fetch: {
         maxNodes: 30,
       },
+    },
+    circleci: {
+      enabled: true,
+      token: 'YOUR_TOKEN',
     },
     jira: [
       {

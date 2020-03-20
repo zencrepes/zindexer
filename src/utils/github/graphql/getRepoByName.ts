@@ -8,7 +8,7 @@ const query = `
     }
     repository(owner:$orgName, name:$repoName) {
       name
-      id
+      nodeId: id
       owner{
         id
         login

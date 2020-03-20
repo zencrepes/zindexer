@@ -9,10 +9,13 @@ function esClient(configElasticsearch: ConfigElasticsearch) {
   if (
     cloudId !== undefined &&
     cloudId !== null &&
+    cloudId !== '' &&
     username !== undefined &&
     username !== null &&
+    username !== '' &&
     password !== undefined &&
-    password !== null
+    password !== null &&
+    password !== ''
   ) {
     return new Client({
       cloud: {
@@ -21,7 +24,7 @@ function esClient(configElasticsearch: ConfigElasticsearch) {
         password: password,
       },
     });
-  } else if (sslCa !== undefined && sslCa !== null) {
+  } else if (sslCa !== undefined && sslCa !== null && sslCa !== '') {
     return new Client({
       node: host,
       ssl: {
