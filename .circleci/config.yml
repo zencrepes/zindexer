@@ -64,7 +64,7 @@ jobs:
           command: yarn
       - run:
           name: Install Typescript
-          command: npm -g install typescript
+          command: npm -g install typescript@3.7.5
       - run:
           name: Install oclif-dev
           command: npm -g install @oclif/dev-cli
