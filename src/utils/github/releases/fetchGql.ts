@@ -13,7 +13,7 @@ query($repoId: ID!, $cursor: String, $increment: Int,) {
         edges {
          cursor
           node {
-            nodeId: id
+            id
             createdAt
             updatedAt
             author {

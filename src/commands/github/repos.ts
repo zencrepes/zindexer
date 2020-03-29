@@ -85,7 +85,7 @@ export default class Repos extends Command {
           JSON.stringify({
             index: {
               _index: esIndex,
-              _id: (rec as GithubRepository).nodeId,
+              _id: (rec as GithubRepository).id,
             },
           }) +
           '\n' +

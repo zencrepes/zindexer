@@ -36,7 +36,7 @@ import fetchNodesByQuery from '../utils/github/utils/fetchNodesByQuery';
 import esQueryData from '../utils/es/esQueryData';
 
 import chunkArray from '../utils/misc/chunkArray';
-import syncDataTypes from '../utils/misc/syncDataTypes';
+import syncDatasets from '../utils/misc/syncDatasets';
 
 export default class Sources extends Command {
   static description = 'Manage data sources (GitHub or Jira)';
@@ -97,7 +97,7 @@ export default class Sources extends Command {
     const gClient = await ghClient(userConfig.github);
 
     cli.action.start('Syncing local types configuration with ES');
-    await syncDataTypes(eClient, userConfig);
+    await syncDatasets(eClient, userConfig);
     cli.action.stop(' done');
 
     let dataSources: Array<ESIndexSources> = [];
@@ -218,7 +218,7 @@ export default class Sources extends Command {
               'Fetching repositories for user: ' + userResponse.data.user.login,
             );
             const fetched = await fetchReposData.load({
-              userId: userResponse.data.user.nodeId,
+              userId: userResponse.data.user.id,
             });
             fetchedRepos = [...fetchedRepos, ...fetched];
             cli.action.stop(' done');
@@ -246,7 +246,7 @@ export default class Sources extends Command {
               'Fetching repositories for org: ' + currentOrg.login,
             );
             const fetched = await fetchReposData.load({
-              orgId: currentOrg.nodeId,
+              orgId: currentOrg.id,
             });
             fetchedRepos = [...fetchedRepos, ...fetched];
             cli.action.stop(' done');
@@ -279,7 +279,7 @@ export default class Sources extends Command {
                 orgResponse.data.organization.login,
             );
             const fetched = await fetchReposData.load({
-              orgId: orgResponse.data.organization.nodeId,
+              orgId: orgResponse.data.organization.id,
             });
             fetchedRepos = [...fetchedRepos, ...fetched];
             cli.action.stop(' done');
@@ -316,8 +316,8 @@ export default class Sources extends Command {
           ...dataSources,
           ...fetchedRepos.map((p: GithubRepository) => {
             return {
-              uuid: getUuid('GITHUB-' + p.nodeId, 5),
-              id: p.nodeId,
+              uuid: getUuid('GITHUB-' + p.id, 5),
+              id: p.id,
               type: 'GITHUB',
               name: p.owner.login + '/' + p.name,
               active: active,

@@ -622,7 +622,7 @@ properties:
             type: integer
       workratio:
         type: long
-  nodeId:
+  id:
     type: keyword
   key:
     type: keyword

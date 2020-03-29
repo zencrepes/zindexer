@@ -141,8 +141,7 @@ export default class Projects extends Command {
         for (const rec of esPayloadChunk) {
           // Trick to replace id with nodeId
           // eslint-disable-next-line
-          const updatedRec: any = { ...rec, nodeId: (rec as JiraProject).id };
-          delete updatedRec.id;
+          const updatedRec: any = { ...rec };
 
           // Jira uses a numerical object key not compatible with arranger, simply removing it
           if (updatedRec.avatarUrls !== undefined) {
@@ -157,8 +156,7 @@ export default class Projects extends Command {
             JSON.stringify({
               index: {
                 _index: esIndex,
-                _id:
-                  getId(jiraServer.name) + (updatedRec as JiraProject).nodeId,
+                _id: getId(jiraServer.name) + (updatedRec as JiraProject).id,
               },
             }) +
             '\n' +

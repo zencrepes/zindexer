@@ -26,7 +26,7 @@ const esPushNodes = async (
         JSON.stringify({
           index: {
             _index: nodesIndex,
-            _id: (rec as GithubNode).nodeId,
+            _id: (rec as GithubNode).id,
           },
         }) +
         '\n' +

@@ -62,7 +62,7 @@ export default class Envvars extends Command {
         [],
       );
 
-      // Before pushing nodes to ES, we replace id by nodeId
+      // Before pushing nodes to ES
       // eslint-disable-next-line
       const items = fetchedItems.map((item: any) => {
         let randomValue = cryptoRandomString({ length: 10 });
@@ -81,7 +81,7 @@ export default class Envvars extends Command {
           ...item,
           source: currentSource,
           value: 'OBFUSCATED:' + randomValue,
-          nodeId: currentSource.uuid + '-' + item.name,
+          id: currentSource.uuid + '-' + item.name,
         };
       });
 

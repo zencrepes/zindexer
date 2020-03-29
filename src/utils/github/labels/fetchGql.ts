@@ -13,7 +13,7 @@ const query = `
           edges {
           cursor
             node {
-              nodeId: id
+              id
               url
               color
               name

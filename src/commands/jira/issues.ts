@@ -116,8 +116,7 @@ export default class Issues extends Command {
           for (const rec of esPayloadChunk) {
             // Trick to replace id with nodeId
             // eslint-disable-next-line
-            const updatedRec: any = { ...rec, nodeId: (rec as JiraIssue).id };
-            delete updatedRec.id;
+            const updatedRec: any = { ...rec };
 
             // Jira uses a numerical object key not compatible with arranger, simply removing it
             if (updatedRec.fields.assignee !== null) {
@@ -138,7 +137,7 @@ export default class Issues extends Command {
               JSON.stringify({
                 index: {
                   _index: issuesIndex,
-                  _id: (updatedRec as JiraIssue).nodeId,
+                  _id: (updatedRec as JiraIssue).id,
                 },
               }) +
               '\n' +

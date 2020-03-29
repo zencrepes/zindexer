@@ -10,6 +10,7 @@ const query = `
       esIndex: $esIndex
     ) {
       id
+      __typename
     }
   }
 `;

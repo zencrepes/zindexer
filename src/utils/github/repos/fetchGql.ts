@@ -47,7 +47,7 @@ query($data_array: [ID!]!) {
       forkCount
       hasIssuesEnabled
       hasWikiEnabled
-      nodeId: id
+      id
       isArchived
       isDisabled
       isFork

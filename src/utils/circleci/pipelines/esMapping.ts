@@ -3,7 +3,7 @@ const yaml = `
 _source:
   enabled: true
 properties:
-  nodeId:
+  id:
     type: keyword
   error:
     properties:

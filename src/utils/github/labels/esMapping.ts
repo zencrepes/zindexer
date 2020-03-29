@@ -13,7 +13,7 @@ properties:
       keyword:
         type: keyword
         ignore_above: 256
-  nodeId:
+  id:
     type: keyword
   isDefault:
     type: boolean
@@ -35,7 +35,7 @@ properties:
     properties:
       databaseId:
         type: long
-      nodeId:
+      id:
         type: keyword
       name:
         type: text

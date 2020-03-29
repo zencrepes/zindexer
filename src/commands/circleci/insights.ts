@@ -20,11 +20,7 @@ import fetchData from '../../utils/circleci/utils/fetchData';
 
 // eslint-disable-next-line
 const generateNodeId = (items: any) => {
-  const updatedItems = items.map((item: { id?: string; nodeId: string }) => {
-    if (item.id !== undefined) {
-      item.nodeId = item.id;
-      delete item.id;
-    }
+  const updatedItems = items.map((item: { id?: string; nodeId?: string }) => {
     return item;
   });
   return updatedItems;
@@ -152,10 +148,6 @@ export default class Insights extends Command {
           );
           // eslint-disable-next-line
           wfJobsRuns = wfJobsRuns.map((wf: any) => {
-            if (wf.id !== undefined) {
-              wf.nodeId = wf.id;
-              delete wf.id;
-            }
             return {
               ...wf,
               job,

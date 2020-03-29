@@ -60,10 +60,6 @@ export default class Pipelines extends Command {
         // Before pushing nodes to ES, we replace id by nodeId
         // eslint-disable-next-line
         const pipelines = fetchedPipelines.map((pipeline: any) => {
-          if (pipeline.id !== undefined) {
-            pipeline.nodeId = pipeline.id;
-            delete pipeline.id;
-          }
           return {
             ...pipeline,
             source: currentSource,

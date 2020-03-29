@@ -14,7 +14,7 @@ const query = `
             cursor
             node {
               name
-              nodeId: id
+              id
               owner {
                 id
                 login

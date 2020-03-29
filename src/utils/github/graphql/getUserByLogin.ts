@@ -9,7 +9,7 @@ const query = `
     user(login: $userLogin){
       name
       login
-      nodeId: id
+      id
       url
     }
   }

@@ -27,7 +27,7 @@ export default abstract class extends Command {
       password: '',
       sysIndices: {
         sources: 'sources', // this index is used to store sources data
-        types: 'types', // this index is used to store data about available index types
+        datasets: 'datasets', // this index is used to store data about available index types
       },
       dataIndices: {
         githubRepos: 'gh_repos',

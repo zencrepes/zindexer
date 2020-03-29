@@ -1,17 +1,17 @@
 import { Config } from '../../global';
-import ymlMappingsTypes from '../mappings/types';
-import esCheckIndex from '../../utils/es/esCheckIndex';
+import ymlMappingsDatasets from '../mappings/datasets';
+import esCheckIndex from '../es/esCheckIndex';
 
 // Synchronize data types between config file and Elasticsearch
 // For now it doesn't handle removal of outdated index types
 // eslint-disable-next-line
-const syncDataTypes = async (eClient: any, userConfig: Config) => {
+const syncDataDatasets = async (eClient: any, userConfig: Config) => {
   //  Check if index exists, create if it does not
   await esCheckIndex(
     eClient,
     userConfig,
-    userConfig.elasticsearch.sysIndices.types,
-    ymlMappingsTypes,
+    userConfig.elasticsearch.sysIndices.datasets,
+    ymlMappingsDatasets,
   );
 
   // There can only be one key, so we give this key the value
@@ -35,14 +35,14 @@ const syncDataTypes = async (eClient: any, userConfig: Config) => {
     });
   }
 
-  console.log('Pushing types data to Elastic search');
+  console.log('Pushing datasets data to Elastic search');
   let formattedData = '';
   for (const rec of esPayload) {
     formattedData =
       formattedData +
       JSON.stringify({
         index: {
-          _index: userConfig.elasticsearch.sysIndices.types,
+          _index: userConfig.elasticsearch.sysIndices.datasets,
           _id: (rec as any).key, // eslint-disable-line
         },
       }) +
@@ -51,9 +51,9 @@ const syncDataTypes = async (eClient: any, userConfig: Config) => {
       '\n';
   }
   await eClient.bulk({
-    index: userConfig.elasticsearch.sysIndices.types,
+    index: userConfig.elasticsearch.sysIndices.datasets,
     refresh: 'wait_for',
     body: formattedData,
   });
 };
-export default syncDataTypes;
+export default syncDataDatasets;

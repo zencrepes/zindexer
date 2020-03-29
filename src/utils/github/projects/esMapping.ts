@@ -32,7 +32,7 @@ properties:
     type: date
   databaseId:
     type: integer
-  nodeId:
+  id:
     type: keyword
   name:
     type: text

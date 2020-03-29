@@ -6,7 +6,7 @@ export interface ConfigElasticsearch {
   password: string;
   sysIndices: {
     sources: string;
-    types: string;
+    datasets: string;
   };
   dataIndices: {
     githubRepos: string;
@@ -143,7 +143,6 @@ export interface ESIndexSources {
 // Object containing all of Jira data related to a project
 export interface JiraProject {
   id: string;
-  nodeId: string;
   properties: any; // eslint-disable-line
   roles: any; // eslint-disable-line
   issueScheme: any; // eslint-disable-line
@@ -155,7 +154,6 @@ export interface JiraProject {
 
 export interface JiraIssue {
   id: string;
-  nodeId: string;
   key: string;
   fields: {
     updated: string;
@@ -164,27 +162,27 @@ export interface JiraIssue {
 
 export interface GithubOrganization {
   login: string;
-  nodeId: string;
+  id: string;
   name?: string;
   __typename?: string;
 }
 
 export interface GithubRepository {
   name: string;
-  nodeId: string;
+  id: string;
   owner: GithubOrganization;
   active: boolean;
 }
 
 export interface GithubIssue {
-  nodeId: string;
+  id: string;
 }
 export interface GithubPullrequest {
-  nodeId: string;
+  id: string;
   updatedAt: string;
 }
 // Standard Github node interface
 export interface GithubNode {
-  nodeId: string;
+  id: string;
   updatedAt: string;
 }

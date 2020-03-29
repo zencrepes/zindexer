@@ -3,7 +3,7 @@ const yaml = `
 _source:
   enabled: true
 properties:
-  nodeId:
+  id:
     type: keyword
   duration:
     type: long
@@ -57,7 +57,7 @@ properties:
         type: date  
       workflow:  
         properties:
-          nodeId:
+          id:
             type: keyword
           name:
             type: text

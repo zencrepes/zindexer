@@ -3,6 +3,8 @@ const yaml = `
 _source:
   enabled: true
 properties:
+  id:
+    type: keyword
   assignees:
     properties:
       edges:
@@ -45,8 +47,6 @@ properties:
     type: date
   databaseId:
     type: long
-  nodeId:
-    type: keyword
   labels:
     properties:
       edges:

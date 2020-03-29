@@ -29,7 +29,7 @@ properties:
       keyword:
         type: keyword
         ignore_above: 256
-  nodeId:
+  id:
     type: keyword
   isDraft:
     type: boolean

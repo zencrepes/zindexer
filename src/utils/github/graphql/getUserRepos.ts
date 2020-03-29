@@ -14,7 +14,7 @@ query ($userId: ID!, $cursor: String, $increment: Int){
           cursor
           node {
             name
-            nodeId: id
+            id
             owner {
               id
               login

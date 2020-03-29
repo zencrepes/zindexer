@@ -13,6 +13,7 @@ async function graphqlQuery(
         ${query}
       `,
       variables,
+      operationName: null,
       fetchPolicy: 'no-cache',
       errorPolicy: 'ignore',
     });

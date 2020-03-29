@@ -15,7 +15,7 @@ properties:
         ignore_above: 256
   dueOn:
     type: date
-  nodeId:
+  id:
     type: keyword
   issues:
     properties:
