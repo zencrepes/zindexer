@@ -16,6 +16,9 @@ import { getId } from '../../utils/misc/getId';
 import esMapping from '../../utils/github/pullrequests/esMapping';
 import fetchGql from '../../utils/github/pullrequests/fetchGql';
 
+import esMappingConfig from '../../utils/mappings/config';
+import zConfig from '../../utils/github/pullrequests/zConfig';
+
 export default class Pullrequests extends Command {
   static description =
     'Github: Fetches Pullrequests data from configured sources';
@@ -82,6 +85,15 @@ export default class Pullrequests extends Command {
         index: userConfig.elasticsearch.dataIndices.githubPullrequests + '*',
         name: userConfig.elasticsearch.dataIndices.githubPullrequests,
       });
+      cli.action.stop(' done');
+
+      // Push Zencrepes configuration
+      const configIndex = userConfig.elasticsearch.sysIndices.config;
+      cli.action.start(
+        'Pushing ZenCrepes UI default configuration: ' + configIndex,
+      );
+      await esCheckIndex(eClient, userConfig, configIndex, esMappingConfig);
+      await esPushNodes([zConfig], configIndex, eClient);
       cli.action.stop(' done');
     }
   }

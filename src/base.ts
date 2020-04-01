@@ -28,6 +28,7 @@ export default abstract class extends Command {
       sysIndices: {
         sources: 'sources', // this index is used to store sources data
         datasets: 'datasets', // this index is used to store data about available index types
+        config: 'config', // this index is used to store zencrepes configuration
       },
       dataIndices: {
         githubRepos: 'gh_repos',

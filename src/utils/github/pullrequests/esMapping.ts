@@ -8,6 +8,7 @@ properties:
   assignees:
     properties:
       edges:
+        type: nested      
         properties:
           node:
             properties:
@@ -50,6 +51,7 @@ properties:
   labels:
     properties:
       edges:
+        type: nested
         properties:
           node:
             properties:
@@ -70,7 +72,7 @@ properties:
                     type: keyword
                     ignore_above: 256
       totalCount:
-        type: long
+        type: long      
   milestone:
     properties:
       closedAt:
@@ -114,6 +116,7 @@ properties:
   projectCards:
     properties:
       edges:
+        type: nested      
         properties:
           node:
             properties:

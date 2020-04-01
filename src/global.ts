@@ -7,6 +7,7 @@ export interface ConfigElasticsearch {
   sysIndices: {
     sources: string;
     datasets: string;
+    config: string;
   };
   dataIndices: {
     githubRepos: string;
