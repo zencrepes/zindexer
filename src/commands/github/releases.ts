@@ -44,12 +44,14 @@ export default class Releases extends Command {
     );
 
     for (const currenSource of sources) {
-      const releasesIndex = (
-        userConfig.elasticsearch.dataIndices.githubReleases +
-        getId(currenSource.name)
-      ).toLocaleLowerCase();
+      let releasesIndex = userConfig.elasticsearch.dataIndices.githubReleases;
+
       this.log('Processing source: ' + currenSource.name);
-      const recentRelease = await esGithubLatest(eClient, releasesIndex);
+      const recentRelease = await esGithubLatest(
+        eClient,
+        releasesIndex,
+        currenSource.id,
+      );
       cli.action.start(
         'Grabbing releases for: ' +
           currenSource.name +
@@ -57,27 +59,44 @@ export default class Releases extends Command {
           currenSource.id +
           ')',
       );
-      const fetchedReleases = await fetchData.load(
+      let fetchedReleases = await fetchData.load(
         currenSource.id,
         recentRelease,
       );
       cli.action.stop(' done');
+
+      // Add the source id to all of the documents
+      fetchedReleases = fetchedReleases.map((item: any) => {
+        return {
+          ...item,
+          zindexer_sourceid: currenSource.id,
+        };
+      });
+
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        releasesIndex = (
+          userConfig.elasticsearch.dataIndices.githubReleases +
+          getId(currenSource.name)
+        ).toLocaleLowerCase();
+      }
 
       // Check if index exists, create it if it does not
       await esCheckIndex(eClient, userConfig, releasesIndex, esMapping);
 
       await esPushNodes(fetchedReleases, releasesIndex, eClient);
 
-      // Create an alias used for group querying
-      cli.action.start(
-        'Creating the Elasticsearch index alias: ' +
-          userConfig.elasticsearch.dataIndices.githubReleases,
-      );
-      await eClient.indices.putAlias({
-        index: userConfig.elasticsearch.dataIndices.githubReleases + '*',
-        name: userConfig.elasticsearch.dataIndices.githubReleases,
-      });
-      cli.action.stop(' done');
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        // Create an alias used for group querying
+        cli.action.start(
+          'Creating the Elasticsearch index alias: ' +
+            userConfig.elasticsearch.dataIndices.githubReleases,
+        );
+        await eClient.indices.putAlias({
+          index: userConfig.elasticsearch.dataIndices.githubReleases + '*',
+          name: userConfig.elasticsearch.dataIndices.githubReleases,
+        });
+        cli.action.stop(' done');
+      }
     }
   }
 }

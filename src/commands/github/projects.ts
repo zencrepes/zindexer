@@ -45,12 +45,14 @@ export default class Projects extends Command {
     );
 
     for (const currenSource of sources) {
-      const projectsIndex = (
-        userConfig.elasticsearch.dataIndices.githubProjects +
-        getId(currenSource.name)
-      ).toLocaleLowerCase();
+      let projectsIndex = userConfig.elasticsearch.dataIndices.githubProjects;
+
       this.log('Processing source: ' + currenSource.name);
-      const recentProject = await esGithubLatest(eClient, projectsIndex);
+      const recentProject = await esGithubLatest(
+        eClient,
+        projectsIndex,
+        currenSource.id,
+      );
       cli.action.start(
         'Grabbing projects for: ' +
           currenSource.name +
@@ -58,27 +60,44 @@ export default class Projects extends Command {
           currenSource.id +
           ')',
       );
-      const fetchedProjects = await fetchData.load(
+      let fetchedProjects = await fetchData.load(
         currenSource.id,
         recentProject,
       );
       cli.action.stop(' done');
+
+      // Add the source id to all of the documents
+      fetchedProjects = fetchedProjects.map((item: any) => {
+        return {
+          ...item,
+          zindexer_sourceid: currenSource.id,
+        };
+      });
+
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        projectsIndex = (
+          userConfig.elasticsearch.dataIndices.githubProjects +
+          getId(currenSource.name)
+        ).toLocaleLowerCase();
+      }
 
       // Check if index exists, create it if it does not
       await esCheckIndex(eClient, userConfig, projectsIndex, esMapping);
 
       await esPushNodes(fetchedProjects, projectsIndex, eClient);
 
-      // Create an alias used for group querying
-      cli.action.start(
-        'Creating the Elasticsearch index alias: ' +
-          userConfig.elasticsearch.dataIndices.githubProjects,
-      );
-      await eClient.indices.putAlias({
-        index: userConfig.elasticsearch.dataIndices.githubProjects + '*',
-        name: userConfig.elasticsearch.dataIndices.githubProjects,
-      });
-      cli.action.stop(' done');
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        // Create an alias used for group querying
+        cli.action.start(
+          'Creating the Elasticsearch index alias: ' +
+            userConfig.elasticsearch.dataIndices.githubProjects,
+        );
+        await eClient.indices.putAlias({
+          index: userConfig.elasticsearch.dataIndices.githubProjects + '*',
+          name: userConfig.elasticsearch.dataIndices.githubProjects,
+        });
+        cli.action.stop(' done');
+      }
     }
   }
 }

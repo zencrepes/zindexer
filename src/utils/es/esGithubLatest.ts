@@ -3,7 +3,11 @@ import { ApiResponse, Client } from '@elastic/elasticsearch';
 
 import { ESSearchResponse, GithubNode } from '../../global';
 
-const esGithubLatest = async (client: Client, esIndex: string) => {
+const esGithubLatest = async (
+  client: Client,
+  esIndex: string,
+  sourceId: string,
+) => {
   // Ensure index exists in Elasticsearch
   cli.action.start('Checking if index: ' + esIndex + ' exists');
 
@@ -30,7 +34,11 @@ const esGithubLatest = async (client: Client, esIndex: string) => {
     index: esIndex,
     body: {
       query: {
-        match_all: {}, // eslint-disable-line
+        match: {
+          zindexer_sourceid: {
+            query: sourceId,
+          },
+        }, // eslint-disable-line
       },
       size: 1,
       sort: [

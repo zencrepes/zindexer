@@ -83,6 +83,34 @@ const query = `
               participants(first: 1) {
                 totalCount
               }
+              reviewRequests(first: 5) {
+                totalCount
+                edges {
+                  node {
+                    requestedReviewer {
+                      ... on User {
+                        login
+                        avatarUrl
+                        url
+                      }
+                    }
+                  }
+                }
+              }
+              reviewDecision
+              reviews(first: 5) {
+                edges {
+                  node {
+                    state
+                    author {
+                      login
+                      url
+                      avatarUrl
+                    }
+                  }
+                }
+                totalCount
+              }                 
               projectCards(first: 5) {
                 totalCount
                 edges {

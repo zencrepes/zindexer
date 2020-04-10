@@ -30,6 +30,7 @@ export default abstract class extends Command {
         datasets: 'datasets', // this index is used to store data about available index types
         config: 'config', // this index is used to store zencrepes configuration
       },
+      oneIndexPerSource: false,
       dataIndices: {
         githubRepos: 'gh_repos',
         githubIssues: 'gh_issues_',

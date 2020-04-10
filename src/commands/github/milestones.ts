@@ -45,12 +45,15 @@ export default class Milestones extends Command {
     );
 
     for (const currenSource of sources) {
-      const milestonesIndex = (
-        userConfig.elasticsearch.dataIndices.githubMilestones +
-        getId(currenSource.name)
-      ).toLocaleLowerCase();
+      let milestonesIndex =
+        userConfig.elasticsearch.dataIndices.githubMilestones;
+
       this.log('Processing source: ' + currenSource.name);
-      const recentMilestone = await esGithubLatest(eClient, milestonesIndex);
+      const recentMilestone = await esGithubLatest(
+        eClient,
+        milestonesIndex,
+        currenSource.id,
+      );
       cli.action.start(
         'Grabbing milestones for: ' +
           currenSource.name +
@@ -58,27 +61,43 @@ export default class Milestones extends Command {
           currenSource.id +
           ')',
       );
-      const fetchedMilestones = await fetchData.load(
+      let fetchedMilestones = await fetchData.load(
         currenSource.id,
         recentMilestone,
       );
       cli.action.stop(' done');
 
+      // Add the source id to all of the documents
+      fetchedMilestones = fetchedMilestones.map((item: any) => {
+        return {
+          ...item,
+          zindexer_sourceid: currenSource.id,
+        };
+      });
+
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        milestonesIndex = (
+          userConfig.elasticsearch.dataIndices.githubMilestones +
+          getId(currenSource.name)
+        ).toLocaleLowerCase();
+      }
       // Check if index exists, create it if it does not
       await esCheckIndex(eClient, userConfig, milestonesIndex, esMapping);
 
       await esPushNodes(fetchedMilestones, milestonesIndex, eClient);
 
-      // Create an alias used for group querying
-      cli.action.start(
-        'Creating the Elasticsearch index alias: ' +
-          userConfig.elasticsearch.dataIndices.githubMilestones,
-      );
-      await eClient.indices.putAlias({
-        index: userConfig.elasticsearch.dataIndices.githubMilestones + '*',
-        name: userConfig.elasticsearch.dataIndices.githubMilestones,
-      });
-      cli.action.stop(' done');
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        // Create an alias used for group querying
+        cli.action.start(
+          'Creating the Elasticsearch index alias: ' +
+            userConfig.elasticsearch.dataIndices.githubMilestones,
+        );
+        await eClient.indices.putAlias({
+          index: userConfig.elasticsearch.dataIndices.githubMilestones + '*',
+          name: userConfig.elasticsearch.dataIndices.githubMilestones,
+        });
+        cli.action.stop(' done');
+      }
     }
   }
 }

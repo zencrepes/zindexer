@@ -40,6 +40,8 @@ properties:
     type: keyword
   closedAt:
     type: date
+  openedDuring:
+    type: long
   comments:
     properties:
       totalCount:
@@ -134,6 +136,42 @@ properties:
                         ignore_above: 256
       totalCount:
         type: long
+  reviewRequests:
+    properties:
+      totalCount:
+        type: long     
+      edges:
+        type: nested
+        properties:
+          node:
+            properties:
+              login:
+                type: keyword
+              url:
+                type: keyword
+              avatarUrl:
+                type: keyword               
+  reviewDecision:
+    type: keyword
+  reviews:
+    properties:
+      edges:
+        type: nested
+        properties:
+          node:
+            properties:
+              state:
+                type: keyword
+              author:
+                properties:
+                  login:
+                    type: keyword
+                  url:
+                    type: keyword
+                  avatarUrl:
+                    type: keyword  
+      totalCount:
+        type: long                  
   repository:
     properties:
       databaseId:

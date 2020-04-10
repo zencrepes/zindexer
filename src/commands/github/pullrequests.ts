@@ -19,6 +19,8 @@ import fetchGql from '../../utils/github/pullrequests/fetchGql';
 import esMappingConfig from '../../utils/mappings/config';
 import zConfig from '../../utils/github/pullrequests/zConfig';
 
+import { differenceInDays } from 'date-fns';
+
 export default class Pullrequests extends Command {
   static description =
     'Github: Fetches Pullrequests data from configured sources';
@@ -49,14 +51,14 @@ export default class Pullrequests extends Command {
     );
 
     for (const currenSource of sources) {
-      const pullrequestsIndex = (
-        userConfig.elasticsearch.dataIndices.githubPullrequests +
-        getId(currenSource.name)
-      ).toLocaleLowerCase();
+      let pullrequestsIndex =
+        userConfig.elasticsearch.dataIndices.githubPullrequests;
+
       this.log('Processing source: ' + currenSource.name);
       const recentPullrequest = await esGithubLatest(
         eClient,
         pullrequestsIndex,
+        currenSource.id,
       );
       cli.action.start(
         'Grabbing pullrequests for: ' +
@@ -65,28 +67,54 @@ export default class Pullrequests extends Command {
           currenSource.id +
           ')',
       );
-      const fetchedPullrequests = await fetchData.load(
+      let fetchedPullrequests = await fetchData.load(
         currenSource.id,
         recentPullrequest,
       );
       cli.action.stop(' done');
 
+      // Some data manipulation on all items
+      fetchedPullrequests = fetchedPullrequests.map((item: any) => {
+        let openedDuring = null;
+        if (item.closedAt !== null) {
+          openedDuring = differenceInDays(
+            new Date(item.closedAt),
+            new Date(item.createdAt),
+          );
+        }
+        return {
+          ...item,
+          zindexer_sourceid: currenSource.id,
+          openedDuring: openedDuring,
+        };
+      });
+
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        pullrequestsIndex = (
+          userConfig.elasticsearch.dataIndices.githubPullrequests +
+          getId(currenSource.name)
+        ).toLocaleLowerCase();
+      }
+
       // Check if index exists, create it if it does not
       await esCheckIndex(eClient, userConfig, pullrequestsIndex, esMapping);
 
+      // Push all nodes to the index
       await esPushNodes(fetchedPullrequests, pullrequestsIndex, eClient);
 
-      // Create an alias used for group querying
-      cli.action.start(
-        'Creating the Elasticsearch index alias: ' +
-          userConfig.elasticsearch.dataIndices.githubPullrequests,
-      );
-      await eClient.indices.putAlias({
-        index: userConfig.elasticsearch.dataIndices.githubPullrequests + '*',
-        name: userConfig.elasticsearch.dataIndices.githubPullrequests,
-      });
-      cli.action.stop(' done');
-
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        // If one index per source, then an alias is created automatically to all of the indices
+        // Create an alias used for group querying
+        cli.action.start(
+          'Creating the Elasticsearch index alias: ' +
+            userConfig.elasticsearch.dataIndices.githubPullrequests,
+        );
+        await eClient.indices.putAlias({
+          index: userConfig.elasticsearch.dataIndices.githubPullrequests + '*',
+          name: userConfig.elasticsearch.dataIndices.githubPullrequests,
+        });
+        cli.action.stop(' done');
+      }
       // Push Zencrepes configuration
       const configIndex = userConfig.elasticsearch.sysIndices.config;
       cli.action.start(

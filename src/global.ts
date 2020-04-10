@@ -9,6 +9,7 @@ export interface ConfigElasticsearch {
     datasets: string;
     config: string;
   };
+  oneIndexPerSource: boolean;
   dataIndices: {
     githubRepos: string;
     githubIssues: string;

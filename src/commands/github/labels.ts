@@ -51,29 +51,42 @@ export default class Labels extends Command {
           currenSource.id +
           ')',
       );
-      const fetchedLabels = await fetchData.load({ repoId: currenSource.id });
+      let fetchedLabels = await fetchData.load({ repoId: currenSource.id });
       cli.action.stop(' done');
 
-      const labelsIndex = (
-        userConfig.elasticsearch.dataIndices.githubLabels +
-        getId(currenSource.name)
-      ).toLocaleLowerCase();
+      // Add the source id to all of the documents
+      fetchedLabels = fetchedLabels.map((item: any) => {
+        return {
+          ...item,
+          zindexer_sourceid: currenSource.id,
+        };
+      });
+
+      let labelsIndex = userConfig.elasticsearch.dataIndices.githubLabels;
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        labelsIndex = (
+          userConfig.elasticsearch.dataIndices.githubLabels +
+          getId(currenSource.name)
+        ).toLocaleLowerCase();
+      }
 
       // Check if index exists, create it if it does not
       await esCheckIndex(eClient, userConfig, labelsIndex, esMapping);
 
       await esPushNodes(fetchedLabels, labelsIndex, eClient);
 
-      // Create an alias used for group querying
-      cli.action.start(
-        'Creating the Elasticsearch index alias: ' +
-          userConfig.elasticsearch.dataIndices.githubLabels,
-      );
-      await eClient.indices.putAlias({
-        index: userConfig.elasticsearch.dataIndices.githubLabels + '*',
-        name: userConfig.elasticsearch.dataIndices.githubLabels,
-      });
-      cli.action.stop(' done');
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        // Create an alias used for group querying
+        cli.action.start(
+          'Creating the Elasticsearch index alias: ' +
+            userConfig.elasticsearch.dataIndices.githubLabels,
+        );
+        await eClient.indices.putAlias({
+          index: userConfig.elasticsearch.dataIndices.githubLabels + '*',
+          name: userConfig.elasticsearch.dataIndices.githubLabels,
+        });
+        cli.action.stop(' done');
+      }
     }
   }
 }
