@@ -20,6 +20,9 @@ import esMappingConfig from '../../utils/mappings/config';
 import zConfig from '../../utils/github/pullrequests/zConfig';
 
 import { differenceInDays } from 'date-fns';
+import fetchConfig from '../../utils/zencrepes/fetchConfig';
+
+import pushConfig from '../../utils/zencrepes/pushConfig';
 
 export default class Pullrequests extends Command {
   static description =
@@ -50,25 +53,25 @@ export default class Pullrequests extends Command {
       this.config.configDir,
     );
 
-    for (const currenSource of sources) {
+    for (const currentSource of sources) {
       let pullrequestsIndex =
         userConfig.elasticsearch.dataIndices.githubPullrequests;
 
-      this.log('Processing source: ' + currenSource.name);
+      this.log('Processing source: ' + currentSource.name);
       const recentPullrequest = await esGithubLatest(
         eClient,
         pullrequestsIndex,
-        currenSource.id,
+        currentSource.id,
       );
       cli.action.start(
         'Grabbing pullrequests for: ' +
-          currenSource.name +
+          currentSource.name +
           ' (ID: ' +
-          currenSource.id +
+          currentSource.id +
           ')',
       );
       let fetchedPullrequests = await fetchData.load(
-        currenSource.id,
+        currentSource.id,
         recentPullrequest,
       );
       cli.action.stop(' done');
@@ -84,7 +87,7 @@ export default class Pullrequests extends Command {
         }
         return {
           ...item,
-          zindexer_sourceid: currenSource.id,
+          zindexer_sourceid: currentSource.id,
           openedDuring: openedDuring,
         };
       });
@@ -92,7 +95,7 @@ export default class Pullrequests extends Command {
       if (userConfig.elasticsearch.oneIndexPerSource === true) {
         pullrequestsIndex = (
           userConfig.elasticsearch.dataIndices.githubPullrequests +
-          getId(currenSource.name)
+          getId(currentSource.name)
         ).toLocaleLowerCase();
       }
 
@@ -115,14 +118,36 @@ export default class Pullrequests extends Command {
         });
         cli.action.stop(' done');
       }
-      // Push Zencrepes configuration
-      const configIndex = userConfig.elasticsearch.sysIndices.config;
-      cli.action.start(
-        'Pushing ZenCrepes UI default configuration: ' + configIndex,
-      );
-      await esCheckIndex(eClient, userConfig, configIndex, esMappingConfig);
-      await esPushNodes([zConfig], configIndex, eClient);
-      cli.action.stop(' done');
     }
+
+    // Push Zencrepes configuration only if there was no previous configuration available
+    await pushConfig(
+      eClient,
+      userConfig,
+      zConfig,
+      userConfig.elasticsearch.dataIndices.githubPullrequests,
+    );
+    // const configIndex = userConfig.elasticsearch.sysIndices.config;
+    // cli.action.start(
+    //   'Pushing ZenCrepes UI default configuration: ' + configIndex,
+    // );
+    // await esCheckIndex(eClient, userConfig, configIndex, esMappingConfig);
+    // const existingConfig = await fetchConfig(eClient, userConfig);
+    // console.log(existingConfig);
+    // if (existingConfig.find((c: any) => c.id === zConfig.id) === undefined) {
+    //   await esPushNodes(
+    //     [
+    //       {
+    //         ...zConfig,
+    //         esIndex: userConfig.elasticsearch.dataIndices.githubPullrequests,
+    //       },
+    //     ],
+    //     configIndex,
+    //     eClient,
+    //   );
+    // } else {
+    //   console.log('Config already present, skipping...');
+    // }
+    // cli.action.stop(' done');
   }
 }

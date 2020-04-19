@@ -43,13 +43,6 @@ export interface ConfigCircleci {
   token: string;
 }
 
-export interface ConfigArranger {
-  project: string;
-  admin: {
-    graphQLEndpoint: string;
-  };
-}
-
 export interface ConfigJira {
   name: string;
   enabled: boolean;
@@ -69,11 +62,11 @@ export interface ConfigJira {
     };
   };
 }
+
 export interface Config {
   elasticsearch: ConfigElasticsearch;
   github: ConfigGithub;
   circleci: ConfigCircleci;
-  arranger: ConfigArranger;
   jira: Array<ConfigJira>;
 }
 

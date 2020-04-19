@@ -27,7 +27,7 @@ const esGithubLatest = async (
   }
 
   //Grab the latest node from an Elasticsearch index
-  cli.action.start('Querying Elasticcearch');
+  cli.action.start('Querying Elasticsearch');
   const esResults: ApiResponse<ESSearchResponse<
     GithubNode
   >> = await client.search({

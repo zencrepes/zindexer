@@ -96,10 +96,6 @@ export default class Sources extends Command {
     const eClient = await esClient(userConfig.elasticsearch);
     const gClient = await ghClient(userConfig.github);
 
-    cli.action.start('Syncing local types configuration with ES');
-    await syncDatasets(eClient, userConfig);
-    cli.action.stop(' done');
-
     let dataSources: Array<ESIndexSources> = [];
     let esPayload: Array<ESIndexSources> = [];
     // 1- Grab data sources from either GitHub or Jira

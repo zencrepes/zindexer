@@ -49,12 +49,6 @@ export default abstract class extends Command {
         circleciInsightsJobsRuns: 'cci_insights_jobsruns_',
       },
     },
-    arranger: {
-      project: 'zencrepes',
-      admin: {
-        graphQLEndpoint: 'http://localhost:5050/admin/graphql',
-      },
-    },
     github: {
       enabled: true,
       username: 'YOUR_USERNAME',

@@ -34,7 +34,7 @@ const esQueryData = async (
   console.log('ES QUERY:');
   console.log(JSON.stringify(esQuery));
   console.log('=====================================================');
-  cli.action.start('Querying Elasticcearch');
+  cli.action.start('Querying Elasticsearch');
   const esRepos: ApiResponse<ESSearchResponse<
     ESIndexSources
   >> = await client.search({

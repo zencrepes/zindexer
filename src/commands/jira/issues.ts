@@ -118,7 +118,6 @@ export default class Issues extends Command {
             // eslint-disable-next-line
             const updatedRec: any = { ...rec };
 
-            // Jira uses a numerical object key not compatible with arranger, simply removing it
             if (updatedRec.fields.assignee !== null) {
               delete updatedRec.fields.assignee.avatarUrls;
             }

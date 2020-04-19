@@ -7,6 +7,18 @@ properties:
     type: keyword
   entity:
     type: keyword
+  esIndex:
+    type: keyword
+  active:
+    type: boolean
+  platform:
+    type: keyword    
+  name:
+    type: text
+    fields:
+      keyword:
+        type: keyword
+        ignore_above: 256
   facets:
     type: nested
     properties:

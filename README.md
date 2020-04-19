@@ -129,10 +129,6 @@ elasticsearch:
     circleciInsightsWorkflowsRuns: cci_insights_wfruns_
     circleciInsightsJobsSummary: cci_insights_jobssum_
     circleciInsightsJobsRuns: cci_insights_jobsruns_
-arranger:
-  project: zencrepes
-  admin:
-    graphQLEndpoint: 'http://localhost:5050/admin/graphql'
 github:
   enabled: true
   username: YOUR_USERNAME

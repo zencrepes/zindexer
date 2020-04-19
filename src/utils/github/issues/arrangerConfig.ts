@@ -1547,10 +1547,3 @@ const extendedMapping = [
     rangeStep: 1,
   },
 ];
-
-export const arrangerConfig = {
-  aggsState,
-  columnsState,
-  matchBoxState,
-  extendedMapping,
-};
