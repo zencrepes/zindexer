@@ -172,7 +172,7 @@ export default class FetchNodesByQuery {
       this.log(
         'Latest call contained ' +
           ghNode.edges.length +
-          ' download rate: ' +
+          ' nodes, download rate: ' +
           apiPerf +
           ' nodes/s',
       );
