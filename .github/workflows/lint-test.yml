@@ -16,7 +16,7 @@ jobs:
       - run: yarn run lint --max-warnings 1
 
   build:
-    needs: [lint, tests]
+    needs: [lint]
     name: Build
     runs-on: ubuntu-latest
     # if: github.event_name == 'push' && github.ref == 'refs/heads/master'
