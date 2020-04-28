@@ -2,6 +2,7 @@ name: Publish to Registry
 on:
   release:
     types: [published]
+<<<<<<< HEAD
 
 jobs:
   npm_publish:
@@ -10,6 +11,14 @@ jobs:
     container:
       image: node:lts-alpine
 
+=======
+  push:
+    branches:
+      - master
+jobs:
+  npm_publish:
+    runs-on: ubuntu-latest
+>>>>>>> 114f384eb67e647d5e8e812ead27927ebdfbdb0c
     steps:
       - uses: actions/checkout@master
       - run: yarn
