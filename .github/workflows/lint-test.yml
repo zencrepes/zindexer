@@ -1,0 +1,31 @@
+name: Lint and test
+# This workflow is triggered on pushes to the repository.
+on: [push]
+
+jobs:
+  lint:
+    name: Linting
+    runs-on: ubuntu-latest
+
+    container:
+      image: node:lts-alpine
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: yarn run lint --max-warnings 1
+
+  build:
+    needs: [lint, tests]
+    name: Build
+    runs-on: ubuntu-latest
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+    container:
+      image: node:lts-alpine
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: npm install -g typescript
+      - run: tsc -b
