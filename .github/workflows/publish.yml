@@ -1,0 +1,45 @@
+name: Publish to Registry
+on:
+  release:
+    types: [published]
+  push:
+    branches:
+      - master
+jobs:
+  npm_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - run: yarn
+      - run: npm -g install typescript
+      - run: npm -g install @oclif/dev-cli@latest
+      - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+      - run: npm --no-git-tag-version version ${{ env.RELEASE_VERSION }}
+      - run: tsc -b
+      - run: oclif-dev manifest
+      - run: oclif-dev readme
+      - run: ls -lah ./
+      - run: npm publish
+
+  npm_test:
+    needs: [npm_publish]
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm -g install zindexer@${{ env.RELEASE_VERSION }}
+      - run: zindexer --help
+
+  docker:
+    needs: [npm_test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Get release version
+        id: get_version
+        run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: zencrepes/zindexer
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tags: 'latest,${{ env.RELEASE_VERSION }}'
