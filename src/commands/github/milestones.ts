@@ -71,6 +71,7 @@ export default class Milestones extends Command {
       fetchedMilestones = fetchedMilestones.map((item: any) => {
         return {
           ...item,
+          // eslint-disable-next-line @typescript-eslint/camelcase
           zindexer_sourceid: currenSource.id,
         };
       });

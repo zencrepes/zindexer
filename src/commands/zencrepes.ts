@@ -1,42 +1,13 @@
 import { flags } from '@oclif/command';
 import Command from '../base';
 import cli from 'cli-ux';
-import { ApiResponse } from '@elastic/elasticsearch';
-import * as _ from 'lodash';
-import * as getUuid from 'uuid-by-string';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as jsYaml from 'js-yaml';
 import * as loadYamlFile from 'load-yaml-file';
 
-import {
-  JiraResponseProject,
-  ESSearchResponse,
-  ESIndexSources,
-  GithubRepository,
-  GithubOrganization,
-} from '../global';
-
-import fetchProjects from '../utils/jira/utils/fetchProjects/index';
-import ymlMappingsSources from '../utils/mappings/sources';
-import esCheckIndex from '../utils/es/esCheckIndex';
 import esClient from '../utils/es/esClient';
-import ghClient from '../utils/github/utils/ghClient';
 
-import graphqlQuery from '../utils/github/utils/graphqlQuery';
-
-import getOrgs from '../utils/github/graphql/getOrgs';
-import getOrgRepos from '../utils/github/graphql/getOrgRepos';
-import getOrgByName from '../utils/github/graphql/getOrgByName';
-import getRepoByName from '../utils/github/graphql/getRepoByName';
-import getUserByLogin from '../utils/github/graphql/getUserByLogin';
-import getUserRepos from '../utils/github/graphql/getUserRepos';
-import fetchNodesByQuery from '../utils/github/utils/fetchNodesByQuery';
-
-import esQueryData from '../utils/es/esQueryData';
-
-import chunkArray from '../utils/misc/chunkArray';
-import syncDatasets from '../utils/misc/syncDatasets';
 import fetchConfig from '../utils/zencrepes/fetchConfig';
 
 import esPushNodes from '../utils/es/esPushNodes';

@@ -35,10 +35,11 @@ const esGithubLatest = async (
     body: {
       query: {
         match: {
+          // eslint-disable-next-line @typescript-eslint/camelcase
           zindexer_sourceid: {
             query: sourceId,
           },
-        }, // eslint-disable-line
+        },
       },
       size: 1,
       sort: [

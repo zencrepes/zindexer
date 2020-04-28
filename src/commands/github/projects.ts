@@ -70,6 +70,7 @@ export default class Projects extends Command {
       fetchedProjects = fetchedProjects.map((item: any) => {
         return {
           ...item,
+          // eslint-disable-next-line @typescript-eslint/camelcase
           zindexer_sourceid: currenSource.id,
         };
       });

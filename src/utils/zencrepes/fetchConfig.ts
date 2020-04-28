@@ -1,7 +1,4 @@
 import { Config } from '../../global';
-import ymlMappingsDatasets from '../mappings/datasets';
-import esCheckIndex from '../es/esCheckIndex';
-
 import esQueryData from '../es/esQueryData';
 
 const fetchConfig = async (eClient: any, userConfig: Config) => {

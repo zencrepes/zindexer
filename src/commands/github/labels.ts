@@ -58,6 +58,7 @@ export default class Labels extends Command {
       fetchedLabels = fetchedLabels.map((item: any) => {
         return {
           ...item,
+          // eslint-disable-next-line @typescript-eslint/camelcase
           zindexer_sourceid: currenSource.id,
         };
       });

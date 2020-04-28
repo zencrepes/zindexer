@@ -5,7 +5,6 @@ import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import chunkArray from '../../utils/misc/chunkArray';
 
-import esGithubLatest from '../../utils/es/esGithubLatest';
 import esPushNodes from '../../utils/es/esPushNodes';
 import fetchNodesByQuery from '../../utils/github/utils/fetchNodesByQuery';
 import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
@@ -21,11 +20,9 @@ import esMapping from '../../utils/github/vulnerabilities/esMapping';
 import fetchGql from '../../utils/github/vulnerabilities/fetchGql';
 import fetchReposWithData from '../../utils/github/vulnerabilities/fetchReposWithData';
 
-import esMappingConfig from '../../utils/mappings/config';
 import zConfig from '../../utils/github/vulnerabilities/zConfig';
 
 import { differenceInDays } from 'date-fns';
-import fetchConfig from '../../utils/zencrepes/fetchConfig';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -119,6 +116,7 @@ export default class Vulnerabilities extends Command {
         }
         return {
           ...item,
+          // eslint-disable-next-line @typescript-eslint/camelcase
           zindexer_sourceid: currentSource.id,
           dismissedAfter: dismissedAfter,
         };

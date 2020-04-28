@@ -36,7 +36,6 @@ import fetchNodesByQuery from '../utils/github/utils/fetchNodesByQuery';
 import esQueryData from '../utils/es/esQueryData';
 
 import chunkArray from '../utils/misc/chunkArray';
-import syncDatasets from '../utils/misc/syncDatasets';
 
 export default class Sources extends Command {
   static description = 'Manage data sources (GitHub or Jira)';

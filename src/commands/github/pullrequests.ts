@@ -16,11 +16,9 @@ import { getId } from '../../utils/misc/getId';
 import esMapping from '../../utils/github/pullrequests/esMapping';
 import fetchGql from '../../utils/github/pullrequests/fetchGql';
 
-import esMappingConfig from '../../utils/mappings/config';
 import zConfig from '../../utils/github/pullrequests/zConfig';
 
 import { differenceInDays } from 'date-fns';
-import fetchConfig from '../../utils/zencrepes/fetchConfig';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -87,6 +85,7 @@ export default class Pullrequests extends Command {
         }
         return {
           ...item,
+          // eslint-disable-next-line @typescript-eslint/camelcase
           zindexer_sourceid: currentSource.id,
           openedDuring: openedDuring,
         };
