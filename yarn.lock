@@ -957,6 +957,13 @@ cross-spawn@^7.0.0:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
+crypto-random-string@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/crypto-random-string/-/crypto-random-string-3.2.0.tgz#d513ef0c2ac6ff7cad5769de585d9bf2ad5a2b4d"
+  integrity sha512-8vPu5bsKaq2uKRy3OL7h1Oo7RayAWB8sYexLKAqvCXVib8SxgbmoF1IN4QMKjBv8uI8mp5gPPMbiRah25GMrVQ==
+  dependencies:
+    type-fest "^0.8.1"
+
 date-fns@^2.8.1:
   version "2.11.0"
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.11.0.tgz#ec2b44977465b9dcb370021d5e6c019b19f36d06"
