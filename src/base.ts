@@ -8,16 +8,6 @@ import * as path from 'path';
 import { Config } from './global';
 
 export default abstract class extends Command {
-  static flags = {
-    // eslint-disable-next-line
-    envUserConf: flags.string({
-      required: false,
-      env: 'USER_CONFIG',
-      description:
-        'User Configuration passed as an environment variable, takes precedence over config file',
-    }),
-  };
-
   userConfig = {
     elasticsearch: {
       host: 'http://127.0.0.1:9200',
@@ -35,6 +25,7 @@ export default abstract class extends Command {
         githubRepos: 'gh_repos',
         githubIssues: 'gh_issues_',
         githubPullrequests: 'gh_prs_',
+        githubVulnerabilities: 'gh_vulns_',
         githubProjects: 'gh_projects_',
         githubMilestones: 'gh_milestones_',
         githubLabels: 'gh_labels_',
@@ -89,10 +80,6 @@ export default abstract class extends Command {
   }
 
   async init() {
-    const { flags } = this.parse();
-    // eslint-disable-next-line
-    const { envUserConf } = flags;
-
     if (process.env.CONFIG_DIR !== undefined) {
       this.config.configDir = process.env.CONFIG_DIR;
     }
@@ -100,33 +87,28 @@ export default abstract class extends Command {
     fse.ensureDirSync(this.config.configDir);
     fse.ensureDirSync(this.config.configDir + '/cache/');
 
-    // eslint-disable-next-line
-    if (envUserConf !== undefined) {
-      this.setUserConfig(JSON.parse(envUserConf));
+    if (!fs.existsSync(path.join(this.config.configDir, 'config.yml'))) {
+      fs.writeFileSync(
+        path.join(this.config.configDir, 'config.yml'),
+        jsYaml.safeDump(this.userConfig),
+      );
+      this.log(
+        'Initialized configuration file with defaults in: ' +
+          path.join(this.config.configDir, 'config.yml'),
+      );
+      this.log('Please EDIT the configuration file first');
+      this.exit();
     } else {
-      if (!fs.existsSync(path.join(this.config.configDir, 'config.yml'))) {
-        fs.writeFileSync(
+      this.log(
+        'Configuration file exists: ' +
           path.join(this.config.configDir, 'config.yml'),
-          jsYaml.safeDump(this.userConfig),
-        );
-        this.log(
-          'Initialized configuration file with defaults in: ' +
-            path.join(this.config.configDir, 'config.yml'),
-        );
-        this.log('Please EDIT the configuration file first');
-        this.exit();
-      } else {
-        this.log(
-          'Configuration file exists: ' +
-            path.join(this.config.configDir, 'config.yml'),
-        );
+      );
 
-        const userConfig = await loadYamlFile(
-          path.join(this.config.configDir, 'config.yml'),
-        );
-        this.setUserConfig(userConfig);
-        //console.log(this.userConfig);
-      }
+      const userConfig = await loadYamlFile(
+        path.join(this.config.configDir, 'config.yml'),
+      );
+      this.setUserConfig(userConfig);
+      //console.log(this.userConfig);
     }
   }
 }

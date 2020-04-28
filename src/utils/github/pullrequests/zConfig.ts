@@ -2,7 +2,7 @@
 const entity = 'githubPullrequests';
 const config = {
   id: entity,
-  name: 'GitHub PullRequests',
+  name: 'Pull Requests',
   platform: 'github',
   active: true,
   facets: [

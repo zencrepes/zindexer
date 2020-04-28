@@ -12,7 +12,7 @@ async function graphqlQuery(
   rateLimit: any, // eslint-disable-line
   log: any, // eslint-disable-line
 ) {
-  log('Remaining GitHub tokens: ' + rateLimit.remaining);
+  //  log('Remaining GitHub tokens: ' + rateLimit.remaining);
   // Logic to pause if remaining ratelimit is lower than 50
   if (rateLimit.remaining - rateLimit.cost < 50 && rateLimit.resetAt !== null) {
     log(
@@ -46,6 +46,17 @@ async function graphqlQuery(
     data.data.errors.forEach((error: { message: string }) => {
       log(error.message);
     });
+  }
+  if (data.data.rateLimit !== undefined) {
+    console.log(
+      'GitHub Tokens - remaining: ' +
+        data.data.rateLimit.remaining +
+        ' query cost: ' +
+        data.data.rateLimit.cost +
+        ' (token will reset at: ' +
+        data.data.rateLimit.resetAt +
+        ')',
+    );
   }
 
   return data;

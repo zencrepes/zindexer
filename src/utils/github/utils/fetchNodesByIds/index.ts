@@ -39,7 +39,7 @@ export default class FetchNodesByIds {
   }
   // eslint-disable-next-line
   public async load(loadRepos: Array<any>) {
-    this.log('Started load');
+    this.log('Fetching data for: ' + loadRepos.length + ' repos');
 
     const data = await graphqlQuery(
       this.ghClient,
