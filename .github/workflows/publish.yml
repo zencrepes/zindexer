@@ -25,7 +25,12 @@ jobs:
 
   npm_test:
     needs: [npm_publish]
+
     runs-on: ubuntu-latest
+
+    container:
+      image: node:lts-alpine
+
     steps:
       - run: npm -g install zindexer@${{ github.event.release.tag_name }}
       - run: zindexer --help
