@@ -16,7 +16,7 @@ jobs:
       - run: npm -g install typescript
       - run: npm -g install @oclif/dev-cli@latest
       - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
-      - run: npm --no-git-tag-version version ${{ env.RELEASE_VERSION }}
+      - run: npm --no-git-tag-version version ${{ github.event.release.tag_name }}
       - run: tsc -b
       - run: oclif-dev manifest
       - run: oclif-dev readme
@@ -27,7 +27,7 @@ jobs:
     needs: [npm_publish]
     runs-on: ubuntu-latest
     steps:
-      - run: npm -g install zindexer@${{ env.RELEASE_VERSION }}
+      - run: npm -g install zindexer@${{ github.event.release.tag_name }}
       - run: zindexer --help
 
   docker:
