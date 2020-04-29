@@ -3,6 +3,13 @@ FROM node:alpine
 
 MAINTAINER Francois Gerthoffert
 
+# Add bash
+RUN apk add --no-cache bash
+
+COPY ./startup.sh /usr/share/zencrepes/
+
+WORKDIR /usr/share/zencrepes/
+
 RUN npm install -g zindexer@latest
 
-CMD ["/bin/sh"]
+CMD ["/bin/bash", "-c", "/usr/share/zencrepes/startup.sh"]
