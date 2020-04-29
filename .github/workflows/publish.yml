@@ -34,6 +34,7 @@ jobs:
     steps:
       - run: npm -g install zindexer@${{ github.event.release.tag_name }}
       - run: zindexer --help
+      - run: zindexer startup
 
   docker:
     needs: [npm_test]

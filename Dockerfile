@@ -9,6 +9,7 @@ RUN apk add --no-cache bash
 COPY ./startup.sh /usr/share/zencrepes/
 
 WORKDIR /usr/share/zencrepes/
+RUN chmod +x ./startup.sh
 
 RUN npm install -g zindexer@latest
 
