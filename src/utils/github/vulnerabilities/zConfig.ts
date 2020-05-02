@@ -7,6 +7,20 @@ const config = {
   active: true,
   facets: [
     {
+      facetType: 'date',
+      field: 'createdAt',
+      name: 'Created',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+    {
+      facetType: 'date',
+      field: 'dismissedAt',
+      name: 'Dismissed',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+    {
       facetType: 'term',
       field: 'securityVulnerability.severity',
       name: 'Severity',

@@ -38,12 +38,37 @@ export default class Vulnerabilities extends Command {
       description:
         'User Configuration passed as an environment variable, takes precedence over config file',
     }),
+    config: flags.boolean({
+      char: 'c',
+      default: false,
+      description: 'Only update ZenCrepes configuration',
+    }),
+    reset: flags.boolean({
+      char: 'r',
+      default: false,
+      description: 'Reset ZenCrepes configuration to default',
+    }),
   };
 
   async run() {
+    const { flags } = this.parse(Vulnerabilities);
+
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
     const gClient = await ghClient(userConfig.github);
+
+    // Push Zencrepes configuration only if there was no previous configuration available
+    await pushConfig(
+      eClient,
+      userConfig,
+      zConfig,
+      userConfig.elasticsearch.dataIndices.githubVulnerabilities,
+      flags.reset,
+    );
+
+    if (flags.config === true) {
+      return;
+    }
 
     const sources = await esGetActiveSources(eClient, userConfig, 'GITHUB');
 
@@ -150,13 +175,5 @@ export default class Vulnerabilities extends Command {
         cli.action.stop(' done');
       }
     }
-
-    // Push Zencrepes configuration only if there was no previous configuration available
-    await pushConfig(
-      eClient,
-      userConfig,
-      zConfig,
-      userConfig.elasticsearch.dataIndices.githubVulnerabilities,
-    );
   }
 }
