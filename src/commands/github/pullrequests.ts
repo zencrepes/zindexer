@@ -143,28 +143,5 @@ export default class Pullrequests extends Command {
         cli.action.stop(' done');
       }
     }
-
-    // const configIndex = userConfig.elasticsearch.sysIndices.config;
-    // cli.action.start(
-    //   'Pushing ZenCrepes UI default configuration: ' + configIndex,
-    // );
-    // await esCheckIndex(eClient, userConfig, configIndex, esMappingConfig);
-    // const existingConfig = await fetchConfig(eClient, userConfig);
-    // console.log(existingConfig);
-    // if (existingConfig.find((c: any) => c.id === zConfig.id) === undefined) {
-    //   await esPushNodes(
-    //     [
-    //       {
-    //         ...zConfig,
-    //         esIndex: userConfig.elasticsearch.dataIndices.githubPullrequests,
-    //       },
-    //     ],
-    //     configIndex,
-    //     eClient,
-    //   );
-    // } else {
-    //   console.log('Config already present, skipping...');
-    // }
-    // cli.action.stop(' done');
   }
 }

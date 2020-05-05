@@ -10,10 +10,12 @@ import FetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
 
 import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import ymlEsMapping from '../../utils/github/repos/esMapping';
+import esMapping from '../../utils/github/repos/esMapping';
 import fetchGql from '../../utils/github/repos/fetchGql';
+import zConfig from '../../utils/github/repos/zConfig';
 
 import chunkArray from '../../utils/misc/chunkArray';
+import pushConfig from '../../utils/zencrepes/pushConfig';
 
 export default class Repos extends Command {
   static description = 'Github: Fetches repos data from configured sources';
@@ -26,12 +28,37 @@ export default class Repos extends Command {
       description:
         'User Configuration passed as an environment variable, takes precedence over config file',
     }),
+    config: flags.boolean({
+      char: 'c',
+      default: false,
+      description: 'Only update ZenCrepes configuration',
+    }),
+    reset: flags.boolean({
+      char: 'r',
+      default: false,
+      description: 'Reset ZenCrepes configuration to default',
+    }),
   };
 
   async run() {
+    const { flags } = this.parse(Repos);
+
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
     const gClient = await ghClient(userConfig.github);
+
+    // Push Zencrepes configuration only if there was no previous configuration available
+    await pushConfig(
+      eClient,
+      userConfig,
+      zConfig,
+      userConfig.elasticsearch.dataIndices.githubPullrequests,
+      flags.reset,
+    );
+
+    if (flags.config === true) {
+      return;
+    }
 
     const sources = await esGetActiveSources(eClient, userConfig, 'GITHUB');
     const githubChunks = await chunkArray(
@@ -63,7 +90,7 @@ export default class Repos extends Command {
 
     const esIndex = userConfig.elasticsearch.dataIndices.githubRepos;
     // Check if index exists, create it if it does not
-    await esCheckIndex(eClient, userConfig, esIndex, ymlEsMapping);
+    await esCheckIndex(eClient, userConfig, esIndex, esMapping);
 
     //Break down the issues response in multiple batches
     const esPayloadChunked = await chunkArray(fetchedRepos, 100);
