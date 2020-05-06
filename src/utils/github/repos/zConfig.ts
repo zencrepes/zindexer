@@ -52,21 +52,26 @@ const config = {
       facetType: 'term',
       field: 'languages.edges.node.name.keyword',
       name: 'Languages',
-      nullValue: 'EMPTY',
+      nullValue: 'NO LANGUAGES',
+      // Null Filter is a stringified object to be used when the user clicks on an _EMPTY_ bucket
+      nullFilter:
+        '{"op":"<=","content":{"field":"languages.totalCount","value":0}}',
       default: true,
     },
     {
       facetType: 'term',
       field: 'repositoryTopics.edges.node.topic.name',
       name: 'Topics',
-      nullValue: 'EMPTY',
+      nullValue: 'NO TOPICS',
+      nullFilter:
+        '{"op":"<=","content":{"field":"repositoryTopics.totalCount","value":0}}',
       default: true,
     },
     {
       facetType: 'term',
       field: 'licenseInfo.nickname',
       name: 'License',
-      nullValue: 'EMPTY',
+      nullValue: 'NO LICENSE',
       default: true,
     },
     {
