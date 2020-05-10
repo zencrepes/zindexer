@@ -8,7 +8,7 @@ properties:
   assignees:
     properties:
       edges:
-        type: nested      
+        type: nested
         properties:
           node:
             properties:

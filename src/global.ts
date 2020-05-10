@@ -15,6 +15,8 @@ export interface ConfigElasticsearch {
     githubIssues: string;
     githubPullrequests: string;
     githubVulnerabilities: string;
+    githubStargazers: string;
+    githubWatchers: string;
     githubProjects: string;
     githubMilestones: string;
     githubLabels: string;

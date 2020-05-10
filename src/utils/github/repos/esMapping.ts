@@ -9,6 +9,37 @@ properties:
     properties:
       totalCount:
         type: integer
+      edges:
+        type: nested      
+        properties:
+          node:
+            properties:
+              id:
+                type: keyword
+              databaseId:
+                type: integer
+              isAdminEnforced:
+                type: boolean
+              pattern:
+                type: keyword
+              requiredApprovingReviewCount:
+                type: integer                
+              requiredStatusCheckContexts:
+                type: keyword                
+              requiresApprovingReviews:
+                type: boolean                
+              requiresCodeOwnerReviews:
+                type: boolean                
+              requiresCommitSignatures:
+                type: boolean                
+              requiresStatusChecks:
+                type: boolean                
+              requiresStrictStatusChecks:
+                type: boolean                
+              restrictsPushes:
+                type: boolean                
+              restrictsReviewDismissals:
+                type: boolean
   codeOfConduct:
     properties:
       body:
@@ -98,6 +129,7 @@ properties:
   languages:
     properties:
       edges:
+        type: nested
         properties:
           node:
             properties:
@@ -113,6 +145,22 @@ properties:
                     ignore_above: 256
       totalCount:
         type: integer
+  licenseInfo:
+    properties:
+      name:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      key:
+        type: keyword
+      nickname:
+        type: keyword
+      spdxId:
+        type: keyword
+      url:
+        type: keyword
   milestones:
     properties:
       totalCount:
@@ -120,8 +168,9 @@ properties:
   name:
     type: text
     fields:
-      raw:
+      keyword:
         type: keyword
+        ignore_above: 256
   nameWithOwner:
     type: text
     fields:
@@ -184,6 +233,7 @@ properties:
   refs:
     properties:
       edges:
+        type: nested
         properties:
           node:
             properties:
@@ -223,14 +273,23 @@ properties:
         type: integer
   repositoryTopics:
     properties:
+      edges:
+        type: nested
+        properties:
+          node:
+            properties:
+              id:
+                type: keyword            
+              topic:
+                properties:
+                  id:
+                    type: keyword 
+                  name:
+                    type: keyword                     
+              url:
+                type: keyword
       totalCount:
         type: long
-  shortDescriptionHTML:
-    type: text
-    fields:
-      keyword:
-        type: keyword
-        ignore_above: 256
   squashMergeAllowed:
     type: boolean
   stargazers:

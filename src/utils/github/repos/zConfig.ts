@@ -1,0 +1,203 @@
+// Zencrepes configuration for that entity
+const entity = 'githubRepositories';
+const config = {
+  id: entity,
+  name: 'Repositories',
+  platform: 'github',
+  active: true,
+  facets: [
+    {
+      facetType: 'date',
+      field: 'createdAt',
+      name: 'Created',
+      nullValue: 'n/a',
+      nullFilter: '',
+      default: true,
+    },
+    {
+      facetType: 'date',
+      field: 'updatedAt',
+      name: 'Updated',
+      nullValue: 'n/a',
+      nullFilter: '',
+      default: true,
+    },
+    {
+      facetType: 'date',
+      field: 'pushedAt',
+      name: 'Pushed',
+      nullValue: 'n/a',
+      nullFilter: '',
+      default: true,
+    },
+    {
+      facetType: 'term',
+      field: 'owner.login',
+      name: 'Organization',
+      nullValue: 'n/a',
+      nullFilter: '',
+      default: true,
+    },
+    {
+      facetType: 'term',
+      field: 'codeOfConduct.name.keyword',
+      name: 'Code of Conduct',
+      nullValue: 'NONE',
+      nullFilter:
+        '{"op":"in","content":{"field":"codeOfConduct.name.keyword","value":["__missing__"]}}',
+      default: true,
+    },
+    {
+      facetType: 'term',
+      field: 'defaultBranchRef.name.keyword',
+      name: 'Default Branch',
+      nullValue: 'NOT SET',
+      nullFilter:
+        '{"op":"in","content":{"field":"defaultBranchRef.name.keyword","value":["__missing__"]}}',
+      default: true,
+    },
+    {
+      facetType: 'term',
+      field: 'branchProtectionRules.edges.node.pattern',
+      name: 'Branch Protection',
+      nullValue: 'NO PROTECTION',
+      // Null Filter is a stringified object to be used when the user clicks on an _EMPTY_ bucket
+      nullFilter:
+        '{"op":"<=","content":{"field":"branchProtectionRules.totalCount","value":0}}',
+      default: true,
+    },
+    {
+      facetType: 'term',
+      field: 'languages.edges.node.name.keyword',
+      name: 'Languages',
+      nullValue: 'NO LANGUAGE',
+      // Null Filter is a stringified object to be used when the user clicks on an _EMPTY_ bucket
+      nullFilter:
+        '{"op":"<=","content":{"field":"languages.totalCount","value":0}}',
+      default: true,
+    },
+    {
+      facetType: 'term',
+      field: 'repositoryTopics.edges.node.topic.name',
+      name: 'Topics',
+      nullValue: 'NO TOPICS',
+      nullFilter:
+        '{"op":"<=","content":{"field":"repositoryTopics.totalCount","value":0}}',
+      default: true,
+    },
+    {
+      facetType: 'term',
+      field: 'licenseInfo.name.keyword',
+      name: 'License',
+      nullValue: 'NO LICENSE',
+      nullFilter:
+        '{"op":"in","content":{"field":"licenseInfo.name.keyword","value":["__missing__"]}}',
+      default: true,
+    },
+    {
+      facetType: 'boolean',
+      field: 'isPrivate',
+      name: 'Private',
+      nullValue: 'EMPTY',
+      nullFilter: '',
+      default: true,
+    },
+    {
+      facetType: 'boolean',
+      field: 'isArchived',
+      name: 'Archived',
+      nullValue: 'EMPTY',
+      nullFilter: '',
+      default: true,
+    },
+    {
+      facetType: 'boolean',
+      field: 'isFork',
+      name: 'Fork',
+      nullValue: 'EMPTY',
+      nullFilter: '',
+      default: true,
+    },
+    {
+      facetType: 'boolean',
+      field: 'isTemplate',
+      name: 'Template',
+      nullValue: 'EMPTY',
+      nullFilter: '',
+      default: true,
+    },
+    {
+      facetType: 'boolean',
+      field: 'rebaseMergeAllowed',
+      name: 'Rebase Merge',
+      nullValue: 'EMPTY',
+      nullFilter: '',
+      default: true,
+    },
+    {
+      facetType: 'metrics',
+      field: 'issues.totalCount',
+      name: 'Issues',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+    {
+      facetType: 'metrics',
+      field: 'pullRequests.totalCount',
+      name: 'PRs',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+    {
+      facetType: 'metrics',
+      field: 'releases.totalCount',
+      name: 'Releases',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+    {
+      facetType: 'metrics',
+      field: 'milestones.totalCount',
+      name: 'Milestones',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+    {
+      facetType: 'metrics',
+      field: 'projects.totalCount',
+      name: 'Projects',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+    {
+      facetType: 'metrics',
+      field: 'refs.totalCount',
+      name: 'Commits',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+    {
+      facetType: 'metrics',
+      field: 'vulnerabilityAlerts.totalCount',
+      name: 'Vulnerabilities',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+    {
+      facetType: 'metrics',
+      field: 'watchers.totalCount',
+      name: 'Watchers',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+    {
+      facetType: 'metrics',
+      field: 'stargazers.totalCount',
+      name: 'Stargazers',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+  ],
+};
+
+export default config;

@@ -1,5 +1,6 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
+import * as _ from 'lodash';
 
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
@@ -14,21 +15,17 @@ import ghClient from '../../utils/github/utils/ghClient';
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
 import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import { getId } from '../../utils/misc/getId';
+import esMapping from '../../utils/github/stargazers/esMapping';
+import fetchGql from '../../utils/github/stargazers/fetchGql';
+import fetchReposWithData from '../../utils/github/stargazers/fetchReposWithData';
 
-import esMapping from '../../utils/github/vulnerabilities/esMapping';
-import fetchGql from '../../utils/github/vulnerabilities/fetchGql';
-import fetchReposWithData from '../../utils/github/vulnerabilities/fetchReposWithData';
-
-import zConfig from '../../utils/github/vulnerabilities/zConfig';
-
-import { differenceInDays } from 'date-fns';
+import zConfig from '../../utils/github/stargazers/zConfig';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
-export default class Vulnerabilities extends Command {
+export default class Stargazers extends Command {
   static description =
-    'Github: Fetches Vulnerabilities data from configured sources';
+    'Github: Fetches Stargazers data from configured sources';
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -51,7 +48,7 @@ export default class Vulnerabilities extends Command {
   };
 
   async run() {
-    const { flags } = this.parse(Vulnerabilities);
+    const { flags } = this.parse(Stargazers);
 
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
@@ -62,7 +59,7 @@ export default class Vulnerabilities extends Command {
       eClient,
       userConfig,
       zConfig,
-      userConfig.elasticsearch.dataIndices.githubVulnerabilities,
+      userConfig.elasticsearch.dataIndices.githubStargazers,
       flags.reset,
     );
 
@@ -88,8 +85,8 @@ export default class Vulnerabilities extends Command {
       gClient,
     );
 
-    // Since not all repositories have data, we start by a query giving us a list of all repositories with vulnerabilities
-    cli.action.start('Searching for repos with vulnerabilities');
+    // Since not all repositories have data, we start by a query giving us a list of all repositories with stargazers
+    cli.action.start('Searching for repos with stargazers');
     const ghPayloadChunked = await chunkArray(
       sources,
       userConfig.github.fetch.maxNodes,
@@ -99,81 +96,87 @@ export default class Vulnerabilities extends Command {
       const newRepos = await fetchRepos.load(reposChunk);
       reposData = [...reposData, ...newRepos];
     }
-    const reposWithVulnerabilities = reposData
-      .filter((r: any) => r.vulnerabilityAlerts.totalCount > 0)
+    const reposWithStargazers = reposData
+      .filter((r: any) => r.stargazers.totalCount > 0)
       .map((r: any) => r.id);
     cli.action.stop(' done');
 
-    const sourcesWithVulnerabilities = sources.filter(s =>
-      reposWithVulnerabilities.includes(s.id),
+    const sourcesWithStargazers = sources.filter(s =>
+      reposWithStargazers.includes(s.id),
     );
     console.log(
       'Found: ' +
-        sourcesWithVulnerabilities.length +
-        ' repos with Vulnerabilities, fetching corresponding data',
+        sourcesWithStargazers.length +
+        ' repos with Stargazers, fetching corresponding data',
     );
 
-    for (const currentSource of sourcesWithVulnerabilities) {
-      let vulnerabilitiesIndex =
-        userConfig.elasticsearch.dataIndices.githubVulnerabilities;
-
+    const stargazersIndex =
+      userConfig.elasticsearch.dataIndices.githubStargazers;
+    let allStargazers: any[] = [];
+    for (const currentSource of sourcesWithStargazers) {
       this.log('Processing source: ' + currentSource.name);
       cli.action.start(
-        'Grabbing vulnerabilities for: ' +
+        'Grabbing stargazers for: ' +
           currentSource.name +
           ' (ID: ' +
           currentSource.id +
           ')',
       );
-      let fetchedVulnerabilities = await fetchData.load({
+      let fetchedStargazers = await fetchData.load({
         repoId: currentSource.id,
       });
       cli.action.stop(' done');
 
       // Some data manipulation on all items
-      fetchedVulnerabilities = fetchedVulnerabilities.map((item: any) => {
-        let dismissedAfter = null;
-        if (item.dismissedAt !== null) {
-          dismissedAfter = differenceInDays(
-            new Date(item.dismissedAt),
-            new Date(item.createdAt),
-          );
-        }
-        return {
+      fetchedStargazers = fetchedStargazers.map((item: any) => {
+        const updatedItem = {
           ...item,
           // eslint-disable-next-line @typescript-eslint/camelcase
           zindexer_sourceid: currentSource.id,
-          dismissedAfter: dismissedAfter,
+          id: 'stargazers-' + item.id,
+          dataType: 'stargazers',
+          repository: {
+            id: item._parent.id,
+            name: item._parent.name,
+            url: item._parent.url,
+            databaseId: item._parent.databaseId,
+            owner: item._parent.owner,
+          },
         };
+        delete updatedItem._parent;
+        return updatedItem;
       });
-
-      if (userConfig.elasticsearch.oneIndexPerSource === true) {
-        vulnerabilitiesIndex = (
-          userConfig.elasticsearch.dataIndices.githubVulnerabilities +
-          getId(currentSource.name)
-        ).toLocaleLowerCase();
-      }
-
-      // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, vulnerabilitiesIndex, esMapping);
-
-      // Push all nodes to the index
-      await esPushNodes(fetchedVulnerabilities, vulnerabilitiesIndex, eClient);
-
-      if (userConfig.elasticsearch.oneIndexPerSource === true) {
-        // If one index per source, then an alias is created automatically to all of the indices
-        // Create an alias used for group querying
-        cli.action.start(
-          'Creating the Elasticsearch index alias: ' +
-            userConfig.elasticsearch.dataIndices.githubVulnerabilities,
-        );
-        await eClient.indices.putAlias({
-          index:
-            userConfig.elasticsearch.dataIndices.githubVulnerabilities + '*',
-          name: userConfig.elasticsearch.dataIndices.githubVulnerabilities,
-        });
-        cli.action.stop(' done');
-      }
+      allStargazers = [...allStargazers, ...fetchedStargazers];
     }
+
+    // Finally we groupBy user login
+    const grouppedUsers = _.groupBy(allStargazers, 'login');
+    // console.log(grouppedUsers);
+    const preppedUsers = Object.entries(grouppedUsers).map(
+      ([name, content]) => {
+        console.log('Preparring data for user: ' + name);
+        const srcUser = JSON.parse(JSON.stringify(content[0]));
+        delete srcUser.repository;
+        delete srcUser.starredAt;
+        const starred: string[] = content.map((u: any) => u.starredAt);
+        return {
+          ...srcUser,
+          lastStarredAt: starred.sort().reverse()[0],
+          repositories: {
+            edges: content.map((u: any) => {
+              return { node: { ...u.repository, starredAt: u.starredAt } };
+            }),
+            totalCount: content.length,
+          },
+        };
+      },
+    );
+    // console.log(cleanedUser);
+
+    // Check if index exists, create it if it does not
+    await esCheckIndex(eClient, userConfig, stargazersIndex, esMapping);
+
+    // Push all nodes to the index
+    await esPushNodes(preppedUsers, stargazersIndex, eClient);
   }
 }

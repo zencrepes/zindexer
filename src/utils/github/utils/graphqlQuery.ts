@@ -35,6 +35,9 @@ async function graphqlQuery(
       errorPolicy: 'ignore',
     });
   } catch (error) {
+    console.log(JSON.stringify(query));
+    console.log(variables);
+    console.log('THIS IS AN ERROR');
     log(error);
   }
 

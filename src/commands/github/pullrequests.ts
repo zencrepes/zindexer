@@ -34,12 +34,37 @@ export default class Pullrequests extends Command {
       description:
         'User Configuration passed as an environment variable, takes precedence over config file',
     }),
+    config: flags.boolean({
+      char: 'c',
+      default: false,
+      description: 'Only update ZenCrepes configuration',
+    }),
+    reset: flags.boolean({
+      char: 'r',
+      default: false,
+      description: 'Reset ZenCrepes configuration to default',
+    }),
   };
 
   async run() {
+    const { flags } = this.parse(Pullrequests);
+
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
     const gClient = await ghClient(userConfig.github);
+
+    // Push Zencrepes configuration only if there was no previous configuration available
+    await pushConfig(
+      eClient,
+      userConfig,
+      zConfig,
+      userConfig.elasticsearch.dataIndices.githubPullrequests,
+      flags.reset,
+    );
+
+    if (flags.config === true) {
+      return;
+    }
 
     const sources = await esGetActiveSources(eClient, userConfig, 'GITHUB');
 
@@ -118,35 +143,5 @@ export default class Pullrequests extends Command {
         cli.action.stop(' done');
       }
     }
-
-    // Push Zencrepes configuration only if there was no previous configuration available
-    await pushConfig(
-      eClient,
-      userConfig,
-      zConfig,
-      userConfig.elasticsearch.dataIndices.githubPullrequests,
-    );
-    // const configIndex = userConfig.elasticsearch.sysIndices.config;
-    // cli.action.start(
-    //   'Pushing ZenCrepes UI default configuration: ' + configIndex,
-    // );
-    // await esCheckIndex(eClient, userConfig, configIndex, esMappingConfig);
-    // const existingConfig = await fetchConfig(eClient, userConfig);
-    // console.log(existingConfig);
-    // if (existingConfig.find((c: any) => c.id === zConfig.id) === undefined) {
-    //   await esPushNodes(
-    //     [
-    //       {
-    //         ...zConfig,
-    //         esIndex: userConfig.elasticsearch.dataIndices.githubPullrequests,
-    //       },
-    //     ],
-    //     configIndex,
-    //     eClient,
-    //   );
-    // } else {
-    //   console.log('Config already present, skipping...');
-    // }
-    // cli.action.stop(' done');
   }
 }

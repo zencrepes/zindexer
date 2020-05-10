@@ -13,6 +13,7 @@ const pushConfig = async (
   userConfig: Config,
   zencrepesConfig: any,
   datasetIndex: string,
+  reset: boolean | undefined,
 ) => {
   const configIndex = userConfig.elasticsearch.sysIndices.config;
   cli.action.start(
@@ -21,7 +22,9 @@ const pushConfig = async (
   await esCheckIndex(eClient, userConfig, configIndex, esMappingConfig);
   const existingConfig = await fetchConfig(eClient, userConfig);
   if (
-    existingConfig.find((c: any) => c.id === zencrepesConfig.id) === undefined
+    existingConfig.find((c: any) => c.id === zencrepesConfig.id) ===
+      undefined ||
+    reset === true
   ) {
     await esPushNodes(
       [

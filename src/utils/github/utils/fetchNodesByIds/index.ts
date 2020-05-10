@@ -1,4 +1,5 @@
 import graphqlQuery from '../graphqlQuery';
+import { performance } from 'perf_hooks';
 
 export default class FetchNodesByIds {
   maxQueryIncrement: number;
@@ -40,6 +41,7 @@ export default class FetchNodesByIds {
   // eslint-disable-next-line
   public async load(loadRepos: Array<any>) {
     this.log('Fetching data for: ' + loadRepos.length + ' repos');
+    const t0 = performance.now();
 
     const data = await graphqlQuery(
       this.ghClient,
@@ -48,8 +50,15 @@ export default class FetchNodesByIds {
       this.rateLimit,
       this.log,
     );
+    const t1 = performance.now();
+    const callDuration = t1 - t0;
 
     if (data.data.nodes.length > 0) {
+      const apiPerf = Math.round(
+        data.data.nodes.length / (callDuration / 1000),
+      );
+      this.log('Fetched data at: ' + apiPerf + ' nodes/s');
+
       return data.data.nodes;
     } else {
       this.log(

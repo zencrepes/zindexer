@@ -46,6 +46,7 @@ query($data_array: [ID!]!) {
       diskUsage
       forkCount
       hasIssuesEnabled
+      hasProjectsEnabled
       hasWikiEnabled
       id
       isArchived
@@ -76,6 +77,13 @@ query($data_array: [ID!]!) {
             name
           }
         }
+      }
+      licenseInfo {
+        key
+        name
+        nickname
+        spdxId
+        url
       }
       milestones(first: 1) {
         totalCount
@@ -148,7 +156,6 @@ query($data_array: [ID!]!) {
           }
         }
       }
-      shortDescriptionHTML
       squashMergeAllowed
       stargazers(first: 1) {
         totalCount
