@@ -123,14 +123,16 @@ export default class FetchNodesByQuery {
           this.rateLimit = data.data.rateLimit;
         }
         //updateChip(data.data.rateLimit)
-        const ghNode =
-          data.data.viewer !== undefined
-            ? data.data.viewer.ghNode
-            : data.data.node.ghNode;
-        const lastCursor = await this.loadNodes(ghNode, callDuration);
+        // const ghNode =
+        //   data.data.viewer !== undefined
+        //     ? data.data.viewer.ghNode
+        //     : data.data.node.ghNode;
+        const ghData =
+          data.data.viewer !== undefined ? data.data.viewer : data.data.node;
+        const lastCursor = await this.loadNodes(ghData, callDuration);
         const queryIncrement = calculateQueryIncrement(
           this.fetchedNodes.length,
-          ghNode.totalCount,
+          ghData.ghNode.totalCount,
           this.maxQueryIncrement,
         );
         this.log(
@@ -139,7 +141,7 @@ export default class FetchNodesByQuery {
             ' -> Fetched Count / Remote Count / Query Increment: ' +
             this.fetchedNodes.length +
             ' / ' +
-            ghNode.totalCount +
+            ghData.ghNode.totalCount +
             ' / ' +
             queryIncrement,
         );
@@ -162,23 +164,33 @@ export default class FetchNodesByQuery {
   }
 
   private async loadNodes(
-    ghNode: any, // eslint-disable-line
+    ghData: any, // eslint-disable-line
     callDuration: number,
   ) {
-    //    this.log('Loading from ' + OrgObj.login + ' organization')
+    const parentData = JSON.parse(JSON.stringify(ghData)); //TODO - Replace this with something better to copy object ?
+    if (parentData.ghNode.edges !== undefined) {
+      delete parentData.ghNode.edges;
+    }
     let lastCursor = null;
-    if (ghNode.edges.length > 0) {
-      const apiPerf = Math.round(ghNode.edges.length / (callDuration / 1000));
+    if (ghData.ghNode.edges.length > 0) {
+      const apiPerf = Math.round(
+        ghData.ghNode.edges.length / (callDuration / 1000),
+      );
       this.log(
         'Latest call contained ' +
-          ghNode.edges.length +
+          ghData.ghNode.edges.length +
           ' nodes, download rate: ' +
           apiPerf +
           ' nodes/s',
       );
     }
-    for (const currentNode of ghNode.edges) {
-      const nodeObj = JSON.parse(JSON.stringify(currentNode.node)); //TODO - Replace this with something better to copy object ?
+    for (const currentNode of ghData.ghNode.edges) {
+      let nodeObj = JSON.parse(JSON.stringify(currentNode.node)); //TODO - Replace this with something better to copy object ?
+      nodeObj = { ...nodeObj, _parent: parentData };
+      // Special treatment for stargazers since data is attached under edges
+      if (currentNode.starredAt !== undefined) {
+        nodeObj = { ...nodeObj, starredAt: currentNode.starredAt };
+      }
       this.fetchedNodes.push(nodeObj);
       //Write the content to the cache file
       this.cacheStream.write(JSON.stringify(nodeObj) + '\n');

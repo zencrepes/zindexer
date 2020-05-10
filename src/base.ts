@@ -26,6 +26,8 @@ export default abstract class extends Command {
         githubIssues: 'gh_issues_',
         githubPullrequests: 'gh_prs_',
         githubVulnerabilities: 'gh_vulns_',
+        githubStargazers: 'gh_stargazers_watchers_',
+        githubWatchers: 'gh_stargazers_watchers_',
         githubProjects: 'gh_projects_',
         githubMilestones: 'gh_milestones_',
         githubLabels: 'gh_labels_',

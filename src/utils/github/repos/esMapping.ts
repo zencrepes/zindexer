@@ -23,9 +23,9 @@ properties:
               pattern:
                 type: keyword
               requiredApprovingReviewCount:
-                type: boolean                
+                type: integer                
               requiredStatusCheckContexts:
-                type: boolean                
+                type: keyword                
               requiresApprovingReviews:
                 type: boolean                
               requiresCodeOwnerReviews:
@@ -280,7 +280,7 @@ properties:
             properties:
               id:
                 type: keyword            
-              target:
+              topic:
                 properties:
                   id:
                     type: keyword 
