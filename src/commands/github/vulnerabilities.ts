@@ -19,7 +19,6 @@ import { getId } from '../../utils/misc/getId';
 import esMapping from '../../utils/github/vulnerabilities/esMapping';
 import fetchGql from '../../utils/github/vulnerabilities/fetchGql';
 import fetchReposWithData from '../../utils/github/vulnerabilities/fetchReposWithData';
-
 import zConfig from '../../utils/github/vulnerabilities/zConfig';
 
 import { differenceInDays } from 'date-fns';
@@ -88,8 +87,8 @@ export default class Vulnerabilities extends Command {
       gClient,
     );
 
-    // Since not all repositories have data, we start by a query giving us a list of all repositories with vulnerabilities
-    cli.action.start('Searching for repos with vulnerabilities');
+    // Since not all repositories have data, we start by a query giving us a list of all repositories with data
+    cli.action.start('Searching for repos with data');
     const ghPayloadChunked = await chunkArray(
       sources,
       userConfig.github.fetch.maxNodes,

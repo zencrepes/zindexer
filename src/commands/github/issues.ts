@@ -14,6 +14,9 @@ import esCheckIndex from '../../utils/es/esCheckIndex';
 
 import esMapping from '../../utils/github/issues/esMapping';
 import fetchGql from '../../utils/github/issues/fetchGql';
+import zConfig from '../../utils/github/issues/zConfig';
+
+import pushConfig from '../../utils/zencrepes/pushConfig';
 
 export default class Issues extends Command {
   static description = 'Github: Fetches issues data from configured sources';
@@ -26,12 +29,37 @@ export default class Issues extends Command {
       description:
         'User Configuration passed as an environment variable, takes precedence over config file',
     }),
+    config: flags.boolean({
+      char: 'c',
+      default: false,
+      description: 'Only update ZenCrepes configuration',
+    }),
+    reset: flags.boolean({
+      char: 'r',
+      default: false,
+      description: 'Reset ZenCrepes configuration to default',
+    }),
   };
 
   async run() {
+    const { flags } = this.parse(Issues);
+
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
     const gClient = await ghClient(userConfig.github);
+
+    // Push Zencrepes configuration only if there was no previous configuration available
+    await pushConfig(
+      eClient,
+      userConfig,
+      zConfig,
+      userConfig.elasticsearch.dataIndices.githubIssues,
+      flags.reset,
+    );
+
+    if (flags.config === true) {
+      return;
+    }
 
     const sources = await esGetActiveSources(eClient, userConfig, 'GITHUB');
 

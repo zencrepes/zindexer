@@ -15,7 +15,6 @@ import { getId } from '../../utils/misc/getId';
 
 import esMapping from '../../utils/github/pullrequests/esMapping';
 import fetchGql from '../../utils/github/pullrequests/fetchGql';
-
 import zConfig from '../../utils/github/pullrequests/zConfig';
 
 import { differenceInDays } from 'date-fns';

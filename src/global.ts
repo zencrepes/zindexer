@@ -40,6 +40,10 @@ export interface ConfigGithub {
     maxNodes: number;
   };
 }
+export interface ConfigJiraFieldMapping {
+  jfield: string;
+  zfield: string;
+}
 
 export interface ConfigCircleci {
   enabled: boolean;
@@ -54,10 +58,7 @@ export interface ConfigJira {
     username: string;
     password: string;
     fields: {
-      points: string;
-      originalPoints: string;
-      parentInitiative: string;
-      parentEpic: string;
+      issues: Array<ConfigJiraFieldMapping>;
     };
     excludeDays: Array<string>;
     fetch: {

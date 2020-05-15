@@ -13,6 +13,9 @@ import { getId } from '../../utils/misc/getId';
 
 import esMapping from '../../utils/github/labels/esMapping';
 import fetchGql from '../../utils/github/labels/fetchGql';
+import zConfig from '../../utils/github/labels/zConfig';
+
+import pushConfig from '../../utils/zencrepes/pushConfig';
 
 export default class Labels extends Command {
   static description = 'Github: Fetches labels attached to configured sources';
@@ -25,12 +28,37 @@ export default class Labels extends Command {
       description:
         'User Configuration passed as an environment variable, takes precedence over config file',
     }),
+    config: flags.boolean({
+      char: 'c',
+      default: false,
+      description: 'Only update ZenCrepes configuration',
+    }),
+    reset: flags.boolean({
+      char: 'r',
+      default: false,
+      description: 'Reset ZenCrepes configuration to default',
+    }),
   };
 
   async run() {
+    const { flags } = this.parse(Labels);
+
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
     const gClient = await ghClient(userConfig.github);
+
+    // Push Zencrepes configuration only if there was no previous configuration available
+    await pushConfig(
+      eClient,
+      userConfig,
+      zConfig,
+      userConfig.elasticsearch.dataIndices.githubLabels,
+      flags.reset,
+    );
+
+    if (flags.config === true) {
+      return;
+    }
 
     const sources = await esGetActiveSources(eClient, userConfig, 'GITHUB');
 
@@ -51,7 +79,9 @@ export default class Labels extends Command {
           currenSource.id +
           ')',
       );
-      let fetchedLabels = await fetchData.load({ repoId: currenSource.id });
+      let fetchedLabels = await fetchData.load({
+        repoId: currenSource.id,
+      });
       cli.action.stop(' done');
 
       // Add the source id to all of the documents
