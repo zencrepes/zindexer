@@ -154,9 +154,7 @@ export interface JiraProject {
 export interface JiraIssue {
   id: string;
   key: string;
-  fields: {
-    updated: string;
-  };
+  updatedAt: string;
 }
 
 export interface GithubOrganization {

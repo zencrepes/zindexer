@@ -26,6 +26,88 @@ import fetchJqlPagination from '../../utils/jira/utils/fetchJql';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
+//https://medium.com/javascript-in-plain-english/javascript-check-if-a-variable-is-an-object-and-nothing-else-not-an-array-a-set-etc-a3987ea08fd7
+const isObject = (obj: any) => {
+  return Object.prototype.toString.call(obj) === '[object Object]';
+};
+
+/* This functions cleans the object from any avatarUrl crap (numerical indices)*/
+const cleanObject = (obj: any) => {
+  const newObject: any = {};
+  for (let [key, value] of Object.entries(obj)) {
+    if (isObject(value)) {
+      newObject[key] = cleanObject(value);
+    } else {
+      if (key === '16x16') {
+        newObject['xsmall'] = value;
+      } else if (key === '24x24') {
+        newObject['small'] = value;
+      } else if (key === '32x32') {
+        newObject['medium'] = value;
+      } else if (key === '48x48') {
+        newObject['large'] = value;
+      } else {
+        newObject[key] = value;
+      }
+    }
+  }
+  return newObject;
+};
+
+/* This reformat an issue, from Jira's data model to ZenCrepes data model*/
+const formatIssue = (issue: any, issueFields: any[]) => {
+  const modifiedObj: any = {};
+  if (issue.key !== undefined) {
+    modifiedObj['key'] = issue.key;
+  }
+  if (issue.id !== undefined) {
+    modifiedObj['id'] = issue.id;
+  }
+  for (const field of issueFields) {
+    if (_.get(issue.fields, field.jfield) !== undefined) {
+      const jValue = _.get(issue.fields, field.jfield);
+      if (Array.isArray(jValue) === true) {
+        modifiedObj[field.zfield] = {
+          totalCount: jValue.length,
+          edges: jValue.map((v: any) => {
+            if (v.outwardIssue !== null || v.inwardIssue !== null) {
+              // We are going through an issue link, we need to clean the sub issue
+              let outwardIssue =
+                v.outwardIssue === null || v.outwardIssue === undefined
+                  ? null
+                  : formatIssue(v.outwardIssue, issueFields);
+              let inwardIssue =
+                v.inwardIssue === null || v.inwardIssue === undefined
+                  ? null
+                  : formatIssue(v.inwardIssue, issueFields);
+              return {
+                node: {
+                  ...v,
+                  outwardIssue,
+                  inwardIssue,
+                },
+              };
+            } else if (v.field !== undefined) {
+              // We're going through a list of issues
+              return {
+                node: formatIssue(v, issueFields),
+              };
+            }
+            return { node: v };
+          }),
+        };
+      } else {
+        if (field.jfield === 'parent') {
+          modifiedObj[field.zfield] = formatIssue(jValue, issueFields);
+        } else {
+          modifiedObj[field.zfield] = jValue;
+        }
+      }
+    }
+  }
+  return modifiedObj;
+};
+
 export default class Issues extends Command {
   static description = 'Jira: Fetches issues data from configured sources';
 
@@ -95,14 +177,19 @@ export default class Issues extends Command {
         // Check if index exists, create it if it does not
         await esCheckIndex(eClient, userConfig, issuesIndex, esMapping);
 
-        //B - Find the most recent issue
+        //B - Find the most recent issue for that project
         const searchResult: ApiResponse<ESSearchResponse<
           JiraIssue
         >> = await eClient.search({
           index: issuesIndex,
           body: {
             query: {
-              match_all: {}, // eslint-disable-line
+              match: {
+                // eslint-disable-next-line @typescript-eslint/camelcase
+                zindexer_sourceid: {
+                  query: source.id,
+                },
+              },
             },
             size: 1,
             sort: [
@@ -135,29 +222,25 @@ export default class Issues extends Command {
         //        console.log(projectIssues);
         // Jira issues will be reformated to a payload closer to GitHub's,
         // objective being to streamline the payload and easy development
-        const updatedIssues = projectIssues.map((ji: any) => {
-          let returnObj: any = {
-            id: ji.id,
-            zindexer_source: source.id,
-            server: { name: jiraServer.name, host: jiraServer.config.host },
-          };
-
-          for (const field of jiraServer.config.fields.issues) {
-            if (_.get(ji.fields, field.jfield) !== undefined) {
-              const jValue = _.get(ji.fields, field.jfield);
-              returnObj[field.zfield] =
-                Array.isArray(jValue) === true
-                  ? {
-                      totalCount: jValue.length,
-                      edges: jValue.map((v: any) => {
-                        return { node: v };
-                      }),
-                    }
-                  : jValue;
-            }
-          }
-          return returnObj;
-        });
+        const updatedIssues = projectIssues
+          .map((ji: any) => {
+            const formattedIssue = formatIssue(
+              ji,
+              jiraServer.config.fields.issues,
+            );
+            return {
+              ...{
+                id: ji.id,
+                key: ji.key,
+                zindexer_sourceid: source.id,
+                updatedAt: ji.fields.updated,
+                server: { name: jiraServer.name, host: jiraServer.config.host },
+                url: jiraServer.config.host + +'/browse/' + ji.key,
+              },
+              ...formattedIssue,
+            };
+          })
+          .map((ji: any) => cleanObject(ji));
 
         //Break down the issues response in multiple batches
         const esPayloadChunked = await chunkArray(updatedIssues, 100);
@@ -174,23 +257,6 @@ export default class Issues extends Command {
           );
           let formattedData = '';
           for (const rec of esPayloadChunk) {
-            // Trick to replace id with nodeId
-            // eslint-disable-next-line
-            // const updatedRec: any = { ...rec };
-
-            // if (updatedRec.fields.assignee !== null) {
-            //   delete updatedRec.fields.assignee.avatarUrls;
-            // }
-            // if (updatedRec.fields.creator.avatarUrls !== undefined) {
-            //   delete updatedRec.fields.creator.avatarUrls;
-            // }
-            // if (updatedRec.fields.project.avatarUrls !== undefined) {
-            //   delete updatedRec.fields.project.avatarUrls;
-            // }
-            // if (updatedRec.fields.reporter.avatarUrls !== undefined) {
-            //   delete updatedRec.fields.reporter.avatarUrls;
-            // }
-
             formattedData =
               formattedData +
               JSON.stringify({

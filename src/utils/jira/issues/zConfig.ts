@@ -44,14 +44,6 @@ const config = {
       default: true,
     },
     {
-      facetType: 'boolean',
-      field: 'reporter.active',
-      name: 'Reporter Active',
-      nullValue: 'EMPTY',
-      nullFilter: '',
-      default: true,
-    },
-    {
       facetType: 'term',
       field: 'project.name.keyword',
       name: 'Project',
@@ -85,6 +77,15 @@ const config = {
       nullValue: 'NO PRIORITY',
       nullFilter:
         '{"op":"in","content":{"field":"priority.name.keyword","value":["__missing__"]}}',
+      default: true,
+    },
+    {
+      facetType: 'term',
+      field: 'type.name.keyword',
+      name: 'Type',
+      nullValue: 'NO TYPE',
+      nullFilter:
+        '{"op":"in","content":{"field":"type.name.keyword","value":["__missing__"]}}',
       default: true,
     },
     {
@@ -145,6 +146,36 @@ const config = {
       default: true,
     },
   ],
+  tableConfig: {
+    itemsType: 'Jira Issues',
+    columns: [
+      { name: 'Key', field: 'key', sortField: 'key', sortable: true },
+      {
+        name: 'Summary',
+        field: 'summary',
+        sortField: 'summary.keyword',
+        sortable: true,
+      },
+      {
+        name: 'Created At',
+        field: 'createdAt',
+        sortField: 'createdAt',
+        sortable: true,
+      },
+      {
+        name: 'Updated At',
+        field: 'updatedAt',
+        sortField: 'updatedAt',
+        sortable: true,
+      },
+      {
+        name: 'Closed At',
+        field: 'closedAt',
+        sortField: 'closedAt',
+        sortable: true,
+      },
+    ],
+  },
 };
 
 export default config;

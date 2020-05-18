@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { performance } from 'perf_hooks';
 
 import { Config, JiraIssue } from '../../../../global';
+import { ExitError } from 'cli-ux';
 
 const fetchJql = async (
   userConfig: Config,
@@ -54,6 +56,7 @@ const fetchJqlPagination = async (
       ' - issues in current cache: ' +
       issues.length,
   );
+  const t0 = performance.now();
   const response = await fetchJql(
     userConfig,
     serverName,
@@ -62,7 +65,14 @@ const fetchJqlPagination = async (
     startAt,
     maxResults,
   );
+  const t1 = performance.now();
+  const callDuration = t1 - t0;
   let addedToCache = 0;
+
+  if (response.errorMessages !== undefined) {
+    console.log(response);
+    return [];
+  }
 
   if (issue === null) {
     for (const newIssue of response.issues) {
@@ -74,7 +84,7 @@ const fetchJqlPagination = async (
     for (const newIssue of response.issues) {
       if (
         newIssue.key === issue.key &&
-        newIssue.fields.updated === issue.fields.updated
+        newIssue.fields.updated === issue.updatedAt
       ) {
         break;
       } else {
@@ -83,13 +93,17 @@ const fetchJqlPagination = async (
       }
     }
   }
+  const apiPerf = Math.round(response.issues.length / (callDuration / 1000));
   console.log(
     'Fetched: ' +
       response.issues.length +
       ' issues - Total: ' +
       response.total +
       ' - issues in current cache: ' +
-      issues.length,
+      issues.length +
+      ', download rate: ' +
+      apiPerf +
+      ' nodes/s',
   );
   if (
     addedToCache !== response.issues.length ||

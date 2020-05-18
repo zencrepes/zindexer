@@ -64,7 +64,6 @@ export default abstract class extends Command {
           host: 'https://jira.myhost.org',
           fields: {
             issues: [
-              { jfield: 'key', zfield: 'key' },
               { jfield: 'issueType', zfield: 'issueType' },
               { jfield: 'parent', zfield: 'parent' },
               { jfield: 'project', zfield: 'project' },
@@ -75,7 +74,8 @@ export default abstract class extends Command {
               { jfield: 'created', zfield: 'createdAt' },
               { jfield: 'priority', zfield: 'priority' },
               { jfield: 'versions', zfield: 'versions' },
-              { jfield: 'issuelinks', zfield: 'issuelinks' },
+              { jfield: 'issuelinks', zfield: 'links' },
+              { jfield: 'issuetype', zfield: 'type' },
               { jfield: 'assignee', zfield: 'assignee' },
               { jfield: 'resolution', zfield: 'resolution' },
               { jfield: 'updated', zfield: 'updatedAt' },
