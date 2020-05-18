@@ -5,7 +5,8 @@ _source:
 properties:
   id:
     type: keyword
-  error:
+  errors:
+    type: nested
     properties:
       type:
         type: keyword
@@ -19,8 +20,16 @@ properties:
     type: keyword
   updated_at:
     type: date
+  createdAt:
+    type: date    
+  updatedAt:
+    type: date      
+  triggeredAt:
+    type: date    
   number:
     type: long
+  state:
+    type: keyword    
   created_at:
     type: date
   trigger:
@@ -85,6 +94,28 @@ properties:
           keyword:
             type: keyword
             ignore_above: 256
+      repository:
+        properties:
+          databaseId:
+            type: long
+          id:
+            type: keyword
+          name:
+            type: text
+            fields:
+              keyword:
+                type: keyword
+                ignore_above: 256
+          owner:
+            properties:
+              id:
+                type: keyword
+              login:
+                type: keyword
+              url:
+                type: keyword
+          url:
+            type: keyword              
       active:
         type: boolean                             
 `;

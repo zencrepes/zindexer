@@ -34,7 +34,7 @@ const isObject = (obj: any) => {
 /* This functions cleans the object from any avatarUrl crap (numerical indices)*/
 const cleanObject = (obj: any) => {
   const newObject: any = {};
-  for (let [key, value] of Object.entries(obj)) {
+  for (const [key, value] of Object.entries(obj)) {
     if (isObject(value)) {
       newObject[key] = cleanObject(value);
     } else {
@@ -72,11 +72,11 @@ const formatIssue = (issue: any, issueFields: any[]) => {
           edges: jValue.map((v: any) => {
             if (v.outwardIssue !== null || v.inwardIssue !== null) {
               // We are going through an issue link, we need to clean the sub issue
-              let outwardIssue =
+              const outwardIssue =
                 v.outwardIssue === null || v.outwardIssue === undefined
                   ? null
                   : formatIssue(v.outwardIssue, issueFields);
-              let inwardIssue =
+              const inwardIssue =
                 v.inwardIssue === null || v.inwardIssue === undefined
                   ? null
                   : formatIssue(v.inwardIssue, issueFields);
@@ -232,6 +232,7 @@ export default class Issues extends Command {
               ...{
                 id: ji.id,
                 key: ji.key,
+                // eslint-disable-next-line @typescript-eslint/camelcase
                 zindexer_sourceid: source.id,
                 updatedAt: ji.fields.updated,
                 server: { name: jiraServer.name, host: jiraServer.config.host },

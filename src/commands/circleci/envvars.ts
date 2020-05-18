@@ -54,7 +54,7 @@ export default class Envvars extends Command {
       eClient,
       userConfig,
       zConfig,
-      userConfig.elasticsearch.dataIndices.githubIssues,
+      userConfig.elasticsearch.dataIndices.circleciEnvvars,
       flags.reset,
     );
 

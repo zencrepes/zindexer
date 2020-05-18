@@ -2,7 +2,6 @@ import axios from 'axios';
 import { performance } from 'perf_hooks';
 
 import { Config, JiraIssue } from '../../../../global';
-import { ExitError } from 'cli-ux';
 
 const fetchJql = async (
   userConfig: Config,

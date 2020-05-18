@@ -9,10 +9,14 @@ import { getId } from '../../utils/misc/getId';
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
 
 import esMapping from '../../utils/circleci/pipelines/esMapping';
+import zConfig from '../../utils/circleci/pipelines/zConfig';
+
 import esCheckIndex from '../../utils/es/esCheckIndex';
 import esPushNodes from '../../utils/es/esPushNodes';
 
 import fetchData from '../../utils/circleci/utils/fetchData';
+
+import pushConfig from '../../utils/zencrepes/pushConfig';
 
 export default class Pipelines extends Command {
   static description = 'Fetches pipelines data from configured sources';
@@ -25,11 +29,36 @@ export default class Pipelines extends Command {
       description:
         'User Configuration passed as an environment variable, takes precedence over config file',
     }),
+    config: flags.boolean({
+      char: 'c',
+      default: false,
+      description: 'Only update ZenCrepes configuration',
+    }),
+    reset: flags.boolean({
+      char: 'r',
+      default: false,
+      description: 'Reset ZenCrepes configuration to default',
+    }),
   };
 
   async run() {
+    const { flags } = this.parse(Pipelines);
+
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
+
+    // Push Zencrepes configuration only if there was no previous configuration available
+    await pushConfig(
+      eClient,
+      userConfig,
+      zConfig,
+      userConfig.elasticsearch.dataIndices.circleciPipelines,
+      flags.reset,
+    );
+
+    if (flags.config === true) {
+      return;
+    }
 
     // Get active sources from Github only
     const sources = await esGetActiveSources(eClient, userConfig, 'GITHUB');
@@ -42,10 +71,14 @@ export default class Pipelines extends Command {
     for (const currentSource of sources) {
       console.log('Processing pipelines for source: ' + currentSource.name);
 
-      const pipelinesIndex = (
-        userConfig.elasticsearch.dataIndices.circleciPipelines +
-        getId(currentSource.name)
-      ).toLocaleLowerCase();
+      let pipelinesIndex =
+        userConfig.elasticsearch.dataIndices.circleciPipelines;
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        pipelinesIndex = (
+          userConfig.elasticsearch.dataIndices.circleciPipelines +
+          getId(currentSource.name)
+        ).toLocaleLowerCase();
+      }
 
       const fetchedPipelines = await fetchData(
         'project/gh/' + currentSource.name + '/pipeline',
@@ -63,20 +96,25 @@ export default class Pipelines extends Command {
           return {
             ...pipeline,
             source: currentSource,
+            createdAt: pipeline.createdAt,
+            updatedAt: pipeline.updatedAt,
+            triggeredAt: pipeline.trigger.received_at,
           };
         });
         await esPushNodes(pipelines, pipelinesIndex, eClient);
       }
     }
-    // Create an alias used for group querying
-    cli.action.start(
-      'Creating the Elasticsearch index alias: ' +
-        userConfig.elasticsearch.dataIndices.circleciPipelines,
-    );
-    await eClient.indices.putAlias({
-      index: userConfig.elasticsearch.dataIndices.circleciPipelines + '*',
-      name: userConfig.elasticsearch.dataIndices.circleciPipelines,
-    });
-    cli.action.stop(' done');
+    if (userConfig.elasticsearch.oneIndexPerSource === true) {
+      // Create an alias used for group querying
+      cli.action.start(
+        'Creating the Elasticsearch index alias: ' +
+          userConfig.elasticsearch.dataIndices.circleciPipelines,
+      );
+      await eClient.indices.putAlias({
+        index: userConfig.elasticsearch.dataIndices.circleciPipelines + '*',
+        name: userConfig.elasticsearch.dataIndices.circleciPipelines,
+      });
+      cli.action.stop(' done');
+    }
   }
 }

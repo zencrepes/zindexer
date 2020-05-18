@@ -1,22 +1,29 @@
 // Zencrepes configuration for that entity
-const entity = 'circleciEnvvars';
+const entity = 'circleciPipelines';
 const config = {
   id: entity,
-  name: 'Circleci EnvVars',
+  name: 'Circleci Pipelines',
   platform: 'circleci',
   active: true,
   facets: [
     {
-      facetType: 'term',
-      field: 'name.keyword',
-      name: 'Variable Name',
+      facetType: 'date',
+      field: 'createdAt',
+      name: 'Created',
       nullValue: 'EMPTY',
       default: true,
     },
     {
-      facetType: 'term',
-      field: 'value.keyword',
-      name: 'Variable Value',
+      facetType: 'date',
+      field: 'updatedAt',
+      name: 'Updated',
+      nullValue: 'EMPTY',
+      default: true,
+    },
+    {
+      facetType: 'date',
+      field: 'triggeredAt',
+      name: 'Triggered',
       nullValue: 'EMPTY',
       default: true,
     },
@@ -34,10 +41,31 @@ const config = {
       nullValue: 'EMPTY',
       default: true,
     },
+    {
+      facetType: 'term',
+      field: 'trigger.actor.login',
+      name: 'Triggered By',
+      nullValue: 'EMPTY',
+      default: true,
+    },
+    {
+      facetType: 'term',
+      field: 'state',
+      name: 'State',
+      nullValue: 'EMPTY',
+      default: true,
+    },
+    {
+      facetType: 'term',
+      field: 'vcs.branch.keyword',
+      name: 'Branch',
+      nullValue: 'EMPTY',
+      default: true,
+    },
   ],
   tableConfig: {
     itemsType: 'Circleci Envvars',
-    defaultSortField: 'name.keyword',
+    defaultSortField: 'triggeredAt',
     columns: [
       {
         name: 'id',
@@ -47,19 +75,31 @@ const config = {
         default: false,
       },
       {
-        name: 'Name',
-        field: 'name',
-        sortField: 'name.keyword',
-        linkField: 'url',
+        name: 'Triggered At',
+        field: 'triggeredAt',
+        sortField: 'triggeredAt',
         sortable: true,
         default: true,
       },
       {
-        name: 'Value',
-        field: 'value',
-        sortField: 'value.keyword',
-        linkField: null,
+        name: 'Triggered By',
+        field: 'trigger.actor.login',
+        sortField: 'trigger.actor.login',
         sortable: true,
+        default: true,
+      },
+      {
+        name: 'State',
+        field: 'state',
+        sortField: 'state',
+        sortable: false,
+        default: true,
+      },
+      {
+        name: 'Commit',
+        field: 'vcs.commit.subject',
+        sortField: 'vcs.commit.subject',
+        sortable: false,
         default: true,
       },
       {
@@ -77,14 +117,6 @@ const config = {
         linkField: 'source.repository.owner.url',
         sortable: true,
         default: true,
-      },
-      {
-        name: 'url',
-        field: 'url',
-        sortField: null,
-        linkField: null,
-        sortable: false,
-        default: false,
       },
       {
         name: 'Repo URL',

@@ -123,7 +123,7 @@ export default class Projects extends Command {
           processedOrg.owner.id +
           ')',
       );
-      let fetchedProjects = await fetchDataOrg.load(
+      const fetchedProjects = await fetchDataOrg.load(
         processedOrg.owner.id,
         null,
       );
