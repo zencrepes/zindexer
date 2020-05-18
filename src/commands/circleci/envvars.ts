@@ -9,10 +9,14 @@ import { getId } from '../../utils/misc/getId';
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
 
 import esMapping from '../../utils/circleci/envvars/esMapping';
+import zConfig from '../../utils/circleci/envvars/zConfig';
+
 import esCheckIndex from '../../utils/es/esCheckIndex';
 import esPushNodes from '../../utils/es/esPushNodes';
 
 import fetchData from '../../utils/circleci/utils/fetchData';
+
+import pushConfig from '../../utils/zencrepes/pushConfig';
 
 import * as cryptoRandomString from 'crypto-random-string';
 
@@ -27,11 +31,36 @@ export default class Envvars extends Command {
       description:
         'User Configuration passed as an environment variable, takes precedence over config file',
     }),
+    config: flags.boolean({
+      char: 'c',
+      default: false,
+      description: 'Only update ZenCrepes configuration',
+    }),
+    reset: flags.boolean({
+      char: 'r',
+      default: false,
+      description: 'Reset ZenCrepes configuration to default',
+    }),
   };
 
   async run() {
+    const { flags } = this.parse(Envvars);
+
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
+
+    // Push Zencrepes configuration only if there was no previous configuration available
+    await pushConfig(
+      eClient,
+      userConfig,
+      zConfig,
+      userConfig.elasticsearch.dataIndices.githubIssues,
+      flags.reset,
+    );
+
+    if (flags.config === true) {
+      return;
+    }
 
     // For each new value returned by CCI API, an random string is generated and stored in an array
     // This allow users to identify if same value are present across multiple sources but does not reveal anything
@@ -51,10 +80,6 @@ export default class Envvars extends Command {
     }
     for (const currentSource of sources) {
       console.log('Processing envvards for source: ' + currentSource.name);
-      const envvarIndex = (
-        userConfig.elasticsearch.dataIndices.circleciEnvvars +
-        getId(currentSource.name)
-      ).toLocaleLowerCase();
 
       const fetchedItems = await fetchData(
         'project/gh/' + currentSource.name + '/envvar',
@@ -82,8 +107,20 @@ export default class Envvars extends Command {
           source: currentSource,
           value: 'OBFUSCATED:' + randomValue,
           id: currentSource.uuid + '-' + item.name,
+          url:
+            'https://app.circleci.com/settings/project/github/' +
+            currentSource.name +
+            '/environment-variables',
         };
       });
+
+      let envvarIndex = userConfig.elasticsearch.dataIndices.circleciEnvvars;
+      if (userConfig.elasticsearch.oneIndexPerSource === true) {
+        envvarIndex = (
+          userConfig.elasticsearch.dataIndices.circleciEnvvars +
+          getId(currentSource.name)
+        ).toLocaleLowerCase();
+      }
 
       if (items.length > 0) {
         // Check if index exists, create it if it does not
@@ -91,15 +128,17 @@ export default class Envvars extends Command {
         await esPushNodes(items, envvarIndex, eClient);
       }
     }
-    // Create an alias used for group querying
-    cli.action.start(
-      'Creating the Elasticsearch index alias: ' +
-        userConfig.elasticsearch.dataIndices.circleciEnvvars,
-    );
-    await eClient.indices.putAlias({
-      index: userConfig.elasticsearch.dataIndices.circleciEnvvars + '*',
-      name: userConfig.elasticsearch.dataIndices.circleciEnvvars,
-    });
-    cli.action.stop(' done');
+    if (userConfig.elasticsearch.oneIndexPerSource === true) {
+      // Create an alias used for group querying
+      cli.action.start(
+        'Creating the Elasticsearch index alias: ' +
+          userConfig.elasticsearch.dataIndices.circleciEnvvars,
+      );
+      await eClient.indices.putAlias({
+        index: userConfig.elasticsearch.dataIndices.circleciEnvvars + '*',
+        name: userConfig.elasticsearch.dataIndices.circleciEnvvars,
+      });
+      cli.action.stop(' done');
+    }
   }
 }

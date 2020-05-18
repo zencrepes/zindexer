@@ -15,6 +15,7 @@ query ($userId: ID!, $cursor: String, $increment: Int){
           node {
             name
             id
+            url
             owner {
               id
               login

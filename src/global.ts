@@ -160,6 +160,7 @@ export interface JiraIssue {
 export interface GithubOrganization {
   login: string;
   id: string;
+  url?: string;
   name?: string;
   __typename?: string;
 }
@@ -167,6 +168,7 @@ export interface GithubOrganization {
 export interface GithubRepository {
   name: string;
   id: string;
+  url?: string;
   owner: GithubOrganization;
   active: boolean;
 }

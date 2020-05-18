@@ -18,6 +18,11 @@ const query = `
             name
             url
             id
+            owner{
+              id
+              login
+              url
+            }            
           }
         }
       }

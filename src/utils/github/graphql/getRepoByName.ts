@@ -9,6 +9,7 @@ const query = `
     repository(owner:$orgName, name:$repoName) {
       name
       id
+      url
       owner{
         id
         login

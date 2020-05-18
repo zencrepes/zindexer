@@ -2,7 +2,7 @@
 const entity = 'jiraIssues';
 const config = {
   id: entity,
-  name: 'Issues',
+  name: 'Jira Issues',
   platform: 'jira',
   active: true,
   facets: [

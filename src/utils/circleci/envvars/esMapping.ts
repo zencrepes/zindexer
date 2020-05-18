@@ -17,6 +17,8 @@ properties:
       keyword:
         type: keyword
         ignore_above: 256
+  url:
+    type: keyword       
   source:
     properties:
       uuid:
@@ -31,6 +33,28 @@ properties:
           keyword:
             type: keyword
             ignore_above: 256
+      repository:
+        properties:
+          databaseId:
+            type: long
+          id:
+            type: keyword
+          name:
+            type: text
+            fields:
+              keyword:
+                type: keyword
+                ignore_above: 256
+          owner:
+            properties:
+              id:
+                type: keyword
+              login:
+                type: keyword
+              url:
+                type: keyword
+          url:
+            type: keyword            
       active:
         type: boolean                              
 `;

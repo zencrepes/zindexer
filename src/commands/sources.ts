@@ -178,6 +178,7 @@ export default class Sources extends Command {
                 id: p.key,
                 type: 'JIRA',
                 server: jiraServer.name,
+                project: p.key,
                 name: p.name + '-' + p.key,
                 active: active,
               };
@@ -315,6 +316,12 @@ export default class Sources extends Command {
               id: p.id,
               type: 'GITHUB',
               name: p.owner.login + '/' + p.name,
+              repository: {
+                name: p.name,
+                id: p.id,
+                url: p.url,
+                owner: p.owner,
+              },
               active: active,
             };
           }),

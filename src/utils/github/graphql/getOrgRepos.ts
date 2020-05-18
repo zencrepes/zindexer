@@ -15,6 +15,7 @@ const query = `
             node {
               name
               id
+              url
               owner {
                 id
                 login
