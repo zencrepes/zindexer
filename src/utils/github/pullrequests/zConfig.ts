@@ -45,35 +45,45 @@ const config = {
       facetType: 'term',
       field: 'assignees.edges.node.login',
       name: 'Assignees',
-      nullValue: 'EMPTY',
+      nullValue: 'NO ASSIGNEE',
+      nullFilter:
+        '{"op":"<=","content":{"field":"assignees.totalCount","value":0}}',
       default: false,
     },
     {
       facetType: 'term',
       field: 'labels.edges.node.name.keyword',
       name: 'Labels',
-      nullValue: 'EMPTY',
+      nullValue: 'NO LABEL',
+      nullFilter:
+        '{"op":"<=","content":{"field":"labels.totalCount","value":0}}',
       default: true,
     },
     {
       facetType: 'term',
       field: 'milestone.state',
       name: 'Milestone States',
-      nullValue: 'EMPTY',
+      nullValue: 'NO MILESTONE',
+      nullFilter:
+        '{"op":"in","content":{"field":"milestone.state","value":["__missing__"]}}',
       default: true,
     },
     {
       facetType: 'term',
       field: 'milestone.title.keyword',
       name: 'Milestone',
-      nullValue: 'EMPTY',
+      nullValue: 'NO MILESTONE',
+      nullFilter:
+        '{"op":"in","content":{"field":"milestone.title.keyword","value":["__missing__"]}}',
       default: true,
     },
     {
       facetType: 'term',
       field: 'projectCards.edges.node.project.name.keyword',
       name: 'Projects',
-      nullValue: 'EMPTY',
+      nullValue: 'NO PROJECT',
+      nullFilter:
+        '{"op":"<=","content":{"field":"projectCards.totalCount","value":0}}',
       default: true,
     },
     {
@@ -93,22 +103,28 @@ const config = {
     {
       facetType: 'term',
       field: 'reviewDecision',
-      name: 'Review Decisions',
-      nullValue: 'EMPTY',
+      name: 'Review Decision',
+      nullValue: 'NO DECISION',
+      nullFilter:
+        '{"op":"in","content":{"field":"reviewDecision","value":["__missing__"]}}',
       default: true,
     },
     {
       facetType: 'term',
       field: 'reviews.edges.node.state',
       name: 'Reviews',
-      nullValue: 'EMPTY',
+      nullValue: 'NO REVIEW',
+      nullFilter:
+        '{"op":"<=","content":{"field":"reviews.totalCount","value":0}}',
       default: false,
     },
     {
       facetType: 'term',
       field: 'reviews.edges.node.author.login',
       name: 'Reviewers',
-      nullValue: 'EMPTY',
+      nullValue: 'NO REVIEWER',
+      nullFilter:
+        '{"op":"<=","content":{"field":"reviews.totalCount","value":0}}',
       default: true,
     },
     {
@@ -161,6 +177,51 @@ const config = {
       default: false,
     },
   ],
+  tableConfig: {
+    itemsType: 'Github PRs',
+    defaultSortField: 'createdAt',
+    columns: [
+      {
+        name: 'id',
+        field: 'id',
+        sortField: 'id',
+        sortable: false,
+        default: false,
+      },
+      {
+        name: 'Created At',
+        field: 'createdAt',
+        sortField: 'createdAt',
+        linkField: null,
+        sortable: true,
+        default: true,
+      },
+      {
+        name: 'Closed At',
+        field: 'closedAt',
+        sortField: 'closedAt',
+        linkField: null,
+        sortable: true,
+        default: true,
+      },
+      {
+        name: 'Title',
+        field: 'title',
+        sortField: 'title.keyword',
+        linkField: null,
+        sortable: true,
+        default: true,
+      },
+      {
+        name: 'Url',
+        field: 'url',
+        sortField: 'url',
+        linkField: null,
+        sortable: false,
+        default: true,
+      },
+    ],
+  },
 };
 
 export default config;

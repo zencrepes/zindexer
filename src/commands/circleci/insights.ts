@@ -8,10 +8,10 @@ import { getId } from '../../utils/misc/getId';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
 
-import esMappingWorkflowSummary from '../../utils/circleci/insights/esMappingWorkflowSummary';
-import esMappingWorkflowRuns from '../../utils/circleci/insights/esMappingWorkflowRuns';
-import esMappingWorkflowJobsSummary from '../../utils/circleci/insights/esMappingWorkflowSummary';
-import esMappingWorkflowJobsRuns from '../../utils/circleci/insights/esMappingWorkflowSummary';
+
+import esMapping from '../../utils/circleci/insights/esMapping';
+import zConfig from '../../utils/circleci/insights/zConfig';
+import pushConfig from '../../utils/zencrepes/pushConfig';
 
 import esCheckIndex from '../../utils/es/esCheckIndex';
 import esPushNodes from '../../utils/es/esPushNodes';
@@ -37,11 +37,35 @@ export default class Insights extends Command {
       description:
         'User Configuration passed as an environment variable, takes precedence over config file',
     }),
+    config: flags.boolean({
+      char: 'c',
+      default: false,
+      description: 'Only update ZenCrepes configuration',
+    }),
+    reset: flags.boolean({
+      char: 'r',
+      default: false,
+      description: 'Reset ZenCrepes configuration to default',
+    }),
   };
 
   async run() {
+    const { flags } = this.parse(Insights);
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
+
+    // Push Zencrepes configuration only if there was no previous configuration available
+    await pushConfig(
+      eClient,
+      userConfig,
+      zConfig,
+      userConfig.elasticsearch.dataIndices.circleciInsights,
+      flags.reset,
+    );
+
+    if (flags.config === true) {
+      return;
+    }
 
     // Get active sources from Github only
     const sources = await esGetActiveSources(eClient, userConfig, 'GITHUB');
@@ -53,12 +77,6 @@ export default class Insights extends Command {
     }
     for (const currentSource of sources) {
       console.log('Processing insights for source: ' + currentSource.name);
-
-      // 1- Get Workflow insights
-      const workflowsSummaryIndex = (
-        userConfig.elasticsearch.dataIndices.circleciInsightsWorkflowsSummary +
-        getId(currentSource.name)
-      ).toLocaleLowerCase();
 
       const fetchedWorkflows = await fetchData(
         'insights/gh/' + currentSource.name + '/workflows',
@@ -75,19 +93,8 @@ export default class Insights extends Command {
           source: currentSource,
         };
       });
-      if (workflows.length > 0) {
-        // Check if index exists, create it if it does not
-        await esCheckIndex(
-          eClient,
-          userConfig,
-          workflowsSummaryIndex,
-          esMappingWorkflowSummary,
-        );
-        await esPushNodes(workflows, workflowsSummaryIndex, eClient);
-      }
 
       // 2- Fetch all runs for a particular workflow
-
       let workflowRuns: Array<object> = [];
       // eslint-disable-next-line
       let workflowJobsSummary: Array<any> = [];
@@ -156,106 +163,41 @@ export default class Insights extends Command {
           workflowJobsRuns = [...workflowJobsRuns, ...wfJobsRuns];
         }
       }
-
-      // Push workflows Runs
-      if (workflowRuns.length > 0) {
-        const workflowsRunsIndex = (
-          userConfig.elasticsearch.dataIndices.circleciInsightsWorkflowsRuns +
-          getId(currentSource.name)
-        ).toLocaleLowerCase();
-
-        await esCheckIndex(
-          eClient,
-          userConfig,
-          workflowsRunsIndex,
-          esMappingWorkflowRuns,
-        );
-
-        await esPushNodes(workflowRuns, workflowsRunsIndex, eClient);
-      }
-
-      // Push workflow Jobs Summary
-      if (workflowJobsSummary.length > 0) {
-        const workflowsJobsSummaryIndex = (
-          userConfig.elasticsearch.dataIndices.circleciInsightsJobsSummary +
-          getId(currentSource.name)
-        ).toLocaleLowerCase();
-
-        await esCheckIndex(
-          eClient,
-          userConfig,
-          workflowsJobsSummaryIndex,
-          esMappingWorkflowJobsSummary,
-        );
-
-        await esPushNodes(
-          workflowJobsSummary,
-          workflowsJobsSummaryIndex,
-          eClient,
-        );
-      }
-
-      // Push workflow Jobs Runs
-
+      
       if (workflowJobsRuns.length > 0) {
-        const workflowsJobsRunsIndex = (
-          userConfig.elasticsearch.dataIndices.circleciInsightsJobsRuns +
-          getId(currentSource.name)
-        ).toLocaleLowerCase();
+        let insightsIndex =
+          userConfig.elasticsearch.dataIndices.circleciInsights;
+        if (userConfig.elasticsearch.oneIndexPerSource === true) {
+          insightsIndex = (
+            userConfig.elasticsearch.dataIndices.circleciInsights +
+            getId(currentSource.name)
+          ).toLocaleLowerCase();
+        }
 
         await esCheckIndex(
           eClient,
           userConfig,
-          workflowsJobsRunsIndex,
-          esMappingWorkflowJobsRuns,
+          insightsIndex,
+          esMapping,
         );
 
-        await esPushNodes(workflowJobsRuns, workflowsJobsRunsIndex, eClient);
+        await esPushNodes(workflowJobsRuns, insightsIndex, eClient);
       }
     }
 
     // Create an alias used for group querying
-    cli.action.start('Creating the Elasticsearch aliases');
-    console.log(
-      userConfig.elasticsearch.dataIndices.circleciInsightsWorkflowsSummary +
-        '*',
-    );
-    await eClient.indices.putAlias({
-      index:
-        userConfig.elasticsearch.dataIndices.circleciInsightsWorkflowsSummary +
-        '*',
-      name:
-        userConfig.elasticsearch.dataIndices.circleciInsightsWorkflowsSummary,
-    });
+    if (userConfig.elasticsearch.oneIndexPerSource === true) {
+      cli.action.start('Creating the Elasticsearch aliases');
+      console.log(
+        userConfig.elasticsearch.dataIndices.circleciInsights + '*',
+      );
+      await eClient.indices.putAlias({
+        index:
+          userConfig.elasticsearch.dataIndices.circleciInsights + '*',
+        name: userConfig.elasticsearch.dataIndices.circleciInsights,
+      });
 
-    console.log(
-      userConfig.elasticsearch.dataIndices.circleciInsightsWorkflowsRuns + '*',
-    );
-    await eClient.indices.putAlias({
-      index:
-        userConfig.elasticsearch.dataIndices.circleciInsightsWorkflowsRuns +
-        '*',
-      name: userConfig.elasticsearch.dataIndices.circleciInsightsWorkflowsRuns,
-    });
-
-    console.log(
-      userConfig.elasticsearch.dataIndices.circleciInsightsJobsSummary + '*',
-    );
-    await eClient.indices.putAlias({
-      index:
-        userConfig.elasticsearch.dataIndices.circleciInsightsJobsSummary + '*',
-      name: userConfig.elasticsearch.dataIndices.circleciInsightsJobsSummary,
-    });
-
-    console.log(
-      userConfig.elasticsearch.dataIndices.circleciInsightsJobsRuns + '*',
-    );
-    await eClient.indices.putAlias({
-      index:
-        userConfig.elasticsearch.dataIndices.circleciInsightsJobsRuns + '*',
-      name: userConfig.elasticsearch.dataIndices.circleciInsightsJobsRuns,
-    });
-
-    cli.action.stop(' done');
+      cli.action.stop(' done');
+    }
   }
 }

@@ -36,10 +36,7 @@ export default abstract class extends Command {
         jiraProjects: 'j_projects_',
         circleciPipelines: 'cci_pipelines_',
         circleciEnvvars: 'cci_envvars_',
-        circleciInsightsWorkflowsSummary: 'cci_insights_wfsum_',
-        circleciInsightsWorkflowsRuns: 'cci_insights_wfruns_',
-        circleciInsightsJobsSummary: 'cci_insights_jobssum_',
-        circleciInsightsJobsRuns: 'cci_insights_jobsruns_',
+        circleciInsights: 'cci_insights_',
       },
     },
     github: {

@@ -25,10 +25,7 @@ export interface ConfigElasticsearch {
     jiraProjects: string;
     circleciPipelines: string;
     circleciEnvvars: string;
-    circleciInsightsWorkflowsSummary: string;
-    circleciInsightsWorkflowsRuns: string;
-    circleciInsightsJobsSummary: string;
-    circleciInsightsJobsRuns: string;
+    circleciInsights: string;
   };
 }
 
