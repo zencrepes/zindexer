@@ -205,6 +205,7 @@ const config = {
       {
         name: 'id',
         field: 'id',
+        fieldType: 'string',
         sortField: 'id',
         sortable: false,
         default: false,
@@ -212,6 +213,7 @@ const config = {
       {
         name: 'Created At',
         field: 'createdAt',
+        fieldType: 'date',
         sortField: 'createdAt',
         linkField: null,
         sortable: true,
@@ -220,6 +222,7 @@ const config = {
       {
         name: 'Org',
         field: 'owner.login',
+        fieldType: 'string',
         sortField: 'owner.login',
         linkField: 'owner.url',
         sortable: true,
@@ -228,6 +231,7 @@ const config = {
       {
         name: 'Name',
         field: 'name',
+        fieldType: 'string',
         sortField: 'name',
         linkField: 'url',
         sortable: true,
@@ -236,6 +240,7 @@ const config = {
       {
         name: 'Default branch',
         field: 'defaultBranchRef.name',
+        fieldType: 'string',
         sortField: 'defaultBranchRef.name',
         linkField: null,
         sortable: true,
@@ -244,6 +249,7 @@ const config = {
       {
         name: 'Disk Usage',
         field: 'diskUsage',
+        fieldType: 'bytes',
         sortField: 'diskUsage',
         linkField: null,
         sortable: true,
@@ -252,6 +258,7 @@ const config = {
       {
         name: 'Fork Count',
         field: 'forkCount',
+        fieldType: 'string',
         sortField: 'forkCount',
         linkField: null,
         sortable: true,
@@ -260,6 +267,7 @@ const config = {
       {
         name: 'Issues Enabled',
         field: 'hasIssuesEnabled',
+        fieldType: 'boolean',
         sortField: null,
         linkField: null,
         sortable: false,
@@ -268,6 +276,7 @@ const config = {
       {
         name: 'Projects Enabled',
         field: 'hasProjectsEnabled',
+        fieldType: 'boolean',
         sortField: null,
         linkField: null,
         sortable: false,
@@ -276,6 +285,7 @@ const config = {
       {
         name: 'Wiki Enabled',
         field: 'hasWikiEnabled',
+        fieldType: 'boolean',
         sortField: null,
         linkField: null,
         sortable: false,
@@ -284,6 +294,7 @@ const config = {
       {
         name: 'Is Archived',
         field: 'isArchived',
+        fieldType: 'boolean',
         sortField: null,
         linkField: null,
         sortable: false,
@@ -292,6 +303,7 @@ const config = {
       {
         name: 'Is Private',
         field: 'isPrivate',
+        fieldType: 'boolean',
         sortField: null,
         linkField: null,
         sortable: false,
@@ -300,14 +312,16 @@ const config = {
       {
         name: 'Primary Language',
         field: 'primaryLanguage.name',
+        fieldType: 'string',
         sortField: 'primaryLanguage.name.keyword',
         linkField: null,
         sortable: false,
         default: true,
       },
       {
-        name: 'Pushed At',
+        name: 'Last Pushed At',
         field: 'pushedAt',
+        fieldType: 'date',
         sortField: 'pushedAt',
         linkField: null,
         sortable: false,
@@ -316,10 +330,11 @@ const config = {
       {
         name: 'Url',
         field: 'url',
+        fieldType: 'link',
         sortField: 'url',
         linkField: null,
         sortable: false,
-        default: true,
+        default: false,
       },
     ],
   },
