@@ -29,6 +29,11 @@ export interface ConfigElasticsearch {
   };
 }
 
+export interface ConfigGithubPointsLabels {
+  label: string;
+  points: number;
+}
+
 export interface ConfigGithub {
   enabled: boolean;
   username: string;
@@ -36,6 +41,7 @@ export interface ConfigGithub {
   fetch: {
     maxNodes: number;
   };
+  storyPointsLabels: ConfigGithubPointsLabels[];
 }
 export interface ConfigJiraFieldMapping {
   jfield: string;
@@ -134,6 +140,7 @@ export interface ESIndexSources {
   server?: string;
   name: string;
   active: boolean;
+  repository?: GithubRepository;
 }
 
 // Object containing all of Jira data related to a project
@@ -167,7 +174,7 @@ export interface GithubRepository {
   id: string;
   url?: string;
   owner: GithubOrganization;
-  active: boolean;
+  active?: boolean;
 }
 
 export interface GithubIssue {

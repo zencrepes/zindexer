@@ -105,24 +105,24 @@ export default class Releases extends Command {
         ' repos with Releases, fetching corresponding data',
     );
 
-    for (const currenSource of sourcesWithData) {
+    for (const currentSource of sourcesWithData) {
       let releasesIndex = userConfig.elasticsearch.dataIndices.githubReleases;
 
-      this.log('Processing source: ' + currenSource.name);
+      this.log('Processing source: ' + currentSource.name);
       const recentRelease = await esGithubLatest(
         eClient,
         releasesIndex,
-        currenSource.id,
+        currentSource.id,
       );
       cli.action.start(
         'Grabbing releases for: ' +
-          currenSource.name +
+          currentSource.name +
           ' (ID: ' +
-          currenSource.id +
+          currentSource.id +
           ')',
       );
       let fetchedReleases = await fetchData.load(
-        currenSource.id,
+        currentSource.id,
         recentRelease,
       );
       cli.action.stop(' done');
@@ -132,14 +132,18 @@ export default class Releases extends Command {
         return {
           ...item,
           // eslint-disable-next-line @typescript-eslint/camelcase
-          zindexer_sourceid: currenSource.id,
+          zindexer_sourceid: currentSource.id,
+          repository:
+            currentSource.repository !== undefined
+              ? currentSource.repository
+              : null,
         };
       });
 
       if (userConfig.elasticsearch.oneIndexPerSource === true) {
         releasesIndex = (
           userConfig.elasticsearch.dataIndices.githubReleases +
-          getId(currenSource.name)
+          getId(currentSource.name)
         ).toLocaleLowerCase();
       }
 

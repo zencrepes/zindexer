@@ -23,7 +23,7 @@ const query = `
               name
               state
               body
-              columns(first: 10) {
+              columns(first: 15) {
                 totalCount
                 edges {
                   node {
@@ -36,22 +36,16 @@ const query = `
                   }
                 }
               }
-              pendingCards(first: 100) {
+              pendingCards(first: 1) {
                 totalCount
               }
-              owner {
-                ... on Repository {
+              organization: owner {
+                ... on Organization {
                   id
-                  name
-                  url
-                  databaseId
-                  owner {
-                    id
-                    login
-                    url
-                  }                  
+                  login
+                  url                 
                 }
-              }
+              }  
             }
           }
         }        

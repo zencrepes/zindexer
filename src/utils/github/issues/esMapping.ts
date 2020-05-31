@@ -8,6 +8,7 @@ properties:
   assignees:
     properties:
       edges:
+        type: nested
         properties:
           node:
             properties:
@@ -39,6 +40,10 @@ properties:
     type: keyword
   closedAt:
     type: date
+  points:
+    type: long     
+  openedDuring:
+    type: long    
   comments:
     properties:
       totalCount:
@@ -50,6 +55,7 @@ properties:
   labels:
     properties:
       edges:
+        type: nested
         properties:
           node:
             properties:
@@ -114,6 +120,7 @@ properties:
   projectCards:
     properties:
       edges:
+        type: nested
         properties:
           node:
             properties:

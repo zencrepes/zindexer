@@ -9,6 +9,7 @@ properties:
   columns:
     properties:
       edges:
+        type: nested
         properties:
           node:
             properties:
@@ -42,7 +43,9 @@ properties:
         ignore_above: 256
   number:
     type: integer
-  owner:
+  projectLevel:
+    type: keyword    
+  repository:
     properties:
       databaseId:
         type: integer
@@ -72,6 +75,22 @@ properties:
                 ignore_above: 256
       url:
         type: keyword
+  organization:
+    properties:
+      id:
+        type: keyword
+      login:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256
+      url:
+        type: text
+        fields:
+          keyword:
+            type: keyword
+            ignore_above: 256        
   pendingCards:
     properties:
       totalCount:

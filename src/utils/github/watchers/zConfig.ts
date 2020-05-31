@@ -166,6 +166,16 @@ const config = {
         default: true,
       },
       {
+        name: 'Organizations',
+        field: 'organizations.edges',
+        subfield: 'node.login',
+        fieldType: 'array',
+        sortField: 'organizations.totalCount',
+        linkField: 'node.url',
+        sortable: true,
+        default: true,
+      },
+      {
         name: 'Url',
         field: 'repository.url',
         fieldType: 'link',

@@ -123,10 +123,17 @@ export default class Projects extends Command {
           processedOrg.owner.id +
           ')',
       );
-      const fetchedProjects = await fetchDataOrg.load(
+      let fetchedProjects = await fetchDataOrg.load(
         processedOrg.owner.id,
         null,
       );
+
+      fetchedProjects = fetchedProjects.map((item: any) => {
+        return {
+          ...item,
+          projectLevel: 'organization',
+        };
+      });
 
       let projectsIndex = userConfig.elasticsearch.dataIndices.githubProjects;
       if (userConfig.elasticsearch.oneIndexPerSource === true) {
@@ -184,6 +191,8 @@ export default class Projects extends Command {
           ...item,
           // eslint-disable-next-line @typescript-eslint/camelcase
           zindexer_sourceid: currenSource.id,
+          organization: item.repository.owner,
+          projectLevel: 'repository',
         };
       });
 

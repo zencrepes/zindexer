@@ -46,6 +46,15 @@ export default abstract class extends Command {
       fetch: {
         maxNodes: 30,
       },
+      // Define a match between a points label and numbers
+      storyPointsLabels: [
+        { label: 'xx-small', points: 1 },
+        { label: 'x-small', points: 2 },
+        { label: 'small', points: 3 },
+        { label: 'medium', points: 5 },
+        { label: 'large', points: 8 },
+        { label: 'x-large', points: 13 },
+      ],
     },
     circleci: {
       enabled: true,
@@ -85,9 +94,18 @@ export default abstract class extends Command {
               { jfield: 'environment', zfield: 'environment' },
               { jfield: 'duedate', zfield: 'dueAt' },
               { jfield: 'customfield_10114', zfield: 'points' },
-              { jfield: 'customfield_11115', zfield: 'originalPoints' },
-              { jfield: 'customfield_11112', zfield: 'parentInitiative' },
-              { jfield: 'customfield_10314', zfield: 'parentEpic' },
+              {
+                jfield: 'customfield_11115',
+                zfield: 'originalPoints',
+              },
+              {
+                jfield: 'customfield_11112',
+                zfield: 'parentInitiative',
+              },
+              {
+                jfield: 'customfield_10314',
+                zfield: 'parentEpic',
+              },
             ],
           },
           excludeDays: ['1900-01-01'],
