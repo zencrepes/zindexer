@@ -156,6 +156,12 @@ jira:
         maxNodes: 30
 ```
 
+# About Bit
+
+https://bit.dev/
+https://docs.bit.dev/docs/quick-start
+https://medium.com/javascript-in-plain-english/how-i-share-react-components-between-projects-3896d853cbee
+
 # Usage
 
 <!-- usage -->

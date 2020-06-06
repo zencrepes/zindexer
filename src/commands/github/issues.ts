@@ -1,26 +1,31 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
-import * as XRegExp from 'xregexp';
-
-import { differenceInDays } from 'date-fns';
 
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import esGithubLatest from '../../utils/es/esGithubLatest';
 import chunkArray from '../../utils/misc/chunkArray';
-import esPushNodes from '../../utils/es/esPushNodes';
 import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
 import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
 import ghClient from '../../utils/github/utils/ghClient';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
-import { getId } from '../../utils/misc/getId';
-import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import esMapping from '../../utils/github/issues/esMapping';
-import fetchGql from '../../utils/github/issues/fetchGql';
-import zConfig from '../../utils/github/issues/zConfig';
-import fetchReposWithData from '../../utils/github/issues/fetchReposWithData';
+import {
+  esMapping,
+  esSettings,
+  fetchNodes,
+  zConfig,
+  ingestNodes,
+  fetchReposWithData,
+} from '../../components/githubIssues';
+
+import {
+  getEsIndex,
+  checkEsIndex,
+  pushEsNodes,
+  aliasEsIndex,
+} from '../../components/esUtils/index';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -71,7 +76,7 @@ export default class Issues extends Command {
 
     const fetchData = new fetchNodesUpdated(
       gClient,
-      fetchGql,
+      fetchNodes,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -127,66 +132,29 @@ export default class Issues extends Command {
       let fetchedIssues = await fetchData.load(currentSource.id, recentIssue);
       cli.action.stop(' done');
 
-      // Add the source id to all of the documents
-      fetchedIssues = fetchedIssues.map((item: any) => {
-        let openedDuring = null;
-        if (item.closedAt !== null) {
-          openedDuring = differenceInDays(
-            new Date(item.closedAt),
-            new Date(item.createdAt),
-          );
-        }
-        let issuePoints: number | null = null;
-        const pointsExp = XRegExp('SP:[.\\d]');
-        for (const currentLabel of item.labels.edges) {
-          if (pointsExp.test(currentLabel.node.name)) {
-            issuePoints = parseInt(currentLabel.node.name.replace('SP:', ''));
-          } else if (pointsExp.test(currentLabel.node.description)) {
-            issuePoints = parseInt(
-              currentLabel.node.description.replace('SP:', ''),
-            );
-          } else {
-            const foundPoints = userConfig.github.storyPointsLabels.find(
-              (pl: any) => pl.label === currentLabel.node.name,
-            );
-            if (foundPoints !== undefined) {
-              issuePoints = foundPoints.points;
-            }
-          }
-        }
-        return {
-          ...item,
-          // eslint-disable-next-line @typescript-eslint/camelcase
-          zindexer_sourceid: currentSource.id,
-          openedDuring: openedDuring,
-          points: issuePoints,
-        };
-      });
+      fetchedIssues = ingestNodes(
+        fetchedIssues,
+        'zindexer',
+        userConfig,
+        currentSource.id,
+      );
 
-      if (userConfig.elasticsearch.oneIndexPerSource === true) {
-        issuesIndex = (
-          userConfig.elasticsearch.dataIndices.githubIssues +
-          getId(currentSource.name)
-        ).toLocaleLowerCase();
-      }
+      issuesIndex = getEsIndex(
+        userConfig.elasticsearch.dataIndices.githubIssues,
+        userConfig.elasticsearch.oneIndexPerSource,
+        currentSource.name,
+      );
 
-      // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, issuesIndex, esMapping);
-
-      await esPushNodes(fetchedIssues, issuesIndex, eClient);
-
-      if (userConfig.elasticsearch.oneIndexPerSource === true) {
-        // Create an alias used for group querying
-        cli.action.start(
-          'Creating the Elasticsearch index alias: ' +
-            userConfig.elasticsearch.dataIndices.githubIssues,
-        );
-        await eClient.indices.putAlias({
-          index: userConfig.elasticsearch.dataIndices.githubIssues + '*',
-          name: userConfig.elasticsearch.dataIndices.githubIssues,
-        });
-        cli.action.stop(' done');
-      }
+      await checkEsIndex(eClient, issuesIndex, esMapping, esSettings, this.log);
+      await pushEsNodes(eClient, issuesIndex, fetchedIssues, this.log);
+    }
+    if (userConfig.elasticsearch.oneIndexPerSource === true) {
+      // Create an alias used for group querying
+      await aliasEsIndex(
+        eClient,
+        userConfig.elasticsearch.dataIndices.githubIssues,
+        this.log,
+      );
     }
   }
 }

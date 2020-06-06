@@ -6,20 +6,23 @@ import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import chunkArray from '../../utils/misc/chunkArray';
 
-import esPushNodes from '../../utils/es/esPushNodes';
 import fetchNodesByQuery from '../../utils/github/utils/fetchNodesByQuery';
 import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
 
 import ghClient from '../../utils/github/utils/ghClient';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
-import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import esMapping from '../../utils/github/watchers/esMapping';
-import fetchGql from '../../utils/github/watchers/fetchGql';
-import fetchReposWithData from '../../utils/github/watchers/fetchReposWithData';
+import {
+  esMapping,
+  esSettings,
+  fetchNodes,
+  zConfig,
+  ingestNodes,
+  fetchReposWithData,
+} from '../../components/githubWatchers';
 
-import zConfig from '../../utils/github/watchers/zConfig';
+import { checkEsIndex, pushEsNodes } from '../../components/esUtils/index';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -70,7 +73,7 @@ export default class Watchers extends Command {
 
     const fetchData = new fetchNodesByQuery(
       gClient,
-      fetchGql,
+      fetchNodes,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -125,25 +128,14 @@ export default class Watchers extends Command {
       });
       cli.action.stop(' done');
 
-      // Some data manipulation on all items
-      fetchedWatchers = fetchedWatchers.map((item: any) => {
-        const updatedItem = {
-          ...item,
-          // eslint-disable-next-line @typescript-eslint/camelcase
-          zindexer_sourceid: currentSource.id,
-          id: 'watchers-' + item.id,
-          dataType: 'watchers',
-          repository: {
-            id: item._parent.id,
-            name: item._parent.name,
-            url: item._parent.url,
-            databaseId: item._parent.databaseId,
-            owner: item._parent.owner,
-          },
-        };
-        delete updatedItem._parent;
-        return updatedItem;
-      });
+      fetchedWatchers = ingestNodes(
+        fetchedWatchers,
+        'zindexer',
+        currentSource.id,
+        currentSource.repository,
+        'watchers',
+      );
+
       allWatchers = [...allWatchers, ...fetchedWatchers];
     }
 
@@ -166,10 +158,7 @@ export default class Watchers extends Command {
       },
     );
 
-    // Check if index exists, create it if it does not
-    await esCheckIndex(eClient, userConfig, watchersIndex, esMapping);
-
-    // Push all nodes to the index
-    await esPushNodes(preppedUsers, watchersIndex, eClient);
+    await checkEsIndex(eClient, watchersIndex, esMapping, esSettings, this.log);
+    await pushEsNodes(eClient, watchersIndex, preppedUsers, this.log);
   }
 }

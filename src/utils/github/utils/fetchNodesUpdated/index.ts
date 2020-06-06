@@ -15,9 +15,9 @@ export default class FetchNodeUpdated {
   configDir: string;
   log: any; // eslint-disable-line
   cli: object;
-  fetchedNodes: Array<object>;
+  fetchedNodes: Array<any>;
   errorRetry: number;
-  graphQLQuery: string;
+  graphQLQuery: any;
   rateLimit: {
     limit: number;
     cost: number;
@@ -28,7 +28,7 @@ export default class FetchNodeUpdated {
 
   constructor(
     gClient: object,
-    graphQLQuery: string,
+    graphQLQuery: any,
     log: object,
     ghIncrement: number,
     configDir: string,

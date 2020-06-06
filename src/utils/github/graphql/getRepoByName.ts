@@ -1,16 +1,18 @@
-const query = `
-  query ($orgName: String!, $repoName: String!){
+import gql from 'graphql-tag';
+
+const GQL_QUERY = gql`
+  query($orgName: String!, $repoName: String!) {
     rateLimit {
       limit
       cost
       remaining
       resetAt
     }
-    repository(owner:$orgName, name:$repoName) {
+    repository(owner: $orgName, name: $repoName) {
       name
       id
       url
-      owner{
+      owner {
         id
         login
         url
@@ -18,4 +20,5 @@ const query = `
     }
   }
 `;
-export default query;
+
+export default GQL_QUERY;

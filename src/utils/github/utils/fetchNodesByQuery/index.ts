@@ -25,9 +25,9 @@ export default class FetchNodesByQuery {
   errorRetry: number;
   totalReposCount: number;
   orgReposCount: any; // eslint-disable-line
-  getOrgs: string;
-  getRepos: string;
-  getUserRepos: string;
+  getOrgs: any;
+  getRepos: any;
+  getUserRepos: any;
   rateLimit: {
     limit: number;
     cost: number;
@@ -38,7 +38,7 @@ export default class FetchNodesByQuery {
 
   constructor(
     gClient: object,
-    graphQLQuery: string,
+    graphQLQuery: any,
     log: object,
     ghIncrement: number,
     configDir: string,
@@ -189,7 +189,10 @@ export default class FetchNodesByQuery {
       nodeObj = { ...nodeObj, _parent: parentData };
       // Special treatment for stargazers since data is attached under edges
       if (currentNode.starredAt !== undefined) {
-        nodeObj = { ...nodeObj, starredAt: currentNode.starredAt };
+        nodeObj = {
+          ...nodeObj,
+          starredAt: currentNode.starredAt,
+        };
       }
       this.fetchedNodes.push(nodeObj);
       //Write the content to the cache file

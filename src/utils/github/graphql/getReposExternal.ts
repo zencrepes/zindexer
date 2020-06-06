@@ -1,5 +1,7 @@
-const query = `
-  query ($repo_cursor: String, $increment: Int, $org_name: String!){
+import gql from 'graphql-tag';
+
+const GQL_QUERY = gql`
+  query($repo_cursor: String, $increment: Int, $org_name: String!) {
     rateLimit {
       limit
       cost
@@ -18,15 +20,16 @@ const query = `
             name
             url
             id
-            owner{
+            owner {
               id
               login
               url
-            }            
+            }
           }
         }
       }
     }
   }
 `;
-export default query;
+
+export default GQL_QUERY;

@@ -1,5 +1,3 @@
-import gql from 'graphql-tag';
-
 async function sleep(ms: number) {
   //https://github.com/Microsoft/tslint-microsoft-contrib/issues/355
   // tslint:disable-next-line no-string-based-set-timeout
@@ -27,9 +25,7 @@ async function graphqlQuery(
   let data: any = {}; // eslint-disable-line
   try {
     data = await client.query({
-      query: gql`
-        ${query}
-      `,
+      query,
       variables,
       fetchPolicy: 'no-cache',
       errorPolicy: 'ignore',

@@ -186,7 +186,7 @@ export default class Issues extends Command {
             query: {
               match: {
                 // eslint-disable-next-line @typescript-eslint/camelcase
-                zindexer_sourceid: {
+                zindexerSourceId: {
                   query: source.id,
                 },
               },
@@ -233,7 +233,7 @@ export default class Issues extends Command {
                 id: ji.id,
                 key: ji.key,
                 // eslint-disable-next-line @typescript-eslint/camelcase
-                zindexer_sourceid: source.id,
+                zindexerSourceId: source.id,
                 updatedAt: ji.fields.updated,
                 server: { name: jiraServer.name, host: jiraServer.config.host },
                 url: jiraServer.config.host + +'/browse/' + ji.key,

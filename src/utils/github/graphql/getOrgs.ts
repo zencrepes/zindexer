@@ -1,5 +1,7 @@
-const query = `
-  query ($cursor: String, $increment: Int) {
+import gql from 'graphql-tag';
+
+const GQL_QUERY = gql`
+  query($cursor: String, $increment: Int) {
     rateLimit {
       limit
       cost
@@ -24,4 +26,5 @@ const query = `
     }
   }
 `;
-export default query;
+
+export default GQL_QUERY;

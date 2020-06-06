@@ -5,23 +5,30 @@ import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import chunkArray from '../../utils/misc/chunkArray';
 
-import esPushNodes from '../../utils/es/esPushNodes';
 import fetchNodesByQuery from '../../utils/github/utils/fetchNodesByQuery';
 import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
 
 import ghClient from '../../utils/github/utils/ghClient';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
-import esCheckIndex from '../../utils/es/esCheckIndex';
 
 import { getId } from '../../utils/misc/getId';
 
-import esMapping from '../../utils/github/vulnerabilities/esMapping';
-import fetchGql from '../../utils/github/vulnerabilities/fetchGql';
-import fetchReposWithData from '../../utils/github/vulnerabilities/fetchReposWithData';
-import zConfig from '../../utils/github/vulnerabilities/zConfig';
+import {
+  esMapping,
+  esSettings,
+  fetchNodes,
+  zConfig,
+  ingestNodes,
+  fetchReposWithData,
+} from '../../components/githubVulnerabilities';
 
-import { differenceInDays } from 'date-fns';
+import {
+  getEsIndex,
+  checkEsIndex,
+  pushEsNodes,
+  aliasEsIndex,
+} from '../../components/esUtils/index';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -73,7 +80,7 @@ export default class Vulnerabilities extends Command {
 
     const fetchData = new fetchNodesByQuery(
       gClient,
-      fetchGql,
+      fetchNodes,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -129,22 +136,31 @@ export default class Vulnerabilities extends Command {
       });
       cli.action.stop(' done');
 
-      // Some data manipulation on all items
-      fetchedVulnerabilities = fetchedVulnerabilities.map((item: any) => {
-        let dismissedAfter = null;
-        if (item.dismissedAt !== null) {
-          dismissedAfter = differenceInDays(
-            new Date(item.dismissedAt),
-            new Date(item.createdAt),
-          );
-        }
-        return {
-          ...item,
-          // eslint-disable-next-line @typescript-eslint/camelcase
-          zindexer_sourceid: currentSource.id,
-          dismissedAfter: dismissedAfter,
-        };
-      });
+      fetchedVulnerabilities = ingestNodes(
+        fetchedVulnerabilities,
+        'zindexer',
+        currentSource.id,
+      );
+
+      vulnerabilitiesIndex = getEsIndex(
+        userConfig.elasticsearch.dataIndices.githubVulnerabilities,
+        userConfig.elasticsearch.oneIndexPerSource,
+        currentSource.name,
+      );
+
+      await checkEsIndex(
+        eClient,
+        vulnerabilitiesIndex,
+        esMapping,
+        esSettings,
+        this.log,
+      );
+      await pushEsNodes(
+        eClient,
+        vulnerabilitiesIndex,
+        fetchedVulnerabilities,
+        this.log,
+      );
 
       if (userConfig.elasticsearch.oneIndexPerSource === true) {
         vulnerabilitiesIndex = (
@@ -152,27 +168,14 @@ export default class Vulnerabilities extends Command {
           getId(currentSource.name)
         ).toLocaleLowerCase();
       }
-
-      // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, vulnerabilitiesIndex, esMapping);
-
-      // Push all nodes to the index
-      await esPushNodes(fetchedVulnerabilities, vulnerabilitiesIndex, eClient);
-
-      if (userConfig.elasticsearch.oneIndexPerSource === true) {
-        // If one index per source, then an alias is created automatically to all of the indices
-        // Create an alias used for group querying
-        cli.action.start(
-          'Creating the Elasticsearch index alias: ' +
-            userConfig.elasticsearch.dataIndices.githubVulnerabilities,
-        );
-        await eClient.indices.putAlias({
-          index:
-            userConfig.elasticsearch.dataIndices.githubVulnerabilities + '*',
-          name: userConfig.elasticsearch.dataIndices.githubVulnerabilities,
-        });
-        cli.action.stop(' done');
-      }
+    }
+    if (userConfig.elasticsearch.oneIndexPerSource === true) {
+      // Create an alias used for group querying
+      await aliasEsIndex(
+        eClient,
+        userConfig.elasticsearch.dataIndices.githubVulnerabilities,
+        this.log,
+      );
     }
   }
 }

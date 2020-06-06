@@ -5,19 +5,27 @@ import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import esGithubLatest from '../../utils/es/esGithubLatest';
 import chunkArray from '../../utils/misc/chunkArray';
-import esPushNodes from '../../utils/es/esPushNodes';
 import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
 import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
 import ghClient from '../../utils/github/utils/ghClient';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
-import { getId } from '../../utils/misc/getId';
-import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import esMapping from '../../utils/github/milestones/esMapping';
-import fetchGql from '../../utils/github/milestones/fetchGql';
-import zConfig from '../../utils/github/milestones/zConfig';
-import fetchReposWithData from '../../utils/github/milestones/fetchReposWithData';
+import {
+  esMapping,
+  esSettings,
+  fetchNodes,
+  zConfig,
+  ingestNodes,
+  fetchReposWithData,
+} from '../../components/githubMilestones';
+
+import {
+  getEsIndex,
+  checkEsIndex,
+  pushEsNodes,
+  aliasEsIndex,
+} from '../../components/esUtils/index';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -69,7 +77,7 @@ export default class Milestones extends Command {
 
     const fetchData = new fetchNodesUpdated(
       gClient,
-      fetchGql,
+      fetchNodes,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -106,61 +114,57 @@ export default class Milestones extends Command {
         ' repos with Milestones, fetching corresponding data',
     );
 
-    for (const currenSource of sourcesWithData) {
+    for (const currentSource of sourcesWithData) {
       let milestonesIndex =
         userConfig.elasticsearch.dataIndices.githubMilestones;
 
-      this.log('Processing source: ' + currenSource.name);
+      this.log('Processing source: ' + currentSource.name);
       const recentMilestone = await esGithubLatest(
         eClient,
         milestonesIndex,
-        currenSource.id,
+        currentSource.id,
       );
       cli.action.start(
         'Grabbing milestones for: ' +
-          currenSource.name +
+          currentSource.name +
           ' (ID: ' +
-          currenSource.id +
+          currentSource.id +
           ')',
       );
       let fetchedMilestones = await fetchData.load(
-        currenSource.id,
+        currentSource.id,
         recentMilestone,
       );
       cli.action.stop(' done');
 
-      // Add the source id to all of the documents
-      fetchedMilestones = fetchedMilestones.map((item: any) => {
-        return {
-          ...item,
-          // eslint-disable-next-line @typescript-eslint/camelcase
-          zindexer_sourceid: currenSource.id,
-        };
-      });
+      fetchedMilestones = ingestNodes(
+        fetchedMilestones,
+        'zindexer',
+        currentSource.id,
+      );
 
-      if (userConfig.elasticsearch.oneIndexPerSource === true) {
-        milestonesIndex = (
-          userConfig.elasticsearch.dataIndices.githubMilestones +
-          getId(currenSource.name)
-        ).toLocaleLowerCase();
-      }
-      // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, milestonesIndex, esMapping);
+      milestonesIndex = getEsIndex(
+        userConfig.elasticsearch.dataIndices.githubMilestones,
+        userConfig.elasticsearch.oneIndexPerSource,
+        currentSource.name,
+      );
 
-      await esPushNodes(fetchedMilestones, milestonesIndex, eClient);
-
-      if (userConfig.elasticsearch.oneIndexPerSource === true) {
-        // Create an alias used for group querying
-        cli.action.start(
-          'Creating the Elasticsearch index alias: ' +
-            userConfig.elasticsearch.dataIndices.githubMilestones,
-        );
-        await eClient.indices.putAlias({
-          index: userConfig.elasticsearch.dataIndices.githubMilestones + '*',
-          name: userConfig.elasticsearch.dataIndices.githubMilestones,
-        });
-        cli.action.stop(' done');
-      }
+      await checkEsIndex(
+        eClient,
+        milestonesIndex,
+        esMapping,
+        esSettings,
+        this.log,
+      );
+      await pushEsNodes(eClient, milestonesIndex, fetchedMilestones, this.log);
+    }
+    if (userConfig.elasticsearch.oneIndexPerSource === true) {
+      // Create an alias used for group querying
+      await aliasEsIndex(
+        eClient,
+        userConfig.elasticsearch.dataIndices.githubMilestones,
+        this.log,
+      );
     }
   }
 }

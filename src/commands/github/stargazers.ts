@@ -6,20 +6,23 @@ import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import chunkArray from '../../utils/misc/chunkArray';
 
-import esPushNodes from '../../utils/es/esPushNodes';
 import fetchNodesByQuery from '../../utils/github/utils/fetchNodesByQuery';
 import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
 
 import ghClient from '../../utils/github/utils/ghClient';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
-import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import esMapping from '../../utils/github/stargazers/esMapping';
-import fetchGql from '../../utils/github/stargazers/fetchGql';
-import fetchReposWithData from '../../utils/github/stargazers/fetchReposWithData';
+import {
+  esMapping,
+  esSettings,
+  fetchNodes,
+  zConfig,
+  ingestNodes,
+  fetchReposWithData,
+} from '../../components/githubStargazers';
 
-import zConfig from '../../utils/github/stargazers/zConfig';
+import { checkEsIndex, pushEsNodes } from '../../components/esUtils/index';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -71,7 +74,7 @@ export default class Stargazers extends Command {
 
     const fetchData = new fetchNodesByQuery(
       gClient,
-      fetchGql,
+      fetchNodes,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -96,6 +99,7 @@ export default class Stargazers extends Command {
       const newRepos = await fetchRepos.load(reposChunk);
       reposData = [...reposData, ...newRepos];
     }
+
     const reposWithStargazers = reposData
       .filter((r: any) => r.stargazers.totalCount > 0)
       .map((r: any) => r.id);
@@ -127,25 +131,33 @@ export default class Stargazers extends Command {
       });
       cli.action.stop(' done');
 
-      // Some data manipulation on all items
-      fetchedStargazers = fetchedStargazers.map((item: any) => {
-        const updatedItem = {
-          ...item,
-          // eslint-disable-next-line @typescript-eslint/camelcase
-          zindexer_sourceid: currentSource.id,
-          id: 'stargazers-' + item.id,
-          dataType: 'stargazers',
-          repository: {
-            id: item._parent.id,
-            name: item._parent.name,
-            url: item._parent.url,
-            databaseId: item._parent.databaseId,
-            owner: item._parent.owner,
-          },
-        };
-        delete updatedItem._parent;
-        return updatedItem;
-      });
+      fetchedStargazers = ingestNodes(
+        fetchedStargazers,
+        'zindexer',
+        currentSource.id,
+        currentSource.repository,
+        'stargazers',
+      );
+
+      // // Some data manipulation on all items
+      // fetchedStargazers = fetchedStargazers.map((item: any) => {
+      //   const updatedItem = {
+      //     ...item,
+      //     // eslint-disable-next-line @typescript-eslint/camelcase
+      //     zindexerSourceId: currentSource.id,
+      //     id: 'stargazers-' + item.id,
+      //     dataType: 'stargazers',
+      //     repository: {
+      //       id: item._parent.id,
+      //       name: item._parent.name,
+      //       url: item._parent.url,
+      //       databaseId: item._parent.databaseId,
+      //       owner: item._parent.owner,
+      //     },
+      //   };
+      //   delete updatedItem._parent;
+      //   return updatedItem;
+      // });
       allStargazers = [...allStargazers, ...fetchedStargazers];
     }
 
@@ -173,10 +185,13 @@ export default class Stargazers extends Command {
     );
     // console.log(cleanedUser);
 
-    // Check if index exists, create it if it does not
-    await esCheckIndex(eClient, userConfig, stargazersIndex, esMapping);
-
-    // Push all nodes to the index
-    await esPushNodes(preppedUsers, stargazersIndex, eClient);
+    await checkEsIndex(
+      eClient,
+      stargazersIndex,
+      esMapping,
+      esSettings,
+      this.log,
+    );
+    await pushEsNodes(eClient, stargazersIndex, preppedUsers, this.log);
   }
 }

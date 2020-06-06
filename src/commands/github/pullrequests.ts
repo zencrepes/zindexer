@@ -4,20 +4,29 @@ import cli from 'cli-ux';
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import esGithubLatest from '../../utils/es/esGithubLatest';
-import esPushNodes from '../../utils/es/esPushNodes';
+import chunkArray from '../../utils/misc/chunkArray';
 import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
+import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
+
 import ghClient from '../../utils/github/utils/ghClient';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
-import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import { getId } from '../../utils/misc/getId';
+import {
+  esMapping,
+  esSettings,
+  fetchNodes,
+  zConfig,
+  ingestNodes,
+  fetchReposWithData,
+} from '../../components/githubPullrequests';
 
-import esMapping from '../../utils/github/pullrequests/esMapping';
-import fetchGql from '../../utils/github/pullrequests/fetchGql';
-import zConfig from '../../utils/github/pullrequests/zConfig';
-
-import { differenceInDays } from 'date-fns';
+import {
+  getEsIndex,
+  checkEsIndex,
+  pushEsNodes,
+  aliasEsIndex,
+} from '../../components/esUtils/index';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -69,13 +78,44 @@ export default class Pullrequests extends Command {
 
     const fetchData = new fetchNodesUpdated(
       gClient,
-      fetchGql,
+      fetchNodes,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
     );
 
-    for (const currentSource of sources) {
+    const fetchRepos = new fetchNodesByIds(
+      this.log,
+      userConfig.github.fetch.maxNodes,
+      cli,
+      fetchReposWithData,
+      gClient,
+    );
+
+    // Since not all repositories have data, we start by a query giving us a list of all repositories with data
+    cli.action.start('Searching for repos with data');
+    const ghPayloadChunked = await chunkArray(
+      sources,
+      userConfig.github.fetch.maxNodes,
+    );
+    let reposData: Array<any> = [];
+    for (const reposChunk of ghPayloadChunked) {
+      const newRepos = await fetchRepos.load(reposChunk);
+      reposData = [...reposData, ...newRepos];
+    }
+    const reposWithData = reposData
+      .filter((r: any) => r.pullRequests.totalCount > 0)
+      .map((r: any) => r.id);
+    cli.action.stop(' done');
+
+    const sourcesWithData = sources.filter(s => reposWithData.includes(s.id));
+    console.log(
+      'Found: ' +
+        reposWithData.length +
+        ' repos with PRs, fetching corresponding data',
+    );
+
+    for (const currentSource of sourcesWithData) {
       let pullrequestsIndex =
         userConfig.elasticsearch.dataIndices.githubPullrequests;
 
@@ -98,49 +138,40 @@ export default class Pullrequests extends Command {
       );
       cli.action.stop(' done');
 
-      // Some data manipulation on all items
-      fetchedPullrequests = fetchedPullrequests.map((item: any) => {
-        let openedDuring = null;
-        if (item.closedAt !== null) {
-          openedDuring = differenceInDays(
-            new Date(item.closedAt),
-            new Date(item.createdAt),
-          );
-        }
-        return {
-          ...item,
-          // eslint-disable-next-line @typescript-eslint/camelcase
-          zindexer_sourceid: currentSource.id,
-          openedDuring: openedDuring,
-        };
-      });
+      fetchedPullrequests = ingestNodes(
+        fetchedPullrequests,
+        'zindexer',
+        userConfig,
+        currentSource.id,
+      );
 
-      if (userConfig.elasticsearch.oneIndexPerSource === true) {
-        pullrequestsIndex = (
-          userConfig.elasticsearch.dataIndices.githubPullrequests +
-          getId(currentSource.name)
-        ).toLocaleLowerCase();
-      }
+      pullrequestsIndex = getEsIndex(
+        userConfig.elasticsearch.dataIndices.githubPullrequests,
+        userConfig.elasticsearch.oneIndexPerSource,
+        currentSource.name,
+      );
 
-      // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, pullrequestsIndex, esMapping);
-
-      // Push all nodes to the index
-      await esPushNodes(fetchedPullrequests, pullrequestsIndex, eClient);
-
-      if (userConfig.elasticsearch.oneIndexPerSource === true) {
-        // If one index per source, then an alias is created automatically to all of the indices
-        // Create an alias used for group querying
-        cli.action.start(
-          'Creating the Elasticsearch index alias: ' +
-            userConfig.elasticsearch.dataIndices.githubPullrequests,
-        );
-        await eClient.indices.putAlias({
-          index: userConfig.elasticsearch.dataIndices.githubPullrequests + '*',
-          name: userConfig.elasticsearch.dataIndices.githubPullrequests,
-        });
-        cli.action.stop(' done');
-      }
+      await checkEsIndex(
+        eClient,
+        pullrequestsIndex,
+        esMapping,
+        esSettings,
+        this.log,
+      );
+      await pushEsNodes(
+        eClient,
+        pullrequestsIndex,
+        fetchedPullrequests,
+        this.log,
+      );
+    }
+    if (userConfig.elasticsearch.oneIndexPerSource === true) {
+      // Create an alias used for group querying
+      await aliasEsIndex(
+        eClient,
+        userConfig.elasticsearch.dataIndices.githubPullrequests,
+        this.log,
+      );
     }
   }
 }

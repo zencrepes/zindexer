@@ -15,11 +15,22 @@ import esCheckIndex from '../../utils/es/esCheckIndex';
 
 import { getId } from '../../utils/misc/getId';
 
-import fetchGqlRepo from '../../utils/github/projects/fetchGql';
-import fetchGqlOrg from '../../utils/github/projects/fetchGqlOrg';
-import esMapping from '../../utils/github/projects/esMapping';
-import fetchReposWithData from '../../utils/github/projects/fetchReposWithData';
-import zConfig from '../../utils/github/projects/zConfig';
+import {
+  esMapping,
+  esSettings,
+  fetchNodes,
+  fetchNodesOrg,
+  zConfig,
+  ingestNodes,
+  fetchReposWithData,
+} from '../../components/githubProjects';
+
+import {
+  getEsIndex,
+  checkEsIndex,
+  pushEsNodes,
+  aliasEsIndex,
+} from '../../components/esUtils/index';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -70,7 +81,7 @@ export default class Projects extends Command {
 
     const fetchDataRepo = new fetchNodesUpdated(
       gClient,
-      fetchGqlRepo,
+      fetchNodes,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -78,7 +89,7 @@ export default class Projects extends Command {
 
     const fetchDataOrg = new fetchNodesUpdated(
       gClient,
-      fetchGqlOrg,
+      fetchNodesOrg,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -107,15 +118,17 @@ export default class Projects extends Command {
 
     //Fetch projects attached to an organization.
     //1- Get list of organizations
-    const uniqueOrgs: string[] = [];
+    const uniqueOrgs: any[] = [];
     for (const repo of reposData) {
-      if (!uniqueOrgs.includes(repo.owner.id)) {
-        uniqueOrgs.push(repo.owner.id);
+      if (!uniqueOrgs.find(o => o.id === repo.owner.id) === undefined) {
+        uniqueOrgs.push(repo.owner);
       }
     }
 
-    for (const orgId of uniqueOrgs) {
-      const processedOrg = reposData.find((r: any) => r.owner.id === orgId);
+    for (const currentOrg of uniqueOrgs) {
+      const processedOrg = reposData.find(
+        (r: any) => r.owner.id === currentOrg.id,
+      );
       cli.action.start(
         'Grabbing projects attached to Org: ' +
           processedOrg.owner.login +
@@ -128,12 +141,14 @@ export default class Projects extends Command {
         null,
       );
 
-      fetchedProjects = fetchedProjects.map((item: any) => {
-        return {
-          ...item,
-          projectLevel: 'organization',
-        };
-      });
+      fetchedProjects = ingestNodes(
+        fetchedProjects,
+        'zindexer',
+        'organization',
+        null,
+        currentOrg,
+        null,
+      );
 
       let projectsIndex = userConfig.elasticsearch.dataIndices.githubProjects;
       if (userConfig.elasticsearch.oneIndexPerSource === true) {
@@ -163,63 +178,60 @@ export default class Projects extends Command {
         ' repos with Milestones, fetching corresponding data',
     );
 
-    for (const currenSource of sourcesWithData) {
+    for (const currentSource of sourcesWithData) {
       let projectsIndex = userConfig.elasticsearch.dataIndices.githubProjects;
 
-      this.log('Processing source: ' + currenSource.name);
+      this.log('Processing source: ' + currentSource.name);
       const recentProject = await esGithubLatest(
         eClient,
         projectsIndex,
-        currenSource.id,
+        currentSource.id,
       );
       cli.action.start(
         'Grabbing projects for: ' +
-          currenSource.name +
+          currentSource.name +
           ' (ID: ' +
-          currenSource.id +
+          currentSource.id +
           ')',
       );
       let fetchedProjects = await fetchDataRepo.load(
-        currenSource.id,
+        currentSource.id,
         recentProject,
       );
       cli.action.stop(' done');
 
-      // Add the source id to all of the documents
-      fetchedProjects = fetchedProjects.map((item: any) => {
-        return {
-          ...item,
-          // eslint-disable-next-line @typescript-eslint/camelcase
-          zindexer_sourceid: currenSource.id,
-          organization: item.repository.owner,
-          projectLevel: 'repository',
-        };
-      });
+      fetchedProjects = ingestNodes(
+        fetchedProjects,
+        'zindexer',
+        'repository',
+        currentSource.id,
+        currentSource.repository.owner,
+        currentSource.repository,
+      );
 
-      if (userConfig.elasticsearch.oneIndexPerSource === true) {
-        projectsIndex = (
-          userConfig.elasticsearch.dataIndices.githubProjects +
-          getId(currenSource.name)
-        ).toLocaleLowerCase();
-      }
+      projectsIndex = getEsIndex(
+        userConfig.elasticsearch.dataIndices.githubProjects,
+        userConfig.elasticsearch.oneIndexPerSource,
+        currentSource.name,
+      );
 
-      // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, projectsIndex, esMapping);
-
-      await esPushNodes(fetchedProjects, projectsIndex, eClient);
+      await checkEsIndex(
+        eClient,
+        projectsIndex,
+        esMapping,
+        esSettings,
+        this.log,
+      );
+      await pushEsNodes(eClient, projectsIndex, fetchedProjects, this.log);
     }
 
     if (userConfig.elasticsearch.oneIndexPerSource === true) {
       // Create an alias used for group querying
-      cli.action.start(
-        'Creating the Elasticsearch index alias: ' +
-          userConfig.elasticsearch.dataIndices.githubProjects,
+      await aliasEsIndex(
+        eClient,
+        userConfig.elasticsearch.dataIndices.githubProjects,
+        this.log,
       );
-      await eClient.indices.putAlias({
-        index: userConfig.elasticsearch.dataIndices.githubProjects + '*',
-        name: userConfig.elasticsearch.dataIndices.githubProjects,
-      });
-      cli.action.stop(' done');
     }
   }
 }

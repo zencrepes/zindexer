@@ -6,7 +6,7 @@ export default class FetchNodesByIds {
   log: any; // eslint-disable-line
   cli: object;
   errorRetry: number;
-  graphqlQuery: string;
+  graphqlQuery: any;
   rateLimit: {
     limit: number;
     cost: number;
@@ -46,7 +46,7 @@ export default class FetchNodesByIds {
     const data = await graphqlQuery(
       this.ghClient,
       this.graphqlQuery,
-      { data_array: loadRepos.map((r: any) => r.id) }, // eslint-disable-line
+      { nodesArray: loadRepos.map((r: any) => r.id) }, // eslint-disable-line
       this.rateLimit,
       this.log,
     );

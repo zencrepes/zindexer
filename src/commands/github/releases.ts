@@ -5,19 +5,28 @@ import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import esGithubLatest from '../../utils/es/esGithubLatest';
 import chunkArray from '../../utils/misc/chunkArray';
-import esPushNodes from '../../utils/es/esPushNodes';
 import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
 import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
 import ghClient from '../../utils/github/utils/ghClient';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
 import { getId } from '../../utils/misc/getId';
-import esCheckIndex from '../../utils/es/esCheckIndex';
 
-import fetchGql from '../../utils/github/releases/fetchGql';
-import esMapping from '../../utils/github/releases/esMapping';
-import zConfig from '../../utils/github/releases/zConfig';
-import fetchReposWithData from '../../utils/github/releases/fetchReposWithData';
+import {
+  esMapping,
+  esSettings,
+  fetchNodes,
+  zConfig,
+  ingestNodes,
+  fetchReposWithData,
+} from '../../components/githubReleases';
+
+import {
+  getEsIndex,
+  checkEsIndex,
+  pushEsNodes,
+  aliasEsIndex,
+} from '../../components/esUtils/index';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -68,7 +77,7 @@ export default class Releases extends Command {
 
     const fetchData = new fetchNodesUpdated(
       gClient,
-      fetchGql,
+      fetchNodes,
       this.log,
       userConfig.github.fetch.maxNodes,
       this.config.configDir,
@@ -93,6 +102,7 @@ export default class Releases extends Command {
       const newRepos = await fetchRepos.load(reposChunk);
       reposData = [...reposData, ...newRepos];
     }
+
     const reposWithData = reposData
       .filter((r: any) => r.releases.totalCount > 0)
       .map((r: any) => r.id);
@@ -127,18 +137,32 @@ export default class Releases extends Command {
       );
       cli.action.stop(' done');
 
-      // Add the source id to all of the documents
-      fetchedReleases = fetchedReleases.map((item: any) => {
-        return {
-          ...item,
-          // eslint-disable-next-line @typescript-eslint/camelcase
-          zindexer_sourceid: currentSource.id,
-          repository:
-            currentSource.repository !== undefined
-              ? currentSource.repository
-              : null,
-        };
-      });
+      const currentRepository =
+        currentSource.repository !== undefined
+          ? currentSource.repository
+          : null;
+
+      fetchedReleases = ingestNodes(
+        fetchedReleases,
+        'zindexer',
+        currentSource.id,
+        currentRepository,
+      );
+
+      releasesIndex = getEsIndex(
+        userConfig.elasticsearch.dataIndices.githubReleases,
+        userConfig.elasticsearch.oneIndexPerSource,
+        currentSource.name,
+      );
+
+      await checkEsIndex(
+        eClient,
+        releasesIndex,
+        esMapping,
+        esSettings,
+        this.log,
+      );
+      await pushEsNodes(eClient, releasesIndex, fetchedReleases, this.log);
 
       if (userConfig.elasticsearch.oneIndexPerSource === true) {
         releasesIndex = (
@@ -146,24 +170,14 @@ export default class Releases extends Command {
           getId(currentSource.name)
         ).toLocaleLowerCase();
       }
-
-      // Check if index exists, create it if it does not
-      await esCheckIndex(eClient, userConfig, releasesIndex, esMapping);
-
-      await esPushNodes(fetchedReleases, releasesIndex, eClient);
-
-      if (userConfig.elasticsearch.oneIndexPerSource === true) {
-        // Create an alias used for group querying
-        cli.action.start(
-          'Creating the Elasticsearch index alias: ' +
-            userConfig.elasticsearch.dataIndices.githubReleases,
-        );
-        await eClient.indices.putAlias({
-          index: userConfig.elasticsearch.dataIndices.githubReleases + '*',
-          name: userConfig.elasticsearch.dataIndices.githubReleases,
-        });
-        cli.action.stop(' done');
-      }
+    }
+    if (userConfig.elasticsearch.oneIndexPerSource === true) {
+      // Create an alias used for group querying
+      await aliasEsIndex(
+        eClient,
+        userConfig.elasticsearch.dataIndices.githubMilestones,
+        this.log,
+      );
     }
   }
 }
