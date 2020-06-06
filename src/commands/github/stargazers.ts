@@ -22,7 +22,12 @@ import {
   fetchReposWithData,
 } from '../../components/githubStargazers';
 
-import { checkEsIndex, pushEsNodes } from '../../components/esUtils/index';
+import {
+  checkEsIndex,
+  pushEsNodes,
+  getEsIndex,
+  aliasEsIndex,
+} from '../../components/esUtils/index';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -114,9 +119,6 @@ export default class Stargazers extends Command {
         ' repos with Stargazers, fetching corresponding data',
     );
 
-    const stargazersIndex =
-      userConfig.elasticsearch.dataIndices.githubStargazers;
-    let allStargazers: any[] = [];
     for (const currentSource of sourcesWithStargazers) {
       this.log('Processing source: ' + currentSource.name);
       cli.action.start(
@@ -139,59 +141,28 @@ export default class Stargazers extends Command {
         'stargazers',
       );
 
-      // // Some data manipulation on all items
-      // fetchedStargazers = fetchedStargazers.map((item: any) => {
-      //   const updatedItem = {
-      //     ...item,
-      //     // eslint-disable-next-line @typescript-eslint/camelcase
-      //     zindexerSourceId: currentSource.id,
-      //     id: 'stargazers-' + item.id,
-      //     dataType: 'stargazers',
-      //     repository: {
-      //       id: item._parent.id,
-      //       name: item._parent.name,
-      //       url: item._parent.url,
-      //       databaseId: item._parent.databaseId,
-      //       owner: item._parent.owner,
-      //     },
-      //   };
-      //   delete updatedItem._parent;
-      //   return updatedItem;
-      // });
-      allStargazers = [...allStargazers, ...fetchedStargazers];
+      const stargazersIndex = getEsIndex(
+        userConfig.elasticsearch.dataIndices.githubStargazers,
+        userConfig.elasticsearch.oneIndexPerSource,
+        currentSource.name,
+      );
+
+      await checkEsIndex(
+        eClient,
+        stargazersIndex,
+        esMapping,
+        esSettings,
+        this.log,
+      );
+      await pushEsNodes(eClient, stargazersIndex, fetchedStargazers, this.log);
     }
-
-    // Finally we groupBy user login
-    const grouppedUsers = _.groupBy(allStargazers, 'login');
-    // console.log(grouppedUsers);
-    const preppedUsers = Object.entries(grouppedUsers).map(
-      ([name, content]) => {
-        console.log('Preparring data for user: ' + name);
-        const srcUser = JSON.parse(JSON.stringify(content[0]));
-        delete srcUser.repository;
-        delete srcUser.starredAt;
-        const starred: string[] = content.map((u: any) => u.starredAt);
-        return {
-          ...srcUser,
-          lastStarredAt: starred.sort().reverse()[0],
-          repositories: {
-            edges: content.map((u: any) => {
-              return { node: { ...u.repository, starredAt: u.starredAt } };
-            }),
-            totalCount: content.length,
-          },
-        };
-      },
-    );
-    // console.log(cleanedUser);
-
-    await checkEsIndex(
-      eClient,
-      stargazersIndex,
-      esMapping,
-      esSettings,
-      this.log,
-    );
-    await pushEsNodes(eClient, stargazersIndex, preppedUsers, this.log);
+    if (userConfig.elasticsearch.oneIndexPerSource === true) {
+      // Create an alias used for group querying
+      await aliasEsIndex(
+        eClient,
+        userConfig.elasticsearch.dataIndices.githubStargazers,
+        this.log,
+      );
+    }
   }
 }

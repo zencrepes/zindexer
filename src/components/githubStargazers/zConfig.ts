@@ -36,14 +36,14 @@ const config = {
     },
     {
       facetType: 'term',
-      field: 'repositories.edges.node.name.keyword',
+      field: 'repositories.name.keyword',
       name: 'Watched Repository',
       nullValue: 'EMPTY',
       default: true,
     },
     {
       facetType: 'term',
-      field: 'repositories.edges.node.owner.login',
+      field: 'repositories.owner.login',
       name: 'Watched Organization',
       nullValue: 'EMPTY',
       default: true,
@@ -109,7 +109,7 @@ const config = {
     },
   ],
   tableConfig: {
-    itemsType: 'Github Watchers',
+    itemsType: 'Github Watchs',
     defaultSortField: 'createdAt',
     columns: [
       {

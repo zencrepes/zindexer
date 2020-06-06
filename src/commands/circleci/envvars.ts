@@ -18,8 +18,6 @@ import fetchData from '../../utils/circleci/utils/fetchData';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
-import * as cryptoRandomString from 'crypto-random-string';
-
 export default class Envvars extends Command {
   static description = 'Fetches Environment variables from configured sources';
 
@@ -48,6 +46,9 @@ export default class Envvars extends Command {
 
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
+
+    // eslint-disable-next-line
+    const cryptoRandomString = require('crypto-random-string');
 
     // Push Zencrepes configuration only if there was no previous configuration available
     await pushConfig(

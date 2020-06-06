@@ -4,7 +4,7 @@ import cli from 'cli-ux';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as jsYaml from 'js-yaml';
-import * as loadYamlFile from 'load-yaml-file';
+import loadYamlFile from 'load-yaml-file';
 
 import esClient from '../utils/es/esClient';
 

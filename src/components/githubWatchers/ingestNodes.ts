@@ -17,7 +17,9 @@ const ingestNodes = (
       zsource,
       zindexerSourceId: sourceId,
       repository,
-      id: dataType + '-' + item.id,
+      id: dataType + '-' + repository.id + item.id,
+      userId: item.id,
+      dataType,
     };
   });
   return updatedNodes;

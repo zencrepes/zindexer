@@ -5,6 +5,8 @@ _source:
 properties:
   id:
     type: keyword
+  userId:
+    type: keyword    
   dataType:
     type: keyword  
   repository:
@@ -31,8 +33,8 @@ properties:
         type: keyword    
   createdAt:
     type: date 
-  lastStarredAt:
-    type: date
+  starredAt:
+    type: date    
   company:
     type: text
     fields:
@@ -74,38 +76,7 @@ properties:
   following:
     properties:
       totalCount:
-        type: integer
-  repositories:
-    properties:
-      totalCount:
-        type: integer    
-      edges:
-        type: nested
-        properties:
-          node:
-            properties:        
-              databaseId:
-                type: long
-              id:
-                type: keyword
-              starredAt:
-                type: date            
-              name:
-                type: text
-                fields:
-                  keyword:
-                    type: keyword
-                    ignore_above: 256
-              owner:
-                properties:
-                  id:
-                    type: keyword
-                  login:
-                    type: keyword
-                  url:
-                    type: keyword
-              url:
-                type: keyword        
+        type: integer      
   organizations:
     properties:
       totalCount:

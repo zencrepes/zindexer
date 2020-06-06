@@ -3,11 +3,11 @@ import Command from '../base';
 import cli from 'cli-ux';
 import { ApiResponse } from '@elastic/elasticsearch';
 import * as _ from 'lodash';
-import getUuid from 'uuid-by-string';
+// import getUuid from 'uuid-by-string';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as jsYaml from 'js-yaml';
-import * as loadYamlFile from 'load-yaml-file';
+import loadYamlFile from 'load-yaml-file';
 
 import {
   JiraResponseProject,
@@ -94,6 +94,9 @@ export default class Sources extends Command {
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
     const gClient = await ghClient(userConfig.github);
+
+    // eslint-disable-next-line
+    const getUuid = require('uuid-by-string');
 
     let dataSources: Array<ESIndexSources> = [];
     let esPayload: Array<ESIndexSources> = [];

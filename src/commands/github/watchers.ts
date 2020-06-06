@@ -22,7 +22,12 @@ import {
   fetchReposWithData,
 } from '../../components/githubWatchers';
 
-import { checkEsIndex, pushEsNodes } from '../../components/esUtils/index';
+import {
+  checkEsIndex,
+  pushEsNodes,
+  getEsIndex,
+  aliasEsIndex,
+} from '../../components/esUtils/index';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -112,8 +117,6 @@ export default class Watchers extends Command {
         ' repos with Watchers, fetching corresponding data',
     );
 
-    const watchersIndex = userConfig.elasticsearch.dataIndices.githubWatchers;
-    let allWatchers: any[] = [];
     for (const currentSource of sourcesWithWatchers) {
       this.log('Processing source: ' + currentSource.name);
       cli.action.start(
@@ -136,29 +139,28 @@ export default class Watchers extends Command {
         'watchers',
       );
 
-      allWatchers = [...allWatchers, ...fetchedWatchers];
+      const watchersIndex = getEsIndex(
+        userConfig.elasticsearch.dataIndices.githubWatchers,
+        userConfig.elasticsearch.oneIndexPerSource,
+        currentSource.name,
+      );
+
+      await checkEsIndex(
+        eClient,
+        watchersIndex,
+        esMapping,
+        esSettings,
+        this.log,
+      );
+      await pushEsNodes(eClient, watchersIndex, fetchedWatchers, this.log);
     }
-
-    const grouppedUsers = _.groupBy(allWatchers, 'login');
-    // console.log(grouppedUsers);
-    const preppedUsers = Object.entries(grouppedUsers).map(
-      ([name, content]) => {
-        console.log('Preparring data for user: ' + name);
-        const srcUser = JSON.parse(JSON.stringify(content[0]));
-        delete srcUser.repository;
-        return {
-          ...srcUser,
-          repositories: {
-            edges: content.map((u: any) => {
-              return { node: { ...u.repository } };
-            }),
-            totalCount: content.length,
-          },
-        };
-      },
-    );
-
-    await checkEsIndex(eClient, watchersIndex, esMapping, esSettings, this.log);
-    await pushEsNodes(eClient, watchersIndex, preppedUsers, this.log);
+    if (userConfig.elasticsearch.oneIndexPerSource === true) {
+      // Create an alias used for group querying
+      await aliasEsIndex(
+        eClient,
+        userConfig.elasticsearch.dataIndices.githubWatchers,
+        this.log,
+      );
+    }
   }
 }

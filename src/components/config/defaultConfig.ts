@@ -56,28 +56,31 @@ const defaultConfig = {
         { githubEvent: 'pull_request', zencrepesEntity: 'pullrequests' },
         { githubEvent: 'issues', zencrepesEntity: 'issues' },
         { githubEvent: 'vulnerabilities', zencrepesEntity: 'vulnerabilities' },
-        { githubEvent: 'stargazers', zencrepesEntity: 'stargazers' },
-        { githubEvent: 'watchers', zencrepesEntity: 'watchers' },
+        { githubEvent: 'stargazers', zencrepesEntity: 'star' },
+        { githubEvent: 'watchers', zencrepesEntity: 'watch' },
         { githubEvent: 'project', zencrepesEntity: 'projects' },
         { githubEvent: 'milestone', zencrepesEntity: 'milestones' },
         { githubEvent: 'release', zencrepesEntity: 'releases' },
       ],
       // Save the raw webhook "as-received" in a timeline fashion (no overwrite)
       timelinePayload: {
-        githubEvents: ['*'],
+        includeGithubEvents: ['*'],
+        excludeGithubEvents: ['push', 'create'],
         esIndexPrefix: 'gh_webhook_timeline_',
       },
       // Save the node data contained in the webhook
       // Overwrite previous node state if the same node with same ID is received
       // One index per node type
       nodePayload: {
-        githubEvents: ['*'],
+        includeGithubEvents: ['*'],
+        excludeGithubEvents: ['push', 'create'],
         esIndexPrefix: 'gh_webhook_',
       },
       // Execute a call to GitHub to fetch the latest data in the same format than zindexer (using the same GraphQL query)
       // Data is fed into the indices specified in the elasticsearch section
       fetchNode: {
-        githubEvents: ['*'],
+        includeGithubEvents: ['*'],
+        excludeGithubEvents: [''],
       },
     },
   },

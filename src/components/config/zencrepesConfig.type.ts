@@ -51,15 +51,18 @@ export interface ConfigGithub {
     secret: string;
     events: GithubWebhookEvents[];
     timelinePayload: {
-      githubEvents: string[];
+      includeGithubEvents: string[];
+      excludeGithubEvents: string[];
       esIndexPrefix: string;
     };
     nodePayload: {
-      githubEvents: string[];
+      includeGithubEvents: string[];
+      excludeGithubEvents: string[];
       esIndexPrefix: string;
     };
     fetchNode: {
-      githubEvents: string[];
+      includeGithubEvents: string[];
+      excludeGithubEvents: string[];
     };
   };
 }
