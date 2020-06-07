@@ -38,8 +38,8 @@ const defaultConfig = {
     token: 'YOUR_TOKEN',
     fetch: {
       maxNodes: 30,
-      maxParrallel: 1,
-      delayBetweenFetch: 1000,
+      maxParallel: 1,
+      delayBetweenCalls: 1000,
     },
     // Define a match between a points label and numbers
     storyPointsLabels: [
