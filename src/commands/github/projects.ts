@@ -200,14 +200,16 @@ export default class Projects extends Command {
       );
       cli.action.stop(' done');
 
-      fetchedProjects = ingestNodes(
-        fetchedProjects,
-        'zindexer',
-        'repository',
-        currentSource.id,
-        currentSource.repository.owner,
-        currentSource.repository,
-      );
+      if (currentSource.repository !== undefined) {
+        fetchedProjects = ingestNodes(
+          fetchedProjects,
+          'zindexer',
+          'repository',
+          currentSource.id,
+          currentSource.repository.owner,
+          currentSource.repository,
+        );
+      }
 
       projectsIndex = getEsIndex(
         userConfig.elasticsearch.dataIndices.githubProjects,
