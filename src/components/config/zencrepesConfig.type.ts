@@ -29,6 +29,10 @@ export interface ConfigElasticsearch {
   };
 }
 
+export interface ConfigRedis {
+  host: string;
+}
+
 export interface ConfigGithubPointsLabels {
   label: string;
   points: number;
@@ -45,6 +49,8 @@ export interface ConfigGithub {
   token: string;
   fetch: {
     maxNodes: number;
+    maxParallel: number;
+    delayBetweenCalls: number;
   };
   storyPointsLabels: ConfigGithubPointsLabels[];
   webhook: {
@@ -95,6 +101,7 @@ export interface ConfigJira {
 
 export interface Config {
   elasticsearch: ConfigElasticsearch;
+  redis: ConfigRedis;
   github: ConfigGithub;
   circleci: ConfigCircleci;
   jira: Array<ConfigJira>;

@@ -29,12 +29,17 @@ const defaultConfig = {
       circleciInsights: 'cci_insights_',
     },
   },
+  redis: {
+    host: 'redis://localhost:6379',
+  },
   github: {
     enabled: true,
     username: 'YOUR_USERNAME',
     token: 'YOUR_TOKEN',
     fetch: {
       maxNodes: 30,
+      maxParrallel: 1,
+      delayBetweenFetch: 1000,
     },
     // Define a match between a points label and numbers
     storyPointsLabels: [

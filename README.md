@@ -162,6 +162,14 @@ https://bit.dev/
 https://docs.bit.dev/docs/quick-start
 https://medium.com/javascript-in-plain-english/how-i-share-react-components-between-projects-3896d853cbee
 
+```bash
+bit login
+bit status
+bit tag config 0.0.11 / bit tag --all 0.0.11
+bit build
+bit export zencrepes.zindexer
+```
+
 # Usage
 
 <!-- usage -->
