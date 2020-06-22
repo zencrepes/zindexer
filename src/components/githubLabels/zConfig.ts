@@ -127,7 +127,7 @@ const config = {
         default: true,
       },
       {
-        name: 'pullRequests Count',
+        name: 'PRs Count',
         field: 'pullRequests.totalCount',
         sortField: 'pullRequests.totalCount',
         linkField: null,

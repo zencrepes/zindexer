@@ -58,6 +58,7 @@ export interface JiraResponseProject {
 
 export interface ESSearchResponse<T> {
   hits: {
+    tital: { value: number };
     hits: Array<{
       _source: T;
     }>;
