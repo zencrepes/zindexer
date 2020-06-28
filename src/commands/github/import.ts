@@ -24,14 +24,20 @@ const checkRateLimit = async (response: any) => {
   const remainingTokens = response.headers['x-ratelimit-remaining'];
   if (remainingTokens <= 5 && resetAt !== null) {
     console.log(
-      'Exhausted all available tokens, will resuming querying after ' +
+      new Date().toISOString() +
+        ': Exhausted all available tokens, will resuming querying after ' +
         new Date(resetAt * 1000),
     );
     const sleepDuration =
-      (new Date(resetAt * 1000).getTime() - new Date().getTime()) / 1000;
-    console.log('Will resume querying in: ' + sleepDuration + 's');
+      new Date(resetAt * 1000).getTime() - new Date().getTime();
+    console.log(
+      new Date().toISOString() +
+        ': Will resume querying in: ' +
+        sleepDuration +
+        's',
+    );
     await sleep(sleepDuration + 10000);
-    console.log('Ready to resume querying');
+    console.log(new Date().toISOString() + ': Ready to resume querying');
   }
 };
 
@@ -83,11 +89,7 @@ export default class Import extends Command {
 
     // Step 1: Importing all issues in memory
     const importIndex = userConfig.elasticsearch.dataIndices.githubImport;
-    const issues: GithubIssue[] = await fetchAllIssues(
-      eClient,
-      importIndex,
-      500,
-    );
+    const issues: GithubIssue[] = await fetchAllIssues(eClient, importIndex);
     this.log(
       'Loading issues to be submitted to GitHubinto memory: ' + issues.length,
     );

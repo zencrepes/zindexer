@@ -58,11 +58,7 @@ export default class Issues extends Command {
 
     // Step 1: Importing all issues in memory
     const issuesIndex = userConfig.elasticsearch.dataIndices.jiraIssues;
-    const issues: GithubIssue[] = await fetchAllIssues(
-      eClient,
-      issuesIndex,
-      500,
-    );
+    const issues: GithubIssue[] = await fetchAllIssues(eClient, issuesIndex);
     this.log('Number of issues fetched into memory: ' + issues.length);
 
     // Step 2: Verifying that all users have a matching github username (creator, assignee, comments).
@@ -90,10 +86,14 @@ export default class Issues extends Command {
       }
       if (i.comments !== undefined && i.comments.totalCount > 0) {
         for (const comment of i.comments.edges) {
-          if (!userUniqueEmails.includes(comment.node.author.emailAddress)) {
+          if (
+            comment.node.author !== undefined &&
+            !userUniqueEmails.includes(comment.node.author.emailAddress)
+          ) {
             userUniqueEmails.push(comment.node.author.emailAddress);
           }
           if (
+            comment.node.updateAuthor !== undefined &&
             !userUniqueEmails.includes(comment.node.updateAuthor.emailAddress)
           ) {
             userUniqueEmails.push(comment.node.updateAuthor.emailAddress);
@@ -220,7 +220,7 @@ export default class Issues extends Command {
       };
       if (assignee !== null) {
         issuePayload = { ...issuePayload, assignee };
-      } else {
+      } else if (reporter !== null) {
         issuePayload = { ...issuePayload, assignee: reporter };
       }
       if (i.closedAt !== null) {
@@ -234,15 +234,25 @@ export default class Issues extends Command {
         issuePayload = { ...issuePayload, labels };
       }
 
+      let dstGitHubRepo = repoCfg.githubOrgRepo;
+      if (repoCfg.archive !== undefined) {
+        if (i[repoCfg.archive.field] !== undefined) {
+          const issueDate = new Date(i[repoCfg.archive.field]);
+          const checkDate = new Date(repoCfg.archive.date);
+          if (issueDate < checkDate) {
+            dstGitHubRepo = repoCfg.archive.githubOrgRepo;
+          }
+        }
+      }
       const pIssue: any = {
         id: i.key,
         createdAt: new Date().toISOString(),
-        source: i,
+        source: { id: i.id, key: i.key, server: i.server, url: i.url },
         payload: {
           issue: issuePayload,
           comments,
         },
-        repo: repoCfg.githubOrgRepo,
+        repo: dstGitHubRepo,
         status: null,
       };
 
@@ -257,11 +267,7 @@ export default class Issues extends Command {
       'Comparing import elements with the ones already submitted to Elasticsearch',
     );
 
-    const alreadyPrepped: any[] = await fetchAllIssues(
-      eClient,
-      importIndex,
-      500,
-    );
+    const alreadyPrepped: any[] = await fetchAllIssues(eClient, importIndex);
 
     const filteredIssues = preppedIssues.filter(
       i => alreadyPrepped.find(ip => ip.key === i.key) === undefined,

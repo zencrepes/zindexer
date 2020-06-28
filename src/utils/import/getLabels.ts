@@ -37,7 +37,9 @@ const getLabels = (issue: any) => {
   if (issue.resolution !== null && issue.resolution.name !== 'Done') {
     labels.push(issue.resolution.name);
   }
-  labels.push('Priority:' + issue.priority.name);
+  if (issue.priority !== null) {
+    labels.push('priority:' + issue.priority.name);
+  }
 
   const sprint = getSprint(issue);
   if (sprint !== null && sprint.number !== undefined) {

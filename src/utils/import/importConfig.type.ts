@@ -6,6 +6,11 @@ export interface User {
 export interface Repo {
   jiraProjectKey: string;
   githubOrgRepo: string;
+  archive?: {
+    date: string;
+    field: string;
+    githubOrgRepo: string;
+  };
 }
 
 export interface Label {
@@ -17,6 +22,7 @@ export interface ImportConfig {
   users: User[];
   repos: Repo[];
   labels: Label[];
+  linkReplace: string;
 }
 
 export default ImportConfig;

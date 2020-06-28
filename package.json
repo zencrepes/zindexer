@@ -8,7 +8,7 @@
   },
   "bugs": "https://github.com/zencrepes/zindexer/issues",
   "dependencies": {
-    "@elastic/elasticsearch": "^7.5.0",
+    "@elastic/elasticsearch": "^7.8.0",
     "@oclif/command": "^1",
     "@oclif/config": "^1.14.0",
     "@oclif/plugin-help": "^2",
@@ -85,6 +85,9 @@
       },
       "circleci": {
         "description": "Fetches data from Circleci"
+      },
+      "utils": {
+        "description": "Set of one-off utility functions"
       }
     }
   },

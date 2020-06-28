@@ -6,22 +6,6 @@ const getMarkdownJiraLink = (key: string, host: string, title: string) => {
   return '[' + key + ' - ' + title + '](' + host + '/browse/' + key + ')';
 };
 
-// const getTypeEmoji = (issue: any) => {
-//   if (issue.type.name === 'Issue') {
-//     return '🟨';
-//   }
-//   if (issue.type.name === 'Bug') {
-//     return '🟥';
-//   }
-//   if (issue.type.name === 'Task') {
-//     return '🟦';
-//   }
-//   if (issue.type.name === 'Epic') {
-//     return '🟪';
-//   } else {
-//     return '';
-//   }
-// };
 const getIssueLink = (link: any, issue: any) => {
   if (link.inwardIssue !== null) {
     const jiraLink = getMarkdownJiraLink(
@@ -112,13 +96,15 @@ const getHeader = (issue: any, users: any[]) => {
     ') in project: ' +
     issue.project.name;
   if (issue.reporter !== null) {
-    header =
-      header +
-      '\n> Reporter: @' +
-      getUsername(issue.reporter.emailAddress, users) +
-      ' (' +
-      issue.reporter.displayName +
-      ')';
+    const reporter =
+      issue.reporter !== undefined
+        ? '@' +
+          getUsername(issue.reporter.emailAddress, users) +
+          ' (' +
+          issue.reporter.displayName +
+          ')'
+        : 'Anonymous';
+    header = header + '\n> Reporter: ' + reporter;
   }
   if (issue.assignee !== null) {
     header =
