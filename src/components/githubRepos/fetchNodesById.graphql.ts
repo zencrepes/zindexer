@@ -127,6 +127,7 @@ const GQL_QUERY = gql`
           totalCount
           edges {
             node {
+              name
               target {
                 ... on Commit {
                   id
@@ -138,6 +139,32 @@ const GQL_QUERY = gql`
                       name
                       login
                       id
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        recentCommitsMaster: ref(qualifiedName: "master") {
+          name
+          target {
+            ... on Commit {
+              id
+              history(first: 20) {
+                totalCount
+                edges {
+                  node {
+                    pushedDate
+                    messageHeadline
+                    author {
+                      date
+                      email
+                      user {
+                        name
+                        login
+                        id
+                      }
                     }
                   }
                 }

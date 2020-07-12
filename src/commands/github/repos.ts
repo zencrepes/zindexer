@@ -20,6 +20,12 @@ import {
 
 import { checkEsIndex, pushEsNodes } from '../../components/esUtils/index';
 
+const sleep = (ms: number) => {
+  //https://github.com/Microsoft/tslint-microsoft-contrib/issues/355
+  // tslint:disable-next-line no-string-based-set-timeout
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
+
 export default class Repos extends Command {
   static description = 'Github: Fetches repos data from configured sources';
 
@@ -88,6 +94,8 @@ export default class Repos extends Command {
       );
       const updatedData = await fetchData.load(githubChunk);
       fetchedRepos = [...fetchedRepos, ...updatedData];
+      //Wait for 1 second between all repos fetch
+      await sleep(1000);
       cli.action.stop(' done');
     }
 

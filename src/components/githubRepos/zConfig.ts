@@ -135,6 +135,14 @@ const config = {
       default: true,
     },
     {
+      facetType: 'boolean',
+      field: 'branchProtectionRules.edges.node.requiresCommitSignatures',
+      name: 'Signed Commit',
+      nullValue: 'EMPTY',
+      nullFilter: '',
+      default: true,
+    },
+    {
       facetType: 'metrics',
       field: 'issues.totalCount',
       name: 'Issues',
@@ -197,6 +205,13 @@ const config = {
       nullValue: 'EMPTY',
       default: false,
     },
+    {
+      facetType: 'metrics',
+      field: 'recentCommitsMaster.target.history.totalCount',
+      name: 'Commits to Master',
+      nullValue: 'EMPTY',
+      default: false,
+    },
   ],
   tableConfig: {
     itemsType: 'Github Repositories',
@@ -232,7 +247,7 @@ const config = {
         name: 'Name',
         field: 'name',
         fieldType: 'string',
-        sortField: 'name',
+        sortField: 'name.keyword',
         linkField: 'url',
         sortable: true,
         default: true,
@@ -326,6 +341,15 @@ const config = {
         linkField: null,
         sortable: false,
         default: true,
+      },
+      {
+        name: 'Commits to Master in Current Year (20 max)',
+        field: 'currentYearMasterCommits',
+        fieldType: 'string',
+        sortField: 'currentYearMasterCommits',
+        linkField: null,
+        sortable: true,
+        default: false,
       },
       {
         name: 'Url',

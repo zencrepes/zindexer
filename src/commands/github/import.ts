@@ -36,21 +36,92 @@ const checkRateLimit = async (response: any) => {
         sleepDuration +
         's',
     );
-    await sleep(sleepDuration + 10000);
+    await sleep(sleepDuration + 600000); // (Pausing for an extra 10mn after retry time)
     console.log(new Date().toISOString() + ': Ready to resume querying');
   }
 };
 
 // There might be a need to rename some labels due to some conflict with the data in GitHub
-// For
 const renameLabels = (labels: string[], importConfig: ImportConfig) => {
-  return labels.map(l => {
+  let updatedLabels = labels.map(l => {
     const replaceLabel = importConfig.labels.find(r => r.from === l);
     if (replaceLabel !== undefined) {
       return replaceLabel.to;
     }
-    return l;
+    // We don't want leading or trailing spaces in labels
+    return l.trim();
   });
+  return updatedLabels.filter(
+    (item, idx) => updatedLabels.indexOf(item) === idx,
+  );
+};
+
+const importIssues = async (
+  eClient: any,
+  importIndex: string,
+  submitIssues: any[],
+  userConfig: any,
+  importConfig: any,
+) => {
+  submitIssues = submitIssues.map(i => {
+    return {
+      ...i,
+      payload: {
+        ...i.payload,
+        issue: {
+          ...i.payload.issue,
+          labels: renameLabels(i.payload.issue.labels, importConfig),
+        },
+      },
+    };
+  });
+  let cpt = 0;
+  for (const issue of submitIssues) {
+    let response: any = {};
+    try {
+      response = await axios({
+        method: 'post',
+        url: 'https://api.github.com/repos/' + issue.repo + '/import/issues',
+        headers: {
+          Authorization: 'token ' + userConfig.github.token,
+          Accept: 'application/vnd.github.golden-comet-preview+json',
+        },
+        data: issue.payload,
+      });
+    } catch (error) {
+      console.log(error);
+      console.log('Error pushing issue: ' + issue.source.key);
+    }
+    const remainingTokens = response.headers['x-ratelimit-remaining'];
+
+    console.log(
+      '(' +
+        cpt +
+        '/' +
+        submitIssues.length +
+        ') Issue: ' +
+        issue.id +
+        ' Submitted to GitHub - remaining tokens: ' +
+        remainingTokens +
+        ' status: ' +
+        response.data.status +
+        ' (id: ' +
+        response.data.id +
+        ')',
+    );
+    const updatedIssue = {
+      ...issue,
+      status: response.data,
+    };
+    await eClient.update({
+      id: issue.id,
+      index: importIndex,
+      body: { doc: updatedIssue },
+    });
+    await sleep(250);
+    await checkRateLimit(response);
+    cpt++;
+  }
 };
 
 //https://gist.github.com/jonmagic/5282384165e0f86ef105
@@ -68,7 +139,7 @@ export default class Import extends Command {
 
     action: flags.string({
       char: 'a',
-      options: ['submit', 'check', 'resubmit'],
+      options: ['submit', 'check', 'resubmit', 'crosscheck'],
       required: false,
       default: 'submit',
       description: 'Import action to be performed',
@@ -89,6 +160,7 @@ export default class Import extends Command {
 
     // Step 1: Importing all issues in memory
     const importIndex = userConfig.elasticsearch.dataIndices.githubImport;
+    const issuesIndex = userConfig.elasticsearch.dataIndices.githubIssues;
     const issues: GithubIssue[] = await fetchAllIssues(eClient, importIndex);
     this.log(
       'Loading issues to be submitted to GitHubinto memory: ' + issues.length,
@@ -102,60 +174,13 @@ export default class Import extends Command {
           i => i.status !== null && i.status.status === 'failed',
         );
       }
-      submitIssues = submitIssues.map(i => {
-        return {
-          ...i,
-          payload: {
-            ...i.payload,
-            issue: {
-              ...i.payload.issue,
-              labels: renameLabels(i.payload.issue.labels, importConfig),
-            },
-          },
-        };
-      });
-      for (const issue of submitIssues) {
-        let response: any = {};
-        try {
-          response = await axios({
-            method: 'post',
-            url:
-              'https://api.github.com/repos/' + issue.repo + '/import/issues',
-            headers: {
-              Authorization: 'token ' + userConfig.github.token,
-              Accept: 'application/vnd.github.golden-comet-preview+json',
-            },
-            data: issue.payload,
-          });
-        } catch (error) {
-          this.log(error);
-          this.log('Error pushing issue: ' + issue.source.key);
-        }
-        const remainingTokens = response.headers['x-ratelimit-remaining'];
-
-        this.log(
-          'Issue: ' +
-            issue.id +
-            ' Submitted to GitHub - remaining tokens: ' +
-            remainingTokens +
-            ' status: ' +
-            response.data.status +
-            ' (id: ' +
-            response.data.id +
-            ')',
-        );
-        const updatedIssue = {
-          ...issue,
-          status: response.data,
-        };
-        await eClient.update({
-          id: issue.id,
-          index: importIndex,
-          body: { doc: updatedIssue },
-        });
-        await sleep(250);
-        await checkRateLimit(response);
-      }
+      await importIssues(
+        eClient,
+        importIndex,
+        submitIssues,
+        userConfig,
+        importConfig,
+      );
     } else if (action === 'check') {
       // Checking issues in GitHub that don't have
       const checkIssues = issues.filter(
@@ -227,7 +252,50 @@ export default class Import extends Command {
           }
         }
       }
+    } else if (action === 'crosscheck') {
+      // Compares issues in the github index to issues in the import index to find which ones are missing
+      const githubIssues: GithubIssue[] = await fetchAllIssues(
+        eClient,
+        issuesIndex,
+      );
+      cli.action.stop('... done (' + githubIssues.length + ' issues)');
+
+      const missingIssues = issues.filter(
+        i =>
+          githubIssues.find(gi => gi.title.includes(i.source.key + ' - ')) ===
+          undefined,
+      );
+      this.log('Found: ' + missingIssues.length + ' issues missing');
+      this.log(
+        'Fetching errors for first 10 missing issues (problems are often similar between issues',
+      );
+      for (const mi of missingIssues.slice(0, 10)) {
+        cli.action.start('Fetching status for missing issue: ' + mi.source.key);
+        let response: any = {};
+        try {
+          response = await axios({
+            method: 'get',
+            url: mi.status.url,
+            headers: {
+              Authorization: 'token ' + userConfig.github.token,
+              Accept: 'application/vnd.github.golden-comet-preview+json',
+            },
+          });
+        } catch (error) {
+          this.log(error);
+        }
+        cli.action.stop('... done');
+        this.log(response.data.errors);
+      }
+      // await importIssues(
+      //   eClient,
+      //   importIndex,
+      //   missingIssues,
+      //   userConfig,
+      //   importConfig,
+      // );
     }
+
     // Need to add some logic to retry until all issues have the status updated
   }
 }
