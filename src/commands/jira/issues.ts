@@ -19,6 +19,7 @@ import esGetActiveSources from '../../utils/es/esGetActiveSources';
 
 import esMapping from '../../utils/jira/issues/esMapping';
 import zConfig from '../../utils/jira/issues/zConfig';
+import getSprint from '../../utils/jira/issues/getSprint';
 
 import esCheckIndex from '../../utils/es/esCheckIndex';
 
@@ -70,7 +71,18 @@ const formatIssue = (issue: any, issueFields: any[]) => {
         modifiedObj[field.zfield] = {
           totalCount: jValue.length,
           edges: jValue.map((v: any) => {
-            if (v.outwardIssue !== null || v.inwardIssue !== null) {
+            if (field.zfield === 'labels') {
+              return {
+                node: {
+                  id: v,
+                  name: v,
+                },
+              };
+            } else if (field.zfield === 'sprints') {
+              return {
+                node: getSprint(v),
+              };
+            } else if (v.outwardIssue !== null || v.inwardIssue !== null) {
               // We are going through an issue link, we need to clean the sub issue
               const outwardIssue =
                 v.outwardIssue === null || v.outwardIssue === undefined
@@ -85,6 +97,19 @@ const formatIssue = (issue: any, issueFields: any[]) => {
                   ...v,
                   outwardIssue,
                   inwardIssue,
+                },
+              };
+            } else if (v.body !== undefined) {
+              // We're going through a list of comments
+              return {
+                node: {
+                  id: v.id,
+                  self: v.self,
+                  author: v.author,
+                  body: v.body,
+                  updateAuthor: v.updateAuthor,
+                  created: v.created,
+                  updated: v.updated,
                 },
               };
             } else if (v.field !== undefined) {
@@ -211,7 +236,7 @@ export default class Issues extends Command {
           userConfig,
           source.server,
           'project = "' + source.id + '" ORDER BY updated DESC',
-          '',
+          '*navigable,comment',
           recentIssue,
           0,
           jiraServer.config.fetch.maxNodes,
@@ -236,7 +261,7 @@ export default class Issues extends Command {
                 zindexerSourceId: source.id,
                 updatedAt: ji.fields.updated,
                 server: { name: jiraServer.name, host: jiraServer.config.host },
-                url: jiraServer.config.host + +'/browse/' + ji.key,
+                url: jiraServer.config.host + '/browse/' + ji.key,
               },
               ...formattedIssue,
             };

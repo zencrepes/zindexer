@@ -39,7 +39,11 @@ properties:
       url:
         type: keyword
   body:
-    type: keyword
+    type: text
+    fields:
+      keyword:
+        type: keyword
+        ignore_above: 256
   closedAt:
     type: date
   points:

@@ -2,13 +2,26 @@
 
 interface GitHubNode {
   id: string;
+  recentCommitsMaster: any;
 }
 
 const ingestNodes = (nodes: GitHubNode[], zsource: string) => {
   const updatedNodes = nodes.map((item: GitHubNode) => {
+    const currentYear = new Date().getFullYear();
+    let currentYearMasterCommits = 0;
+    if (
+      item.recentCommitsMaster !== undefined &&
+      item.recentCommitsMaster !== null
+    ) {
+      const yearCommits = item.recentCommitsMaster.target.history.edges.filter(
+        (cn: any) => new Date(cn.node.pushedDate).getFullYear() === currentYear,
+      );
+      currentYearMasterCommits = yearCommits.length;
+    }
     return {
       ...item,
       zsource,
+      currentYearMasterCommits,
     };
   });
   return updatedNodes;

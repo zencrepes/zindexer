@@ -7,6 +7,8 @@ properties:
     type: keyword
   active:
     type: boolean
+  currentYearCommits:
+    type: integer    
   branchProtectionRules:
     properties:
       totalCount:

@@ -21,6 +21,7 @@ export interface ConfigElasticsearch {
     githubMilestones: string;
     githubLabels: string;
     githubReleases: string;
+    githubImport: string;
     jiraIssues: string;
     jiraProjects: string;
     circleciPipelines: string;

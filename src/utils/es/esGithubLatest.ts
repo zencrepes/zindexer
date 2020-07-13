@@ -22,7 +22,7 @@ const esGithubLatest = async (
   });
   cli.action.stop(' done');
 
-  if (testIndex.body === false) {
+  if (testIndex.statusCode === 404) {
     return null;
   }
 

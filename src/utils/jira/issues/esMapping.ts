@@ -138,6 +138,105 @@ properties:
                 type: keyword
       totalCount:
         type: long
+  comments:
+    properties:
+      edges:
+        type: nested
+        properties:
+          node:
+            properties:
+              id:
+                type: keyword
+              self:
+                type: keyword
+              body:
+                type: text
+                fields:
+                  keyword:
+                    type: keyword
+                    ignore_above: 256 
+              created:
+                type: date
+              updated:
+                type: date    
+              author:
+                properties:
+                  active:
+                    type: boolean
+                  avatarUrls:
+                    properties:
+                      xsmall:
+                        type: keyword
+                      small:
+                        type: keyword
+                      medium:
+                        type: keyword
+                      large:
+                        type: keyword
+                  displayName:
+                    type: text
+                    fields:
+                      keyword:
+                        type: keyword
+                        ignore_above: 256
+                  emailAddress:
+                    type: text
+                    fields:
+                      keyword:
+                        type: keyword
+                        ignore_above: 256
+                  key:
+                    type: keyword
+                  name:
+                    type: text
+                    fields:
+                      keyword:
+                        type: keyword
+                        ignore_above: 256
+                  self:
+                    type: keyword
+                  timeZone:
+                    type: keyword
+              updateAuthor:
+                properties:
+                  active:
+                    type: boolean
+                  avatarUrls:
+                    properties:
+                      xsmall:
+                        type: keyword
+                      small:
+                        type: keyword
+                      medium:
+                        type: keyword
+                      large:
+                        type: keyword
+                  displayName:
+                    type: text
+                    fields:
+                      keyword:
+                        type: keyword
+                        ignore_above: 256
+                  emailAddress:
+                    type: text
+                    fields:
+                      keyword:
+                        type: keyword
+                        ignore_above: 256
+                  key:
+                    type: keyword
+                  name:
+                    type: text
+                    fields:
+                      keyword:
+                        type: keyword
+                        ignore_above: 256
+                  self:
+                    type: keyword
+                  timeZone:
+                    type: keyword
+      totalCount:
+        type: long        
   issuelinks:
     properties:
       edges:

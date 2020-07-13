@@ -22,6 +22,7 @@ const defaultConfig = {
       githubMilestones: 'gh_milestones_',
       githubLabels: 'gh_labels_',
       githubReleases: 'gh_releases_',
+      githubImport: 'gh_import_',
       jiraIssues: 'j_issues_',
       jiraProjects: 'j_projects_',
       circleciPipelines: 'cci_pipelines_',
@@ -126,7 +127,10 @@ const defaultConfig = {
             { jfield: 'reporter', zfield: 'reporter' },
             { jfield: 'environment', zfield: 'environment' },
             { jfield: 'duedate', zfield: 'dueAt' },
+            { jfield: 'labels', zfield: 'labels' },
+            { jfield: 'customfield_10313', zfield: 'sprints' },
             { jfield: 'customfield_10114', zfield: 'points' },
+            { jfield: 'comment.comments', zfield: 'comments' },
             {
               jfield: 'customfield_11115',
               zfield: 'originalPoints',
