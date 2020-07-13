@@ -20,7 +20,7 @@ const esQueryData = async (
   const testIndex = await client.indices.exists({
     index: esIndex,
   });
-  if (testIndex.body === false) {
+  if (testIndex.statusCode === 404) {
     console.error(
       'Index: ' + esIndex + ' does not exists, please fix that first',
       { exit: 1 },

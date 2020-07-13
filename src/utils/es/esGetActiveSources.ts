@@ -25,7 +25,7 @@ const esGetActiveSources = async (
   const testIndex = await client.indices.exists({
     index: userConfig.elasticsearch.sysIndices.sources,
   });
-  if (testIndex.body === false) {
+  if (testIndex.statusCode === 404) {
     console.error(
       'Index: ' +
         userConfig.elasticsearch.sysIndices.sources +

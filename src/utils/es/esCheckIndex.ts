@@ -19,7 +19,7 @@ const esCheckIndex = async (
     process.exit(1);
   }
   const testIndex = await client.indices.exists({ index: index });
-  if (testIndex.body === false) {
+  if (testIndex.statusCode === 404) {
     cli.action.start(
       'Elasticsearch Index ' + index + ' does not exist, creating',
     );

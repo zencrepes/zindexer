@@ -13,7 +13,6 @@ import GQL_UPDATEISSUEBODY from '../../utils/import/updateIssueBody.graphql';
 import GQL_RATELIMIT from '../../utils/import/getRateLimit.graphql';
 
 import { ImportConfig } from '../../utils/import/importConfig.type';
-import { GithubIssue } from 'src/global';
 
 const sleep = (ms: number) => {
   //https://github.com/Microsoft/tslint-microsoft-contrib/issues/355
@@ -63,7 +62,7 @@ export default class UpdateLinks extends Command {
 
     // Step 1: Importing all issues in memory
     const issuesIndex = userConfig.elasticsearch.dataIndices.githubIssues;
-    const issues: GithubIssue[] = await fetchAllIssues(eClient, issuesIndex);
+    const issues: any[] = await fetchAllIssues(eClient, issuesIndex);
 
     // This array contains the list of links that couldn't be found
     const notFound: { issueKey: string; linkedIssue: string }[] = [];

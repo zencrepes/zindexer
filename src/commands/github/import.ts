@@ -11,7 +11,6 @@ import fetchAllIssues from '../../utils/import/fetchAllIssues';
 import checkConfig from '../../utils/import/checkConfig';
 
 import { ImportConfig } from '../../utils/import/importConfig.type';
-import { GithubIssue } from 'src/global';
 
 const sleep = (ms: number) => {
   //https://github.com/Microsoft/tslint-microsoft-contrib/issues/355
@@ -43,7 +42,7 @@ const checkRateLimit = async (response: any) => {
 
 // There might be a need to rename some labels due to some conflict with the data in GitHub
 const renameLabels = (labels: string[], importConfig: ImportConfig) => {
-  let updatedLabels = labels.map(l => {
+  const updatedLabels = labels.map(l => {
     const replaceLabel = importConfig.labels.find(r => r.from === l);
     if (replaceLabel !== undefined) {
       return replaceLabel.to;
@@ -161,7 +160,7 @@ export default class Import extends Command {
     // Step 1: Importing all issues in memory
     const importIndex = userConfig.elasticsearch.dataIndices.githubImport;
     const issuesIndex = userConfig.elasticsearch.dataIndices.githubIssues;
-    const issues: GithubIssue[] = await fetchAllIssues(eClient, importIndex);
+    const issues: any[] = await fetchAllIssues(eClient, importIndex);
     this.log(
       'Loading issues to be submitted to GitHubinto memory: ' + issues.length,
     );
@@ -254,10 +253,7 @@ export default class Import extends Command {
       }
     } else if (action === 'crosscheck') {
       // Compares issues in the github index to issues in the import index to find which ones are missing
-      const githubIssues: GithubIssue[] = await fetchAllIssues(
-        eClient,
-        issuesIndex,
-      );
+      const githubIssues: any[] = await fetchAllIssues(eClient, issuesIndex);
       cli.action.stop('... done (' + githubIssues.length + ' issues)');
 
       const missingIssues = issues.filter(

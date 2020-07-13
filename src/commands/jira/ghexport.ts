@@ -23,7 +23,6 @@ import { esMapping, esSettings } from '../../components/githubImport';
 import { checkEsIndex, pushEsNodes } from '../../components/esUtils/index';
 
 import { ImportConfig } from '../../utils/import/importConfig.type';
-import { GithubIssue } from 'src/global';
 
 //https://gist.github.com/jonmagic/5282384165e0f86ef105
 export default class Issues extends Command {
@@ -58,7 +57,7 @@ export default class Issues extends Command {
 
     // Step 1: Importing all issues in memory
     const issuesIndex = userConfig.elasticsearch.dataIndices.jiraIssues;
-    const issues: GithubIssue[] = await fetchAllIssues(eClient, issuesIndex);
+    const issues: any[] = await fetchAllIssues(eClient, issuesIndex);
     this.log('Number of issues fetched into memory: ' + issues.length);
 
     // Step 2: Verifying that all users have a matching github username (creator, assignee, comments).
