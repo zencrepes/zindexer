@@ -9,6 +9,8 @@ interface GitHubNode {
   closedAt: string | null;
   createdAt: string;
   labels: any;
+  assignees: any;
+  projectCards: any;
 }
 
 const ingestNodes = (
@@ -43,8 +45,29 @@ const ingestNodes = (
         }
       }
     }
+    // To be able to calculate sum of points on nested aggregations, we need to store the points alongside all of the nested fields.
+    // Wanted to handle this through the ES mapping with copy_to but this doesn't seem to be possible
+    // See: https://github.com/elastic/elasticsearch/issues/34428
     return {
       ...item,
+      assignees: {
+        ...item.assignees,
+        edges: item.assignees.edges.map((a: any) => {
+          return { ...a, points: issuePoints };
+        }),
+      },
+      labels: {
+        ...item.labels,
+        edges: item.labels.edges.map((l: any) => {
+          return { ...l, points: issuePoints };
+        }),
+      },
+      projectCards: {
+        ...item.projectCards,
+        edges: item.projectCards.edges.map((p: any) => {
+          return { ...p, points: issuePoints };
+        }),
+      },
       zsource,
       zindexerSourceId: sourceId,
       openedDuring: openedDuring,
