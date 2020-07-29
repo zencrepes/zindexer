@@ -48,7 +48,7 @@ const config = {
       nullValue: 'NO ASSIGNEE',
       nullFilter:
         '{"op":"<=","content":{"field":"assignees.totalCount","value":0}}',
-      default: false,
+      default: true,
     },
     {
       facetType: 'term',

@@ -28,6 +28,8 @@ properties:
                     ignore_above: 256
               url:
                 type: keyword
+              points:
+                type: integer                
       totalCount:
         type: long
   author:
@@ -47,7 +49,7 @@ properties:
   closedAt:
     type: date
   points:
-    type: long     
+    type: integer
   openedDuring:
     type: long    
   comments:
@@ -81,6 +83,8 @@ properties:
                   keyword:
                     type: keyword
                     ignore_above: 256
+              points:
+                type: integer
       totalCount:
         type: long
   milestone:
@@ -142,6 +146,8 @@ properties:
                       keyword:
                         type: keyword
                         ignore_above: 256
+                  points:
+                    type: integer
       totalCount:
         type: long
   repository:
