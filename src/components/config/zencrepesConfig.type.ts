@@ -90,6 +90,7 @@ export interface ConfigJira {
     host: string;
     username: string;
     password: string;
+    concurrency: number;
     fields: {
       issues: Array<ConfigJiraFieldMapping>;
     };

@@ -12,7 +12,9 @@ properties:
   createdAt:
     type: date
   updatedAt:
-    type: date    
+    type: date
+  endOfSupport:
+    type: date      
   assignee:
     properties:
       active:
@@ -236,7 +238,7 @@ properties:
                   timeZone:
                     type: keyword
       totalCount:
-        type: long        
+        type: long
   issuelinks:
     properties:
       edges:
@@ -463,6 +465,37 @@ properties:
                         type: keyword
                         ignore_above: 256
                   self:
+                    type: keyword
+      totalCount:
+        type: long
+  remoteLinks:
+    properties:
+      edges:
+        type: nested
+        properties:
+          node:
+            properties:
+              key:
+                type: keyword
+              points:
+                type: long
+              closedAt:
+                type: date
+              createdAt:
+                type: date
+              updatedAt:
+                type: date
+              summary:
+                type: text
+                fields:
+                  keyword:
+                    type: keyword
+                    ignore_above: 256       
+              remoteLink:
+                properties:                  
+                  url:
+                    type: keyword
+                  title:
                     type: keyword
       totalCount:
         type: long

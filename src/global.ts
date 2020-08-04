@@ -72,6 +72,7 @@ export interface ESIndexSources {
   server?: string;
   name: string;
   active: boolean;
+  remoteLinks?: boolean;
   repository?: GithubRepository;
 }
 
