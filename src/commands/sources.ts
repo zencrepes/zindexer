@@ -64,8 +64,7 @@ export default class Sources extends Command {
     load: flags.boolean({
       char: 'l',
       default: false,
-      description:
-        'Load active status from status file: CONFIG_DIR/sources.yml',
+      description: 'Load active status from file: CONFIG_DIR/sources.yml',
     }),
     ggrab: flags.string({
       char: 'g',
@@ -184,6 +183,7 @@ export default class Sources extends Command {
                 project: p.key,
                 name: p.name + '-' + p.key,
                 active: active,
+                remoteLinks: false,
               };
             }),
           ];

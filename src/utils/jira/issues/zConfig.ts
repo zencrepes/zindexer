@@ -28,6 +28,13 @@ const config = {
       default: true,
     },
     {
+      facetType: 'date',
+      field: 'endOfSupport',
+      name: 'End Of Support',
+      nullValue: 'EMPTY',
+      default: true,
+    },
+    {
       facetType: 'boolean',
       field: 'assignee.active',
       name: 'Assignee Active',
@@ -45,8 +52,17 @@ const config = {
     },
     {
       facetType: 'term',
+      field: 'server.name.keyword',
+      name: 'Jira Server',
+      nullValue: 'NO SERVER',
+      nullFilter:
+        '{"op":"in","content":{"field":"server.name.keyword","value":["__missing__"]}}',
+      default: true,
+    },
+    {
+      facetType: 'term',
       field: 'project.name.keyword',
-      name: 'Project',
+      name: 'Jira Project',
       nullValue: 'NO EPIC',
       nullFilter:
         '{"op":"in","content":{"field":"project.name.keyword","value":["__missing__"]}}',
@@ -149,12 +165,52 @@ const config = {
   tableConfig: {
     itemsType: 'Jira Issues',
     columns: [
-      { name: 'Key', field: 'key', sortField: 'key', sortable: true },
+      {
+        name: 'Type',
+        field: 'type.name',
+        sortField: 'type.name.keyword',
+        sortable: true,
+      },
+      { name: 'Issue Key', field: 'key', sortField: 'key', sortable: true },
       {
         name: 'Summary',
         field: 'summary',
         sortField: 'summary.keyword',
         sortable: true,
+      },
+      {
+        name: 'Priority',
+        field: 'priority.name',
+        sortField: 'priority.name.keyword',
+        sortable: true,
+      },
+      {
+        name: 'Resolution',
+        field: 'resolution.name',
+        sortField: 'resolution.name.keyword',
+        sortable: true,
+      },
+      {
+        name: 'Remote Links Count',
+        field: 'remoteLinks.totalCount',
+        sortField: 'remoteLinks.totalCount',
+        sortable: false,
+      },
+      {
+        name: 'Remote Links Keys',
+        field: 'remoteLinks.edges',
+        fieldType: 'array',
+        fieldNode: 'node.key',
+        sortField: 'remoteLinks.totalCount',
+        sortable: false,
+      },
+      {
+        name: 'Remote Links Points',
+        field: 'remoteLinks.edges',
+        fieldType: 'arraysum',
+        fieldNode: 'node.points',
+        sortField: 'remoteLinks.totalCount',
+        sortable: false,
       },
       {
         name: 'Created At',
@@ -172,6 +228,24 @@ const config = {
         name: 'Closed At',
         field: 'closedAt',
         sortField: 'closedAt',
+        sortable: true,
+      },
+      {
+        name: 'Project Key',
+        field: 'project.key',
+        sortField: 'project.key',
+        sortable: true,
+      },
+      {
+        name: 'Project Name',
+        field: 'project.name',
+        sortField: 'project.name.keyword',
+        sortable: false,
+      },
+      {
+        name: 'End Of Support',
+        field: 'endOfSupport',
+        sortField: 'endOfSupport',
         sortable: true,
       },
     ],

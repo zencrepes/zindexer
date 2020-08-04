@@ -11,6 +11,8 @@ properties:
     type: keyword
   type:
     type: keyword
+  remoteLinks:
+    type: boolean    
   server:
     type: keyword
   name:

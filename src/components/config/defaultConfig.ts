@@ -102,6 +102,9 @@ const defaultConfig = {
         username: 'username',
         password: 'password',
         host: 'https://jira.myhost.org',
+        // Concurrent API calls to JIRA, this is only used for specific "light" calls when bulk fetching is not available at an API level
+        // Such as fetching remote links
+        concurrency: 20,
         fields: {
           issues: [
             { jfield: 'issueType', zfield: 'issueType' },
@@ -143,6 +146,8 @@ const defaultConfig = {
               jfield: 'customfield_10314',
               zfield: 'parentEpic',
             },
+            { jfield: 'remoteLinks', zfield: 'remoteLinks' },
+            { jfield: 'customfield_10850', zfield: 'endOfSupport' },
           ],
         },
         excludeDays: ['1900-01-01'],

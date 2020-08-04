@@ -244,23 +244,32 @@ export default class Issues extends Command {
         );
         cli.action.stop(' done');
 
-        //        console.log(projectIssues);
+        // console.log(projectIssues);
         // Jira issues will be reformated to a payload closer to GitHub's,
         // objective being to streamline the payload and easy development
         const updatedIssues = projectIssues
           .map((ji: any) => {
             const formattedIssue = formatIssue(
-              ji,
+              {
+                ...ji,
+                fields: {
+                  ...ji.fields,
+                },
+              },
               jiraServer.config.fields.issues,
             );
             return {
               ...{
                 id: ji.id,
                 key: ji.key,
+                //                source: ji,
                 // eslint-disable-next-line @typescript-eslint/camelcase
                 zindexerSourceId: source.id,
                 updatedAt: ji.fields.updated,
-                server: { name: jiraServer.name, host: jiraServer.config.host },
+                server: {
+                  name: jiraServer.name,
+                  host: jiraServer.config.host,
+                },
                 url: jiraServer.config.host + '/browse/' + ji.key,
               },
               ...formattedIssue,
