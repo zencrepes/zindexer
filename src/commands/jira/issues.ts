@@ -26,7 +26,6 @@ import esCheckIndex from '../../utils/es/esCheckIndex';
 import fetchJqlPagination from '../../utils/jira/utils/fetchJql';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
-import { truncate } from 'lodash';
 
 //https://medium.com/javascript-in-plain-english/javascript-check-if-a-variable-is-an-object-and-nothing-else-not-an-array-a-set-etc-a3987ea08fd7
 const isObject = (obj: any) => {
@@ -219,7 +218,7 @@ export default class Issues extends Command {
         if (flags.all === true) {
           // If refresh flag is true, delete all issues and refetch
           cli.action.start('Deleting all issues for project: ' + source.name);
-          const response = await eClient.deleteByQuery({
+          await eClient.deleteByQuery({
             index: issuesIndex,
             body: {
               query: {
@@ -257,7 +256,6 @@ export default class Issues extends Command {
               ],
             },
           });
-          let recentIssue = null;
           if (searchResult.body.hits.hits.length > 0) {
             recentIssue = searchResult.body.hits.hits[0]._source;
           }
