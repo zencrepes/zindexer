@@ -177,11 +177,11 @@ export default class Sources extends Command {
             ...jiraProjects.map((p: JiraResponseProject) => {
               return {
                 uuid: getUuid('JIRA-' + p.key + '-' + p.name, 'SOURCES', 5),
-                id: p.key,
+                id: jiraServer.name + '_' + p.key,
                 type: 'JIRA',
                 server: jiraServer.name,
                 project: p.key,
-                name: p.name + '-' + p.key,
+                name: jiraServer.name + '_' + p.key,
                 active: active,
                 remoteLinks: false,
               };

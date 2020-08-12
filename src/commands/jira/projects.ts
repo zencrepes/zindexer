@@ -1,5 +1,7 @@
 import { flags } from '@oclif/command';
 import cli from 'cli-ux';
+import pMap from 'p-map';
+import { ApiResponse } from '@elastic/elasticsearch';
 
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
@@ -12,6 +14,7 @@ import esMapping from '../../utils/jira/projects/esMapping';
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
 import esCheckIndex from '../../utils/es/esCheckIndex';
 import fetchData from '../../utils/jira/utils/fetchData';
+import { fetchJql } from '../../utils/jira/utils/fetchJql';
 
 export default class Projects extends Command {
   static description = 'Jira: Fetches project data from configured sources';
@@ -29,6 +32,9 @@ export default class Projects extends Command {
   async run() {
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
+
+    const esIndex = userConfig.elasticsearch.dataIndices.jiraProjects;
+
     // Split the array by jira server
     for (const jiraServer of userConfig.jira.filter(
       (p: ConfigJira) => p.enabled === true,
@@ -45,84 +51,142 @@ export default class Projects extends Command {
         (s: ESIndexSources) => s.server === jiraServer.name,
       )) {
         cli.action.start('Fetching data for project: ' + source.name);
-        console.log('Getting overall project data');
-        const projectData = await fetchData(
-          userConfig,
-          source.server,
-          '/rest/api/2/project/' + source.id,
-        );
-        console.log('Getting project properties');
-        const projectProperties = await fetchData(
-          userConfig,
-          source.server,
-          '/rest/api/2/project/' + source.id + '/properties',
-        );
-        console.log('Getting project roles');
-        const projectRolesRaw = await fetchData(
-          userConfig,
-          source.server,
-          '/rest/api/2/project/' + source.id + '/role',
-        );
-        const projectRoles: Array<object> = [];
-        for (const endpointValue of Object.values(projectRolesRaw)) {
-          console.log(
-            'Getting project roles - fetching additional data from: ' +
-              endpointValue,
-          );
-          const projectRoleData = await fetchData(
-            userConfig,
-            source.server,
-            String(endpointValue),
-          );
-          projectRoles.push(projectRoleData);
+        // Begin with fetching everything that can be parallelized
+        const apiCalls: any[] = [
+          {
+            key: 'projectData',
+            endpoint: '/rest/api/2/project/' + source.project,
+          },
+          {
+            key: 'properties',
+            endpoint: '/rest/api/2/project/' + source.project + '/properties',
+          },
+          {
+            key: 'projectRolesRaw',
+            endpoint: '/rest/api/2/project/' + source.project + '/role',
+          },
+          {
+            key: 'notificationsScheme',
+            endpoint:
+              '/rest/api/2/project/' + source.project + '/notificationscheme',
+          },
+          {
+            key: 'permissionsScheme',
+            endpoint:
+              '/rest/api/2/project/' + source.project + '/permissionscheme',
+          },
+          {
+            key: 'priorityScheme',
+            endpoint:
+              '/rest/api/2/project/' + source.project + '/priorityscheme',
+          },
+          {
+            key: 'securityLevel',
+            endpoint:
+              '/rest/api/2/project/' + source.project + '/securitylevel',
+          },
+        ];
+
+        const mapper = async (apiCall: { key: string; endpoint: string }) => {
+          const data = await fetchData(userConfig, source.server, apiCall);
+          return data;
+        };
+        const results: any[] = await pMap(apiCalls, mapper, {
+          concurrency: jiraServer.config.concurrency,
+        });
+
+        const projectsData = results.find((p: any) => p.key === 'projectData');
+        const projectObj: any = {};
+        for (const projectData of results.filter(
+          (p: any) => p.key !== 'projectData',
+        )) {
+          projectObj[projectData.key] = projectData.data;
         }
 
-        console.log('Getting notification scheme');
-        const projectNotificationsScheme = await fetchData(
-          userConfig,
-          source.server,
-          '/rest/api/2/project/' + source.id + '/notificationscheme',
-        );
+        const projectRoles: Array<object> = [];
+        if (
+          projectObj.projectRolesRaw !== undefined &&
+          Object.values(projectObj.projectRolesRaw).length > 0
+        ) {
+          const apiNotifsCalls: any[] = [];
+          for (const [key, endpointValue] of Object.entries(
+            projectObj.projectRolesRaw,
+          )) {
+            apiNotifsCalls.push({
+              key,
+              endpoint: endpointValue,
+            });
+          }
+          const mapper = async (apiNotifsCall: {
+            key: string;
+            endpoint: string;
+          }) => {
+            const data = await fetchData(
+              userConfig,
+              source.server,
+              apiNotifsCall,
+            );
+            return data;
+          };
+          const results = await pMap(apiNotifsCalls, mapper, {
+            concurrency: jiraServer.config.concurrency,
+          });
+          for (const projectData of results) {
+            projectRoles.push(projectData.data);
+          }
+        }
 
-        console.log('Getting permissions scheme');
-        const projectPermissionsScheme = await fetchData(
+        // Count issues for project
+        const projectIssuesResponse = await fetchJql(
           userConfig,
           source.server,
-          '/rest/api/2/project/' + source.id + '/permissionscheme',
+          'project = "' + source.project + '" ORDER BY updated DESC',
+          '*navigable',
+          0,
+          1,
         );
+        let issuesJiraCount = 0;
+        if (Object.values(projectIssuesResponse).length > 0) {
+          issuesJiraCount = projectIssuesResponse.total;
+        }
 
-        console.log('Getting priority scheme');
-        const projectPriorityScheme = await fetchData(
-          userConfig,
-          source.server,
-          '/rest/api/2/project/' + source.id + '/priorityscheme',
-        );
-
-        console.log('Getting project security level');
-        const projectSecurityLevel = await fetchData(
-          userConfig,
-          source.server,
-          '/rest/api/2/project/' + source.id + '/securitylevel',
-        );
+        // Count issues in ES for that same project
+        let issuesEsCount = 0;
+        try {
+          const countDocuments: ApiResponse = await eClient.count({
+            index: userConfig.elasticsearch.dataIndices.jiraIssues,
+            body: {
+              query: {
+                match: {
+                  zindexerSourceId: {
+                    query: source.id,
+                  },
+                },
+              },
+            },
+          });
+          issuesEsCount = countDocuments.body.count;
+        } catch (e) {
+          console.log(e);
+        }
 
         projects.push({
-          ...projectData,
-          properties: projectProperties,
+          ...projectsData.data,
+          ...projectObj,
           roles: projectRoles,
-          notificationsScheme: projectNotificationsScheme,
-          permissionsScheme: projectPermissionsScheme,
-          priorityScheme: projectPriorityScheme,
-          securityLevel: projectSecurityLevel,
+          issues: {
+            jira: issuesJiraCount,
+            es: issuesEsCount,
+          },
+          server: { name: jiraServer.name, host: jiraServer.config.host },
         });
+
         cli.action.stop(' done');
       }
 
       //Break down the issues response in multiple batches
       const esPayloadChunked = await chunkArray(projects, 100);
       //Push the results back to Elastic Search
-      const esIndex =
-        userConfig.elasticsearch.dataIndices.jiraProjects +
-        getId(jiraServer.name);
 
       // Check if index exists, create it if it does not
       await esCheckIndex(eClient, userConfig, esIndex, esMapping);
@@ -167,17 +231,6 @@ export default class Projects extends Command {
           index: esIndex,
           refresh: 'wait_for',
           body: formattedData,
-        });
-        cli.action.stop(' done');
-
-        // Create an alias used for group querying
-        cli.action.start(
-          'Creating the Elasticsearch index alias: ' +
-            userConfig.elasticsearch.dataIndices.jiraProjects,
-        );
-        await eClient.indices.putAlias({
-          index: userConfig.elasticsearch.dataIndices.jiraProjects + '*',
-          name: userConfig.elasticsearch.dataIndices.jiraProjects,
         });
         cli.action.stop(' done');
       }

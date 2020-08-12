@@ -266,7 +266,7 @@ export default class Issues extends Command {
                 JSON.stringify({
                   index: {
                     _index: issuesIndex,
-                    _id: (rec as JiraIssue).id,
+                    _id: source.id + '_' + (rec as JiraIssue).id,
                   },
                 }) +
                 '\n' +

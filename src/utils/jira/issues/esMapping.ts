@@ -14,7 +14,7 @@ properties:
   updatedAt:
     type: date
   endOfSupport:
-    type: date      
+    type: keyword      
   assignee:
     properties:
       active:

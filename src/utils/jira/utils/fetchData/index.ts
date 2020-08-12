@@ -5,12 +5,17 @@ import { Config } from '../../../../global';
 const fetchProjects = async (
   userConfig: Config,
   serverName: string | undefined,
-  endpoint: string,
+  apiCall: { key: string; endpoint: string },
 ) => {
   const jiraServer = userConfig.jira.find(j => j.name === serverName);
-  if (jiraServer !== undefined) {
+  if (
+    jiraServer !== undefined &&
+    !Array.isArray(apiCall.endpoint) &&
+    apiCall.endpoint.length > 0
+  ) {
     const serverUrl =
-      jiraServer.config.host + endpoint.replace(jiraServer.config.host, '');
+      jiraServer.config.host +
+      apiCall.endpoint.replace(jiraServer.config.host, '');
     const response = await axios({
       method: 'get',
       url: serverUrl,
@@ -30,8 +35,14 @@ const fetchProjects = async (
       },
     });
     if (response.data !== undefined) {
+      if (apiCall.key !== undefined) {
+        return { key: apiCall.key, data: response.data };
+      }
       return response.data;
     }
+  }
+  if (apiCall.key !== undefined) {
+    return { key: apiCall.key, data: {} };
   }
   return {};
 };

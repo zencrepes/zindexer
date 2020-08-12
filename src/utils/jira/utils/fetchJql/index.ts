@@ -3,7 +3,7 @@ import { performance } from 'perf_hooks';
 
 import { Config, JiraIssue } from '../../../../global';
 
-const fetchJql = async (
+export const fetchJql = async (
   userConfig: Config,
   serverName: string | undefined,
   jqlQuey: string,
@@ -30,6 +30,8 @@ const fetchJql = async (
         fields: fields,
       },
     });
+    // console.log(jqlQuey);
+    // console.log(response.data);
     if (response.data !== undefined) {
       return response.data;
     }

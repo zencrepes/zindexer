@@ -26,6 +26,7 @@ import esCheckIndex from '../../utils/es/esCheckIndex';
 import fetchJqlPagination from '../../utils/jira/utils/fetchJql';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
+import { truncate } from 'lodash';
 
 //https://medium.com/javascript-in-plain-english/javascript-check-if-a-variable-is-an-object-and-nothing-else-not-an-array-a-set-etc-a3987ea08fd7
 const isObject = (obj: any) => {
@@ -154,6 +155,15 @@ export default class Issues extends Command {
       default: false,
       description: 'Reset ZenCrepes configuration to default',
     }),
+    all: flags.boolean({
+      char: 'a',
+      default: false,
+      description: 'Delete all issues from Elasticsearch and fetch all again',
+    }),
+    project: flags.string({
+      char: 'p',
+      description: 'Fetch issues for a particular source ID',
+    }),
   };
 
   async run() {
@@ -186,9 +196,12 @@ export default class Issues extends Command {
           { exit: 1 },
         );
       }
-      for (const source of sources.filter(
-        (s: ESIndexSources) => s.server === jiraServer.name,
-      )) {
+      for (const source of sources
+        .filter((s: ESIndexSources) => s.server === jiraServer.name)
+        .filter(
+          (s: ESIndexSources) =>
+            flags.project === undefined || flags.project === s.id,
+        )) {
         let issuesIndex = userConfig.elasticsearch.dataIndices.jiraIssues;
         if (userConfig.elasticsearch.oneIndexPerSource === true) {
           issuesIndex = (
@@ -202,40 +215,59 @@ export default class Issues extends Command {
         // Check if index exists, create it if it does not
         await esCheckIndex(eClient, userConfig, issuesIndex, esMapping);
 
-        //B - Find the most recent issue for that project
-        const searchResult: ApiResponse<ESSearchResponse<
-          JiraIssue
-        >> = await eClient.search({
-          index: issuesIndex,
-          body: {
-            query: {
-              match: {
-                // eslint-disable-next-line @typescript-eslint/camelcase
-                zindexerSourceId: {
-                  query: source.id,
+        let recentIssue = null;
+        if (flags.all === true) {
+          // If refresh flag is true, delete all issues and refetch
+          cli.action.start('Deleting all issues for project: ' + source.name);
+          const response = await eClient.deleteByQuery({
+            index: issuesIndex,
+            body: {
+              query: {
+                match: {
+                  zindexerSourceId: {
+                    query: source.id,
+                  },
                 },
               },
             },
-            size: 1,
-            sort: [
-              {
-                updatedAt: {
-                  order: 'desc',
+          });
+          cli.action.stop();
+        } else {
+          //B - Find the most recent issue for that project
+          const searchResult: ApiResponse<ESSearchResponse<
+            JiraIssue
+          >> = await eClient.search({
+            index: issuesIndex,
+            body: {
+              query: {
+                match: {
+                  // eslint-disable-next-line @typescript-eslint/camelcase
+                  zindexerSourceId: {
+                    query: source.id,
+                  },
                 },
               },
-            ],
-          },
-        });
-        let recentIssue = null;
-        if (searchResult.body.hits.hits.length > 0) {
-          recentIssue = searchResult.body.hits.hits[0]._source;
+              size: 1,
+              sort: [
+                {
+                  updatedAt: {
+                    order: 'desc',
+                  },
+                },
+              ],
+            },
+          });
+          let recentIssue = null;
+          if (searchResult.body.hits.hits.length > 0) {
+            recentIssue = searchResult.body.hits.hits[0]._source;
+          }
         }
 
         cli.action.start('Fetching issues for project: ' + source.name);
         const projectIssues = await fetchJqlPagination(
           userConfig,
           source.server,
-          'project = "' + source.id + '" ORDER BY updated DESC',
+          'project = "' + source.project + '" ORDER BY updated DESC',
           '*navigable,comment',
           recentIssue,
           0,
@@ -244,7 +276,6 @@ export default class Issues extends Command {
         );
         cli.action.stop(' done');
 
-        // console.log(projectIssues);
         // Jira issues will be reformated to a payload closer to GitHub's,
         // objective being to streamline the payload and easy development
         const updatedIssues = projectIssues
@@ -297,7 +328,7 @@ export default class Issues extends Command {
               JSON.stringify({
                 index: {
                   _index: issuesIndex,
-                  _id: (rec as JiraIssue).id,
+                  _id: source.id + '_' + (rec as JiraIssue).id,
                 },
               }) +
               '\n' +
