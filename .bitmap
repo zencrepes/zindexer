@@ -57,7 +57,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/github-issues@0.0.16": {
+    "zencrepes.zindexer/github-issues@0.0.17": {
         "files": [
             {
                 "relativePath": "src/components/githubIssues/esMapping.ts",
@@ -110,7 +110,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/github-labels@0.0.14": {
+    "zencrepes.zindexer/github-labels@0.0.15": {
         "files": [
             {
                 "relativePath": "src/components/githubLabels/esMapping.ts",
