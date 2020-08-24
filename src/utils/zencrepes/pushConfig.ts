@@ -37,9 +37,7 @@ const pushConfig = async (
       eClient,
     );
   } else {
-    console.log(
-      'Config already present, skipping... (use zindexer zencrepes command to modify)',
-    );
+    console.log('Config already present, skipping... ');
   }
   cli.action.stop(' done');
 };

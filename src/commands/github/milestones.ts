@@ -103,6 +103,7 @@ export default class Milestones extends Command {
       reposData = [...reposData, ...newRepos];
     }
     const reposWithData = reposData
+      .filter((r: any) => r !== null)
       .filter((r: any) => r.milestones.totalCount > 0)
       .map((r: any) => r.id);
     cli.action.stop(' done');

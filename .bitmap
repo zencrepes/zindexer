@@ -57,7 +57,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/github-issues@0.0.17": {
+    "zencrepes.zindexer/github-issues@0.0.18": {
         "files": [
             {
                 "relativePath": "src/components/githubIssues/esMapping.ts",
@@ -211,7 +211,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/github-projects@0.0.10": {
+    "zencrepes.zindexer/github-projects@0.0.11": {
         "files": [
             {
                 "relativePath": "src/components/githubProjects/esMapping.ts",
@@ -375,7 +375,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/github-repos@0.0.14": {
+    "zencrepes.zindexer/github-repos@0.0.15": {
         "files": [
             {
                 "relativePath": "src/components/githubRepos/esMapping.ts",

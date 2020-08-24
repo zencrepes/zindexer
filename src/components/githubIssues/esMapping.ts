@@ -148,6 +148,16 @@ properties:
                         ignore_above: 256
                   points:
                     type: integer
+              olumn:
+                properties:
+                  id:
+                    type: keyword
+                  name:
+                    type: text
+                    fields:
+                      keyword:
+                        type: keyword
+                        ignore_above: 256
       totalCount:
         type: long
   repository:
