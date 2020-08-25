@@ -105,6 +105,7 @@ export default class Stargazers extends Command {
     }
 
     const reposWithStargazers = reposData
+      .filter((r: any) => r !== null)
       .filter((r: any) => r.stargazers.totalCount > 0)
       .map((r: any) => r.id);
     cli.action.stop(' done');

@@ -103,6 +103,7 @@ export default class Watchers extends Command {
       reposData = [...reposData, ...newRepos];
     }
     const reposWithWatchers = reposData
+      .filter((r: any) => r !== null)
       .filter((r: any) => r.watchers.totalCount > 0)
       .map((r: any) => r.id);
     cli.action.stop(' done');

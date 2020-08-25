@@ -104,6 +104,7 @@ export default class Releases extends Command {
     }
 
     const reposWithData = reposData
+      .filter((r: any) => r !== null)
       .filter((r: any) => r.releases.totalCount > 0)
       .map((r: any) => r.id);
     cli.action.stop(' done');

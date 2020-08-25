@@ -7,6 +7,18 @@ properties:
     type: boolean
   assigneeType:
     type: keyword
+  server:
+    properties:
+      name:
+        type: keyword
+      host:
+        type: keyword
+  issues:
+    properties:
+      jira:
+        type: integer
+      es:
+        type: integer
   components:
     properties:
       id:

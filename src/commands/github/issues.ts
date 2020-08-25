@@ -102,6 +102,7 @@ export default class Issues extends Command {
       reposData = [...reposData, ...newRepos];
     }
     const reposWithData = reposData
+      .filter((r: any) => r !== null)
       .filter((r: any) => r.issues.totalCount > 0)
       .map((r: any) => r.id);
     cli.action.stop(' done');

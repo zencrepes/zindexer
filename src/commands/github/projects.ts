@@ -167,6 +167,7 @@ export default class Projects extends Command {
     }
 
     const reposWithData = reposData
+      .filter((r: any) => r !== null)
       .filter((r: any) => r.projects.totalCount > 0)
       .map((r: any) => r.id);
     cli.action.stop(' done');

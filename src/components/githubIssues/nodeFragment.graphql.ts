@@ -133,6 +133,7 @@ export const NODE_FRAGMENT = gql`
             id
             url
             name
+            body
           }
           column {
             id

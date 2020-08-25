@@ -21,6 +21,8 @@ export const NODE_FRAGMENT = gql`
       name
       url
       databaseId
+      isArchived
+      isDisabled
       owner {
         id
         login

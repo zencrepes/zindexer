@@ -129,28 +129,32 @@ export default class FetchNodesByQuery {
         //     : data.data.node.ghNode;
         const ghData =
           data.data.viewer !== undefined ? data.data.viewer : data.data.node;
-        const lastCursor = await this.loadNodes(ghData, callDuration);
-        const queryIncrement = calculateQueryIncrement(
-          this.fetchedNodes.length,
-          ghData.ghNode.totalCount,
-          this.maxQueryIncrement,
-        );
-        this.log(
-          'Params: ' +
-            JSON.stringify(queryParams) +
-            ' -> Fetched Count / Remote Count / Query Increment: ' +
-            this.fetchedNodes.length +
-            ' / ' +
-            ghData.ghNode.totalCount +
-            ' / ' +
-            queryIncrement,
-        );
-        if (queryIncrement > 0 && lastCursor !== null) {
-          await this.getNodesPagination(
-            lastCursor,
-            queryIncrement,
-            queryParams,
+        // ghData can be null if the repository has been deleted or access has been lost
+        // In that case, there's no point in continuing to fetch.
+        if (ghData !== null) {
+          const lastCursor = await this.loadNodes(ghData, callDuration);
+          const queryIncrement = calculateQueryIncrement(
+            this.fetchedNodes.length,
+            ghData.ghNode.totalCount,
+            this.maxQueryIncrement,
           );
+          this.log(
+            'Params: ' +
+              JSON.stringify(queryParams) +
+              ' -> Fetched Count / Remote Count / Query Increment: ' +
+              this.fetchedNodes.length +
+              ' / ' +
+              ghData.ghNode.totalCount +
+              ' / ' +
+              queryIncrement,
+          );
+          if (queryIncrement > 0 && lastCursor !== null) {
+            await this.getNodesPagination(
+              lastCursor,
+              queryIncrement,
+              queryParams,
+            );
+          }
         }
       } else {
         this.errorRetry = this.errorRetry + 1;
@@ -185,18 +189,21 @@ export default class FetchNodesByQuery {
       );
     }
     for (const currentNode of ghData.ghNode.edges) {
-      let nodeObj = JSON.parse(JSON.stringify(currentNode.node)); //TODO - Replace this with something better to copy object ?
-      nodeObj = { ...nodeObj, _parent: parentData };
-      // Special treatment for stargazers since data is attached under edges
-      if (currentNode.starredAt !== undefined) {
-        nodeObj = {
-          ...nodeObj,
-          starredAt: currentNode.starredAt,
-        };
+      if (parentData !== null) {
+        let nodeObj = JSON.parse(JSON.stringify(currentNode.node)); //TODO - Replace this with something better to copy object ?
+        nodeObj = { ...nodeObj, _parent: parentData };
+        // Special treatment for stargazers since data is attached under edges
+        if (currentNode.starredAt !== undefined) {
+          nodeObj = {
+            ...nodeObj,
+            starredAt: currentNode.starredAt,
+          };
+        }
+
+        this.fetchedNodes.push(nodeObj);
+        //Write the content to the cache file
+        this.cacheStream.write(JSON.stringify(nodeObj) + '\n');
       }
-      this.fetchedNodes.push(nodeObj);
-      //Write the content to the cache file
-      this.cacheStream.write(JSON.stringify(nodeObj) + '\n');
 
       lastCursor = currentNode.cursor;
     }

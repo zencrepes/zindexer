@@ -12,6 +12,11 @@ export const NODE_FRAGMENT = gql`
     name
     state
     body
+    creator {
+      avatarUrl
+      login
+      url
+    }
     columns(first: 15) {
       totalCount
       edges {

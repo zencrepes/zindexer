@@ -6,6 +6,14 @@ properties:
   # This is not a GitHub field, it is used by the system to define which repositories should be grabbed
   body:
     type: text
+  creator:
+    properties:
+      avatarUrl:
+        type: keyword
+      login:
+        type: keyword
+      url:
+        type: keyword    
   columns:
     properties:
       edges:
