@@ -101,7 +101,33 @@ export interface ConfigJira {
   };
 }
 
+export interface ConfigAuthDomainCheck {
+  enabled: boolean;
+  warning: string;
+  domains: string[];
+}
+
+export interface ConfigAuth {
+  domainCheck: ConfigAuthDomainCheck;
+  name: string;
+  enabled: boolean;
+  config: {
+    host: string;
+    username: string;
+    password: string;
+    concurrency: number;
+    fields: {
+      issues: Array<ConfigJiraFieldMapping>;
+    };
+    excludeDays: Array<string>;
+    fetch: {
+      maxNodes: number;
+    };
+  };
+}
+
 export interface Config {
+  auth: ConfigAuth;
   elasticsearch: ConfigElasticsearch;
   redis: ConfigRedis;
   github: ConfigGithub;

@@ -150,6 +150,36 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
+"@bit/zencrepes.zindexer.config@0.0.15":
+  version "0.0.15"
+  resolved "https://node.bit.dev/zencrepes.zindexer.config/-/zencrepes.zindexer.config-0.0.15.tgz#e9cd49b71a3755240829bc5ca035a60989337a41"
+  integrity sha1-6c1Jtxo3VSQIKbxcoDWmCYkzekE=
+
+"@bit/zencrepes.zindexer.github-issues@^0.0.18":
+  version "0.0.18"
+  resolved "https://node.bit.dev/zencrepes.zindexer.github-issues/-/zencrepes.zindexer.github-issues-0.0.18.tgz#253ebccee11f98ecd026fed2a15c5e1c248591a6"
+  integrity sha1-JT68zuEfmOzQJv7SoVxeHCSFkaY=
+  dependencies:
+    "@bit/zencrepes.zindexer.config" "0.0.15"
+    "@types/xregexp" "^4.3.0"
+    date-fns "^2.8.1"
+    graphql-tag "^2.10.1"
+    xregexp "^4.3.0"
+
+"@bit/zencrepes.zindexer.github-projects@^0.0.11":
+  version "0.0.11"
+  resolved "https://node.bit.dev/zencrepes.zindexer.github-projects/-/zencrepes.zindexer.github-projects-0.0.11.tgz#5ee5f18da016130c547d10854b48f329aea5a8c2"
+  integrity sha1-XuXxjaAWEwxUfRCFS0jzKa6lqMI=
+  dependencies:
+    graphql-tag "^2.10.1"
+
+"@bit/zencrepes.zindexer.github-repos@^0.0.15":
+  version "0.0.15"
+  resolved "https://node.bit.dev/zencrepes.zindexer.github-repos/-/zencrepes.zindexer.github-repos-0.0.15.tgz#bd2cc55e620b79bd6d8a856b4c1e44b978e0294b"
+  integrity sha1-vSzFXmILeb1tioVrTB5EuXjgKUs=
+  dependencies:
+    graphql-tag "^2.10.1"
+
 "@elastic/elasticsearch@^7.8.0":
   version "7.8.0"
   resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.8.0.tgz#3f9ee54fe8ef79874ebd231db03825fa500a7111"
