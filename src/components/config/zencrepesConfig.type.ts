@@ -101,7 +101,18 @@ export interface ConfigJira {
   };
 }
 
+export interface ConfigAuthDomainCheck {
+  enabled: boolean;
+  warning: string;
+  domains: string[];
+}
+
+export interface ConfigAuth {
+  domainCheck: ConfigAuthDomainCheck;
+}
+
 export interface Config {
+  auth: ConfigAuth;
   elasticsearch: ConfigElasticsearch;
   redis: ConfigRedis;
   github: ConfigGithub;

@@ -8,6 +8,9 @@
   },
   "bugs": "https://github.com/zencrepes/zindexer/issues",
   "dependencies": {
+    "@bit/zencrepes.zindexer.github-issues": "^0.0.18",
+    "@bit/zencrepes.zindexer.github-projects": "^0.0.11",
+    "@bit/zencrepes.zindexer.github-repos": "^0.0.15",
     "@elastic/elasticsearch": "^7.8.0",
     "@oclif/command": "^1",
     "@oclif/config": "^1.14.0",
