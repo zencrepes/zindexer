@@ -2,7 +2,7 @@ const defaultConfig = {
   auth: {
     domainCheck: {
       enabled: false,
-      WARNING:
+      warning:
         'If enabled, for each call received by the API, the user email will be verified aginst that list of domains. User will be granted if the user email includes a portion of the domain. Do not forget to disable Account login in your Realm configuration.',
       domains: ['@checkingdomain.com123', '@anotherdomain.com456'],
     },

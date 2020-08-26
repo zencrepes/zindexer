@@ -109,21 +109,6 @@ export interface ConfigAuthDomainCheck {
 
 export interface ConfigAuth {
   domainCheck: ConfigAuthDomainCheck;
-  name: string;
-  enabled: boolean;
-  config: {
-    host: string;
-    username: string;
-    password: string;
-    concurrency: number;
-    fields: {
-      issues: Array<ConfigJiraFieldMapping>;
-    };
-    excludeDays: Array<string>;
-    fetch: {
-      maxNodes: number;
-    };
-  };
 }
 
 export interface Config {
