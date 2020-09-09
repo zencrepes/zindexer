@@ -28,6 +28,58 @@ export const NODE_FRAGMENT = gql`
         url
       }
     }
+    timelineItems(first: 30, itemTypes: [CROSS_REFERENCED_EVENT]) {
+      totalCount
+      edges {
+        node {
+          ... on CrossReferencedEvent {
+            id
+            createdAt
+            referencedAt
+            resourcePath
+            isCrossRepository
+            url
+            willCloseTarget
+            source {
+              ... on Issue {
+                typename: __typename
+                id
+                number
+                title
+                state
+                url
+              }
+              ... on PullRequest {
+                typename: __typename
+                id
+                number
+                title
+                state
+                url
+              }
+            }
+            target {
+              ... on Issue {
+                typename: __typename
+                id
+                number
+                title
+                state
+                url
+              }
+              ... on PullRequest {
+                typename: __typename
+                id
+                number
+                title
+                state
+                url
+              }
+            }
+          }
+        }
+      }
+    }
     labels(first: 10) {
       totalCount
       edges {

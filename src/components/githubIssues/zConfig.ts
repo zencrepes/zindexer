@@ -29,6 +29,13 @@ const config = {
     },
     {
       facetType: 'term',
+      field: 'id',
+      name: 'ID',
+      nullValue: 'EMPTY',
+      default: false,
+    },
+    {
+      facetType: 'term',
       field: 'state',
       name: 'State',
       nullValue: 'EMPTY',
