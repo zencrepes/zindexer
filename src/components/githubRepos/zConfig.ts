@@ -374,7 +374,7 @@ const config = {
         fieldType: 'date',
         sortField: 'pushedAt',
         linkField: null,
-        sortable: false,
+        sortable: true,
         default: true,
       },
       {
