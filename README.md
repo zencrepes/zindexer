@@ -23,7 +23,7 @@ _This project aims at replacing ZenCrepes's [github-indexer](https://github.com/
 
 <!-- introduction -->
 
-This script has been created to easily export Data from GitHub, Jira, CircleCI & more and import it into an Elasticsearch instance to be later used for data analystics (via ZenCrepes, Kibana or other)
+This script has been created to easily export Data from GitHub, Jira, CircleCI & more and import it into an Elasticsearch instance to be later used for data analytics (via ZenCrepes, Kibana or other)
 
 Whenever possible (i.e. issues, milestones, projects), it loads data sorted by the updated date in descending order (most recent first) and will stop as soon as it find the same node already in Elasticsearch. This way, first load takes some time, then you can just cron it to keep your Elasticsearch instance up to date.
 
@@ -37,130 +37,19 @@ You can then re-run the scripts at regular interval to fetch the updated nodes.
 
 Note: GitHub doesn't provide a mechanism to fetch new or updated labels so the script will (flush the index and) load all labels every time `gLabels` is executed.
 
-# Quick start with Docker
+# Documentation
 
-The easiest way to get started quickly is to use docker. In this quick start example we will also run elasticsearch and kibana within a docker image. This example is meant at getting started quickly and should not be used "as-is" for production.
+You can find ZenCrepes documentation on [docs.zencrepes.io](https://docs.zencrepes.io/), issues should be created [here](https://github.com/zencrepes/zencrepes/issues).
 
-## Set-up Elasticsearch and Kibana
-
-Pull and run an Elasticsearch instance
-
-```sh-session
-> docker pull docker.elastic.co/elasticsearch/elasticsearch:7.5.0
-> docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:7.5.0
-```
-
-Verify you instance is running properly by opening up a web browser and visiting `http://127.0.0.1:9200`, you should see a JSON payload.
-
-Get the container id of the Elasticsearch instance (for Kibana)
-
-```sh-session
-> docker ps
-CONTAINER ID        IMAGE                                                 COMMAND                  CREATED             STATUS              PORTS                                            NAMES
-f0b5b04a2c24        docker.elastic.co/elasticsearch/elasticsearch:7.5.0   "/usr/local/bin/dock…"   3 minutes ago       Up 3 minutes        0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp   hungry_gagarin
-```
-
-In this example, the container ID for our Elasticsearch instance is: `f0b5b04a2c24`, we'll use this number to attach the kibana to.
-
-Pull and run a Kibana instance (note the use of the container ID `f0b5b04a2c24`)
-
-```sh-session
-> docker pull docker.elastic.co/kibana/kibana:7.5.0
-> docker run --link f0b5b04a2c24:elasticsearch -p 5601:5601 docker.elastic.co/kibana/kibana:7.5.0
-```
-
-At this point, you should have a Kibana instance running, open-up your web browser and visit `http://127.0.0.1:5601`, click on `Management` on the left side, then `Index Management`. You should see "No Indices to show" since we haven't loaded any data yet.
-
-## Pull and run zindexer
-
-Next, pull the latest version of zindexer
-
-```sh-session
-> docker pull zencrepes/zindexer:latest
-```
-
-And finally open-up a shell in the container
-
-```sh-session
-> docker run -it --rm zencrepes/zindexer:latest /bin/ash
-```
-
-Before you use zindexer you will need to configure it. If you start zindexer without a configuration file, it will automatically generate a template, tell you where to find it and exit without running the command
-
-From within the container
-
-```sh-session
-> zindexer gIssues
-Initialized configuration file with defaults in: /Users/fgerthoffert/.config/zindexer/config.yml
-Please EDIT the configuration file first
-```
-
-Refer to the following sections to understand how to configure and use the tool.
-
-# Configuration
-
-The configuration file is a yaml file, it can be provided as part of the container (or by mounting a folder containing the configuration into ~/.config/zindexer/) or passed (as a whole) as an environment variable.
-
-If you are just starting and are running a default Elasticsearch instance as detailed above, you only need to configure github, circleci and/or jira credentials. All the other parameters should be good enough with default values.
-
-```yaml
-elasticsearch:
-  host: 'http://127.0.0.1:9200'
-  sslCa: ''
-  cloudId: ''
-  username: ''
-  password: ''
-  sysIndices:
-    sources: sources
-    types: types
-  dataIndices:
-    githubRepos: gh_repos
-    githubIssues: gh_issues_
-    githubPullrequests: gh_prs_
-    githubProjects: gh_projects_
-    githubMilestones: gh_milestones_
-    githubLabels: gh_labels_
-    githubReleases: gh_releases_
-    jiraIssues: j_issues_
-    jiraProjects: j_projects_
-    circleciPipelines: cci_pipelines_
-    circleciEnvvars: cci_envvars_
-    circleciInsightsWorkflowsSummary: cci_insights_wfsum_
-    circleciInsightsWorkflowsRuns: cci_insights_wfruns_
-    circleciInsightsJobsSummary: cci_insights_jobssum_
-    circleciInsightsJobsRuns: cci_insights_jobsruns_
-github:
-  enabled: true
-  username: YOUR_USERNAME
-  token: YOUR_TOKEN
-  fetch:
-    maxNodes: 30
-circleci:
-  enabled: true
-  token: YOUR_TOKEN
-jira:
-  - name: JAHIA
-    enabled: true
-    config:
-      username: YOUR_USERNAME
-      password: YOUR_PASSWORD
-      host: 'https://jira.mydomain.com'
-      fields:
-        points: customfield_10114
-        originalPoints: customfield_11115
-        parentInitiative: customfield_11112
-        parentEpic: customfield_10314
-      excludeDays:
-        - '1900-01-01'
-      fetch:
-        maxNodes: 30
-```
+This readme only contains developer-focused details.
 
 # About Bit
 
-https://bit.dev/
-https://docs.bit.dev/docs/quick-start
-https://medium.com/javascript-in-plain-english/how-i-share-react-components-between-projects-3896d853cbee
+Bit components are exported from Zindexer, those are used to share logic between the various ZenCrepes services.
+
+- https://bit.dev/
+- https://docs.bit.dev/docs/quick-start
+- https://medium.com/javascript-in-plain-english/how-i-share-react-components-between-projects-3896d853cbee
 
 ```bash
 bit login
