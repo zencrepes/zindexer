@@ -27,6 +27,7 @@ export interface ConfigElasticsearch {
     circleciPipelines: string;
     circleciEnvvars: string;
     circleciInsights: string;
+    junitStates: string;
   };
 }
 
@@ -73,6 +74,13 @@ export interface ConfigGithub {
     };
   };
 }
+
+export interface ConfigJunit {
+  webhook: {
+    secret: string;
+  };
+}
+
 export interface ConfigJiraFieldMapping {
   jfield: string;
   zfield: string;
@@ -118,6 +126,8 @@ export interface Config {
   github: ConfigGithub;
   circleci: ConfigCircleci;
   jira: Array<ConfigJira>;
+  junit: ConfigJunit;
+
 }
 
 export default Config;
