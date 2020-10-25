@@ -572,7 +572,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/junit-states@0.0.3": {
+    "zencrepes.zindexer/junit-states@0.0.4": {
         "files": [
             {
                 "relativePath": "src/components/junitStates/esMapping.ts",
