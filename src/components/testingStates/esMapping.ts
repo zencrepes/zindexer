@@ -17,6 +17,12 @@ properties:
       keyword:
         type: keyword
         ignore_above: 256
+  full:
+    type: text
+    fields:
+      keyword:
+        type: keyword
+        ignore_above: 256        
   dependencies:
     properties:
       totalCount:
@@ -40,6 +46,12 @@ properties:
                   keyword:
                     type: keyword
                     ignore_above: 256
+              full:
+                type: text
+                fields:
+                  keyword:
+                    type: keyword
+                    ignore_above: 256                    
               url:
                 type: keyword                   
   createdAt:

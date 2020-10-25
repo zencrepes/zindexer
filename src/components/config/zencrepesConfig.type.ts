@@ -27,7 +27,7 @@ export interface ConfigElasticsearch {
     circleciPipelines: string;
     circleciEnvvars: string;
     circleciInsights: string;
-    junitStates: string;
+    testingStates: string;
   };
 }
 
@@ -75,7 +75,7 @@ export interface ConfigGithub {
   };
 }
 
-export interface ConfigJunit {
+export interface ConfigTesting {
   webhook: {
     secret: string;
   };
@@ -126,7 +126,7 @@ export interface Config {
   github: ConfigGithub;
   circleci: ConfigCircleci;
   jira: Array<ConfigJira>;
-  junit: ConfigJunit;
+  testing: ConfigTesting;
 
 }
 
