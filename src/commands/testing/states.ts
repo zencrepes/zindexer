@@ -7,7 +7,7 @@ import {
   esMapping,
   esSettings,
   zConfig,
-} from '../../components/junitStates';
+} from '../../components/testingStates';
 
 import {
   checkEsIndex,
@@ -16,7 +16,7 @@ import {
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
 export default class States extends Command {
-  static description = 'Junit: Initialize ES indeices for JUnit reports states';
+  static description = 'States: Initialize ES indeices for Testing States';
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -49,11 +49,11 @@ export default class States extends Command {
       eClient,
       userConfig,
       zConfig,
-      userConfig.elasticsearch.dataIndices.junitStates,
+      userConfig.elasticsearch.dataIndices.testingStates,
       flags.reset,
     );
 
-    await checkEsIndex(eClient, userConfig.elasticsearch.dataIndices.junitStates, esMapping, esSettings, this.log);
+    await checkEsIndex(eClient, userConfig.elasticsearch.dataIndices.testingStates, esMapping, esSettings, this.log);
 
 
     if (flags.config === true) {

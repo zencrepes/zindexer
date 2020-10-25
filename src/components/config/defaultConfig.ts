@@ -36,7 +36,7 @@ const defaultConfig = {
       circleciPipelines: 'cci_pipelines_',
       circleciEnvvars: 'cci_envvars_',
       circleciInsights: 'cci_insights_',
-      junitStates: 'ju_states_',
+      testingStates: 't_states_',
     },
   },
   redis: {
@@ -166,7 +166,7 @@ const defaultConfig = {
       },
     },
   ],
-  junit: {
+  testing: {
     webhook: {
       secret: 'PLEASE_CHANGE_ME',
     }

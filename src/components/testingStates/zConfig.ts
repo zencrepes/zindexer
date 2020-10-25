@@ -1,9 +1,9 @@
 // Zencrepes configuration for that entity
-const entity = 'junitStates';
+const entity = 'testingStates';
 const config = {
   id: entity,
-  name: 'JUnit States',
-  platform: 'junit',
+  name: 'Testing States',
+  platform: 'testing',
   active: true,
   facets: [
     {
@@ -15,17 +15,24 @@ const config = {
     },
     {
       facetType: 'term',
-      field: 'name',
+      field: 'name.keyword',
       name: 'Name',
       nullValue: 'EMPTY',
       default: true,
     },
     {
       facetType: 'term',
-      field: 'version',
+      field: 'version.keyword',
       name: 'Version',
       nullValue: 'EMPTY',
       default: true,
+    },   
+    {
+      facetType: 'term',
+      field: 'full.keyword',
+      name: 'Name & Version',
+      nullValue: 'EMPTY',
+      default: false,
     },    
     {
       facetType: 'term',
@@ -36,18 +43,38 @@ const config = {
     },
     {
       facetType: 'term',
-      field: 'dependencies.edges.node.name',
+      field: 'dependencies.edges.node.full.keyword',
       name: 'Dependencies',
       nullValue: 'NO Dependencies',
       // Null Filter is a stringified object to be used when the user clicks on an _EMPTY_ bucket
       nullFilter:
         '{"op":"<=","content":{"field":"dependencies.totalCount","value":0}}',
       default: true,
-    },       
+    }, 
+    {
+      facetType: 'term',
+      field: 'dependencies.edges.node.name.keyword',
+      name: 'Dep. name',
+      nullValue: 'NO Dependencies',
+      // Null Filter is a stringified object to be used when the user clicks on an _EMPTY_ bucket
+      nullFilter:
+        '{"op":"<=","content":{"field":"dependencies.totalCount","value":0}}',
+      default: false,
+    },
+    {
+      facetType: 'term',
+      field: 'dependencies.edges.node.version.keyword',
+      name: 'Dep. version',
+      nullValue: 'NO Dependencies',
+      // Null Filter is a stringified object to be used when the user clicks on an _EMPTY_ bucket
+      nullFilter:
+        '{"op":"<=","content":{"field":"dependencies.totalCount","value":0}}',
+      default: false,
+    },     
   ],
   tableConfig: {
-    itemsType: 'JUnit States',
-    defaultSortField: 'completedAt',
+    itemsType: 'Testing States',
+    defaultSortField: 'createdAt',
     columns: [
       {
         name: 'id',
@@ -85,15 +112,6 @@ const config = {
         default: true,
       },
       {
-        name: 'Completed At',
-        field: 'completedAt',
-        fieldType: 'date',
-        sortField: 'completedAt',
-        linkField: null,
-        sortable: true,
-        default: true,
-      },
-      {
         name: 'State',
         field: 'state',
         fieldType: 'string',
@@ -125,6 +143,14 @@ const config = {
         sortable: true,
         default: true,
       },
+      {
+        name: 'Run Duration',
+        field: 'runDuration',
+        fieldType: 'string',
+        sortField: 'runDuration',
+        sortable: true,
+        default: true,
+      },      
     ],
   },
 };

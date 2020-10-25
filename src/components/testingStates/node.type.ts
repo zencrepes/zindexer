@@ -2,6 +2,7 @@ export interface Dependency {
   id: string;
   name: string;
   version: string;
+  full: string;
   url?: string;
 }
 
@@ -9,7 +10,8 @@ export interface StateNode {
   id: string;
   name: string;
   version: string;
-  dependency: Dependency[]
+  full: string;
+  dependencies: Dependency[]
   createdAt: string;
   state: string;
   url: string;
