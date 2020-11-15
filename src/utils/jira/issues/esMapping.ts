@@ -884,6 +884,7 @@ properties:
   versions:
     properties:
       edges:
+        type: nested
         properties:
           node:
             properties:
