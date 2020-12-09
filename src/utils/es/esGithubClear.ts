@@ -1,8 +1,6 @@
 import cli from 'cli-ux';
 import { ApiResponse, Client } from '@elastic/elasticsearch';
 
-import { ESSearchResponse, GithubNode } from '../../global';
-
 const esGithubClear = async (
   client: Client,
   esIndex: string,
