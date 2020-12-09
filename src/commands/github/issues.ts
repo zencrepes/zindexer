@@ -4,12 +4,14 @@ import cli from 'cli-ux';
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import esGithubLatest from '../../utils/es/esGithubLatest';
+import esGithubClear from '../../utils/es/esGithubClear';
 import chunkArray from '../../utils/misc/chunkArray';
 import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
 import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
 import ghClient from '../../utils/github/utils/ghClient';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
+import { GithubNode } from '../../global';
 
 import {
   esMapping,
@@ -49,6 +51,11 @@ export default class Issues extends Command {
       char: 'r',
       default: false,
       description: 'Reset ZenCrepes configuration to default',
+    }),
+    all: flags.boolean({
+      char: 'a',
+      default: false,
+      description: 'Clear nodes before fetching all of them again',
     }),
   };
 
@@ -118,11 +125,24 @@ export default class Issues extends Command {
       let issuesIndex = userConfig.elasticsearch.dataIndices.githubIssues;
 
       this.log('Processing source: ' + currentSource.name);
-      const recentIssue = await esGithubLatest(
-        eClient,
-        issuesIndex,
-        currentSource.id,
-      );
+
+      let recentIssue: GithubNode | null = null;
+      // Clear all issues in current repository
+      // It's necessary to clear since we want to also delete nodes that might not exist remotely anymore
+      if (flags.all === true) {
+        await esGithubClear(
+          eClient,
+          issuesIndex,
+          currentSource.id,
+        );        
+      } else {
+        recentIssue = await esGithubLatest(
+          eClient,
+          issuesIndex,
+          currentSource.id,
+        );
+      }
+    
       cli.action.start(
         'Grabbing issues for: ' +
           currentSource.name +

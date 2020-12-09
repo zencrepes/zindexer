@@ -5,12 +5,15 @@ import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import chunkArray from '../../utils/misc/chunkArray';
 import esGithubLatest from '../../utils/es/esGithubLatest';
+import esGithubClear from '../../utils/es/esGithubClear';
 import esPushNodes from '../../utils/es/esPushNodes';
 import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
 import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
 import ghClient from '../../utils/github/utils/ghClient';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
+import { GithubNode } from '../../global';
+
 import esCheckIndex from '../../utils/es/esCheckIndex';
 
 import { getId } from '../../utils/misc/getId';
@@ -55,6 +58,11 @@ export default class Projects extends Command {
       default: false,
       description: 'Reset ZenCrepes configuration to default',
     }),
+    all: flags.boolean({
+      char: 'a',
+      default: false,
+      description: 'Clear nodes before fetching all of them again',
+    }),    
   };
 
   async run() {
@@ -183,11 +191,24 @@ export default class Projects extends Command {
       let projectsIndex = userConfig.elasticsearch.dataIndices.githubProjects;
 
       this.log('Processing source: ' + currentSource.name);
-      const recentProject = await esGithubLatest(
-        eClient,
-        projectsIndex,
-        currentSource.id,
-      );
+      
+      let recentProject: GithubNode | null = null;
+      // Clear all issues in current repository
+      // It's necessary to clear since we want to also delete nodes that might not exist remotely anymore
+      if (flags.all === true) {
+        await esGithubClear(
+          eClient,
+          projectsIndex,
+          currentSource.id,
+        );        
+      } else {
+        recentProject = await esGithubLatest(
+          eClient,
+          projectsIndex,
+          currentSource.id,
+        );
+      }      
+
       cli.action.start(
         'Grabbing projects for: ' +
           currentSource.name +
