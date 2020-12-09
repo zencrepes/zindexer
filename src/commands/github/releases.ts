@@ -4,12 +4,14 @@ import cli from 'cli-ux';
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import esGithubLatest from '../../utils/es/esGithubLatest';
+import esGithubClear from '../../utils/es/esGithubClear';
 import chunkArray from '../../utils/misc/chunkArray';
 import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
 import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
 import ghClient from '../../utils/github/utils/ghClient';
 
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
+import { GithubNode } from '../../global';
 import { getId } from '../../utils/misc/getId';
 
 import {
@@ -51,6 +53,11 @@ export default class Releases extends Command {
       default: false,
       description: 'Reset ZenCrepes configuration to default',
     }),
+    all: flags.boolean({
+      char: 'a',
+      default: false,
+      description: 'Clear nodes before fetching all of them again',
+    }),    
   };
 
   async run() {
@@ -120,11 +127,23 @@ export default class Releases extends Command {
       let releasesIndex = userConfig.elasticsearch.dataIndices.githubReleases;
 
       this.log('Processing source: ' + currentSource.name);
-      const recentRelease = await esGithubLatest(
-        eClient,
-        releasesIndex,
-        currentSource.id,
-      );
+      let recentRelease: GithubNode | null = null;
+      // Clear all issues in current repository
+      // It's necessary to clear since we want to also delete nodes that might not exist remotely anymore
+      if (flags.all === true) {
+        await esGithubClear(
+          eClient,
+          releasesIndex,
+          currentSource.id,
+        );        
+      } else {
+        recentRelease = await esGithubLatest(
+          eClient,
+          releasesIndex,
+          currentSource.id,
+        );
+      }      
+
       cli.action.start(
         'Grabbing releases for: ' +
           currentSource.name +
