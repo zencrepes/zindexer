@@ -28,6 +28,7 @@ export interface ConfigElasticsearch {
     circleciEnvvars: string;
     circleciInsights: string;
     testingStates: string;
+    bambooRuns: string;
   };
 }
 
@@ -109,6 +110,21 @@ export interface ConfigJira {
   };
 }
 
+export interface ConfigBamboo {
+  name: string;
+  enabled: boolean;
+  config: {
+    host: string;
+    username: string;
+    password: string;
+    concurrency: number;
+    fetch: {
+      maxNodes: number;
+    };
+  };
+}
+
+
 export interface ConfigAuthDomainCheck {
   enabled: boolean;
   warning: string;
@@ -126,8 +142,8 @@ export interface Config {
   github: ConfigGithub;
   circleci: ConfigCircleci;
   jira: Array<ConfigJira>;
+  bamboo: Array<ConfigBamboo>;
   testing: ConfigTesting;
-
 }
 
 export default Config;

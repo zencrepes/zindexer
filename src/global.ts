@@ -1,6 +1,7 @@
 export {
   Config,
   ConfigJira,
+  ConfigBamboo,
   ConfigCircleci,
   ConfigJiraFieldMapping,
   ConfigGithub,
@@ -56,6 +57,14 @@ export interface JiraResponseProject {
   projectTypeLey: string;
 }
 
+export interface BambooResponsePlan {
+  expand: string;
+  self: string;
+  id: string;
+  key: string;
+  name: string;
+}
+
 export interface ESSearchResponse<T> {
   hits: {
     tital: { value: number };
@@ -72,6 +81,7 @@ export interface ESIndexSources {
   server?: string;
   name: string;
   project?: string;
+  plan?: string;
   active: boolean;
   remoteLinks?: boolean;
   repository?: GithubRepository;
@@ -93,6 +103,18 @@ export interface JiraIssue {
   id: string;
   key: string;
   updatedAt: string;
+}
+
+export interface BambooPlan {
+  id: string;
+  key: string;
+}
+
+export interface BambooRun {
+  id: string;
+  key: string;
+  number: number;
+  startedAt: string;
 }
 
 export interface GithubOrganization {
