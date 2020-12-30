@@ -29,6 +29,7 @@ const ingestNodes = (
   // Removing all runs that might not exist on the server
   const updatedNodes = nodes.filter((item: BambooRun) => item['status-code'] === undefined).map((item: BambooRun) => {
     // console.log(item);
+    const runTotal: number = item.successfulTestCount + item.failedTestCount + item.quarantinedTestCount + item.skippedTestCount
     return {
       id: source.id + '-' + item.key,
       key: item.key,
@@ -46,9 +47,11 @@ const ingestNodes = (
       startedAt: item.buildStartedTime,
       completedAt: item.buildCompletedTime,
       duration: item.buildDurationInSeconds,
-      runTotal: item.successfulTestCount + item.failedTestCount + item.quarantinedTestCount + item.skippedTestCount,
+      runTotal: runTotal,
       runSuccess: item.successfulTestCount,
+      runSuccessRate: item.successfulTestCount * 100 / runTotal,
       runFailure: item.failedTestCount,
+      runFailureRate: item.failedTestCount * 100 / runTotal,
       runSkipped: item.skippedTestCount,
       runQuarantined: item.quarantinedTestCount,
       successful: item.successful,

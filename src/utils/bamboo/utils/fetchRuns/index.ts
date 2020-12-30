@@ -61,6 +61,9 @@ const fetchRunsPagination = async (
   let runs = [];
   if (bambooServer !== undefined && serverName !== undefined && planKey !== undefined) {
     const latestRun = await fetchLatestRun(userConfig, serverName, planKey)
+    if (latestRun === null) {
+      return []
+    }
     if (existingRuns.length === 0 || (existingRuns.length > 0 && latestRun !== null && latestRun.number !== Math.max(...existingRuns))) {
       // Runs start from 1, build an array of missing run numbers between 1 and latestRun.number
       const missingRuns: Array<number> = []
@@ -69,7 +72,6 @@ const fetchRunsPagination = async (
           missingRuns.push(i)
         }
       }
-
       const missingRunsLinks = missingRuns.map((i: number) => bambooServer.config.host + '/rest/api/latest/result/' + planKey + '-' + i.toString())
       const t0 = performance.now();    
       const mapper = async (missingRunLink: string) => {

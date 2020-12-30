@@ -11,7 +11,6 @@ import loadYamlFile from 'load-yaml-file';
 
 import {
   JiraResponseProject,
-  BambooResponsePlan,
   ESSearchResponse,
   ESIndexSources,
   GithubRepository,
@@ -115,7 +114,7 @@ export default class Sources extends Command {
         },
       );
 
-      //Math the data with the config file
+      //Match the data with the config file
       cli.action.start(
         'Grabbing sources configuration from file: ' +
           path.join(this.config.configDir, 'sources.yml'),
@@ -145,7 +144,9 @@ export default class Sources extends Command {
             // eslint-disable-next-line
             (o as any)['JIRA/' + source.name] !== undefined ||
             // eslint-disable-next-line
-            (o as any)['GITHUB/' + source.name] !== undefined,
+            (o as any)['GITHUB/' + source.name] !== undefined ||
+            // eslint-disable-next-line
+            (o as any)['BAMBOO/' + source.name] !== undefined,
         );
         if (cfgSource !== undefined) {
           if (Object.values(cfgSource)[0] !== source.active) {

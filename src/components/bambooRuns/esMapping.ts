@@ -29,14 +29,18 @@ properties:
     type: integer
   runSuccess:
     type: integer    
+  runSuccessRate:
+    type: integer     
   runFailure:
-    type: integer 
+    type: integer
+  runFailureRate:
+    type: integer
   runSkipped:
-    type: integer 
+    type: integer
   runQuarantined:
-    type: integer 
+    type: integer
   successful:
-    type: boolean            
+    type: boolean
   url:
     type: keyword
   state:
