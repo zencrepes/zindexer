@@ -37,6 +37,7 @@ const defaultConfig = {
       circleciEnvvars: 'cci_envvars_',
       circleciInsights: 'cci_insights_',
       testingStates: 't_states_',
+      bambooRuns: 'b_runs_',
     },
   },
   redis: {
@@ -166,6 +167,22 @@ const defaultConfig = {
       },
     },
   ],
+  bamboo: [
+    {
+      name: 'SERVER_2',
+      enabled: true,
+      config: {
+        username: 'username',
+        password: 'password',
+        host: 'https://bamboo.myhost.org',
+        // Concurrent API calls to JIRA, this is only used for specific "light" calls when bulk fetching is not available at an API level
+        concurrency: 20,
+        fetch: {
+          maxNodes: 30,
+        },
+      },
+    },
+  ],  
   testing: {
     webhook: {
       secret: 'PLEASE_CHANGE_ME',

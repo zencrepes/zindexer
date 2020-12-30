@@ -18,6 +18,7 @@ import {
 } from '../global';
 
 import fetchProjects from '../utils/jira/utils/fetchProjects/index';
+import fetchPlans from '../utils/bamboo/utils/fetchPlans/index';
 import ymlMappingsSources from '../utils/mappings/sources';
 import esCheckIndex from '../utils/es/esCheckIndex';
 import esClient from '../utils/es/esClient';
@@ -51,10 +52,10 @@ export default class Sources extends Command {
     // flag with a value (-n, --name=VALUE)
     type: flags.string({
       char: 't',
-      options: ['JIRA', 'GITHUB'],
+      options: ['JIRA', 'GITHUB', 'BAMBOO'],
       required: false,
       default: 'GITHUB',
-      description: 'Type of source (JIRA or GitHUB)',
+      description: 'Type of source (JIRA, GitHUB or BAMBOO)',
     }),
     active: flags.boolean({
       char: 'a',
@@ -113,7 +114,7 @@ export default class Sources extends Command {
         },
       );
 
-      //Math the data with the config file
+      //Match the data with the config file
       cli.action.start(
         'Grabbing sources configuration from file: ' +
           path.join(this.config.configDir, 'sources.yml'),
@@ -143,7 +144,9 @@ export default class Sources extends Command {
             // eslint-disable-next-line
             (o as any)['JIRA/' + source.name] !== undefined ||
             // eslint-disable-next-line
-            (o as any)['GITHUB/' + source.name] !== undefined,
+            (o as any)['GITHUB/' + source.name] !== undefined ||
+            // eslint-disable-next-line
+            (o as any)['BAMBOO/' + source.name] !== undefined,
         );
         if (cfgSource !== undefined) {
           if (Object.values(cfgSource)[0] !== source.active) {
@@ -184,6 +187,29 @@ export default class Sources extends Command {
                 name: jiraServer.name + '_' + p.key,
                 active: active,
                 remoteLinks: false,
+              };
+            }),
+          ];
+          cli.action.stop(' done');
+        }
+      } 
+      else if (type === 'BAMBOO') {
+        this.log('Fetching data from server: About to fetch plans from BAMBOO');
+        //console.log(await fetchProjects(userConfig, 'JIRA-JAHIA'));
+        for (const bambooServer of userConfig.bamboo) {
+          cli.action.start('Fetching data from server: ' + bambooServer.name);
+          const bambooPlans = await fetchPlans(userConfig, bambooServer.name, 0, bambooServer.config.fetch.maxNodes, []);
+          dataSources = [
+            ...dataSources,
+            ...bambooPlans.map((p: any) => {
+              return {
+                uuid: getUuid('BAMBOO-' + p.key + '-' + p.name, 'PLAN', 5),
+                id: bambooServer.name + '_' + p.key,
+                type: 'BAMBOO',
+                server: bambooServer.name,
+                plan: p.key,
+                name: bambooServer.name + '_' + p.key,
+                active: active,
               };
             }),
           ];
