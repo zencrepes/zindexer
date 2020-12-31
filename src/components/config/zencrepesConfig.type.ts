@@ -28,6 +28,7 @@ export interface ConfigElasticsearch {
     circleciEnvvars: string;
     circleciInsights: string;
     testingStates: string;
+    testingRuns: string;
     bambooRuns: string;
   };
 }

@@ -37,6 +37,7 @@ const defaultConfig = {
       circleciEnvvars: 'cci_envvars_',
       circleciInsights: 'cci_insights_',
       testingStates: 't_states_',
+      testingRuns: 't_runs_',
       bambooRuns: 'b_runs_',
     },
   },
