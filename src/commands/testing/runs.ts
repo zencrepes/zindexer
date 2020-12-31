@@ -7,7 +7,7 @@ import {
   esMapping,
   esSettings,
   zConfig,
-} from '../../components/testingStates';
+} from '../../components/testingRuns';
 
 import {
   checkEsIndex,
@@ -15,8 +15,8 @@ import {
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
-export default class States extends Command {
-  static description = 'States: Initialize ES indices for Testing States';
+export default class Runs extends Command {
+  static description = 'Runs: Initialize ES indices for Testing Runs';
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -39,7 +39,7 @@ export default class States extends Command {
   };
 
   async run() {
-    const { flags } = this.parse(States);
+    const { flags } = this.parse(Runs);
 
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
@@ -49,11 +49,11 @@ export default class States extends Command {
       eClient,
       userConfig,
       zConfig,
-      userConfig.elasticsearch.dataIndices.testingStates,
+      userConfig.elasticsearch.dataIndices.testingRuns,
       flags.reset,
     );
 
-    await checkEsIndex(eClient, userConfig.elasticsearch.dataIndices.testingStates, esMapping, esSettings, this.log);
+    await checkEsIndex(eClient, userConfig.elasticsearch.dataIndices.testingRuns, esMapping, esSettings, this.log);
 
 
     if (flags.config === true) {
