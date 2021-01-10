@@ -25,5 +25,6 @@ export interface RunNode {
   runSkipped: number;
   runQuarantined: number;
   successful: boolean;
+  withTests: boolean;
   state: string;
 }

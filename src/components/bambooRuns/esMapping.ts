@@ -41,6 +41,8 @@ properties:
     type: integer
   successful:
     type: boolean
+  withTests:
+    type: boolean    
   url:
     type: keyword
   state:
