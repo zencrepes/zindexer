@@ -57,6 +57,7 @@ const ingestNodes = (
       successful: item.successful,
       state: item.state,
       url: item.url,
+      withTests: runTotal > 0 ? true: false,
       zsource,
       zindexerSourceId: source.id
     }

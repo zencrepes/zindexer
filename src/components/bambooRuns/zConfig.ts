@@ -22,6 +22,14 @@ const config = {
       default: true,
     },  
     {
+      facetType: 'boolean',
+      field: 'withTests',
+      name: 'Includes Tests',
+      nullValue: 'EMPTY',
+      nullFilter: '',
+      default: true,
+    },     
+    {
       facetType: 'term',
       field: 'plan.name.keyword',
       name: 'Plan Name',
