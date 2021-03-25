@@ -31,6 +31,7 @@ const defaultConfig = {
       githubLabels: 'gh_labels_',
       githubReleases: 'gh_releases_',
       githubImport: 'gh_import_',
+      githubMavenPoms: 'gh_maven_',
       jiraIssues: 'j_issues_',
       jiraProjects: 'j_projects_',
       circleciPipelines: 'cci_pipelines_',

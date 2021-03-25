@@ -39,7 +39,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/config@0.0.22": {
+    "zencrepes.zindexer/config@0.0.23": {
         "files": [
             {
                 "relativePath": "src/components/config/defaultConfig.ts",
@@ -95,7 +95,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/github-issues@0.0.26": {
+    "zencrepes.zindexer/github-issues@0.0.27": {
         "files": [
             {
                 "relativePath": "src/components/githubIssues/esMapping.ts",
@@ -193,6 +193,49 @@
         ],
         "mainFile": "src/components/githubLabels/index.ts",
         "trackDir": "src/components/githubLabels",
+        "origin": "AUTHORED",
+        "exported": true
+    },
+    "zencrepes.zindexer/github-maven-poms@0.0.3": {
+        "files": [
+            {
+                "relativePath": "src/components/githubMavenPoms/esMapping.ts",
+                "test": false,
+                "name": "esMapping.ts"
+            },
+            {
+                "relativePath": "src/components/githubMavenPoms/esSettings.ts",
+                "test": false,
+                "name": "esSettings.ts"
+            },
+            {
+                "relativePath": "src/components/githubMavenPoms/fetchNodesById.graphql.ts",
+                "test": false,
+                "name": "fetchNodesById.graphql.ts"
+            },
+            {
+                "relativePath": "src/components/githubMavenPoms/fetchPoms.graphql.ts",
+                "test": false,
+                "name": "fetchPoms.graphql.ts"
+            },
+            {
+                "relativePath": "src/components/githubMavenPoms/index.ts",
+                "test": false,
+                "name": "index.ts"
+            },
+            {
+                "relativePath": "src/components/githubMavenPoms/ingestNodes.ts",
+                "test": false,
+                "name": "ingestNodes.ts"
+            },
+            {
+                "relativePath": "src/components/githubMavenPoms/zConfig.ts",
+                "test": false,
+                "name": "zConfig.ts"
+            }
+        ],
+        "mainFile": "src/components/githubMavenPoms/index.ts",
+        "trackDir": "src/components/githubMavenPoms",
         "origin": "AUTHORED",
         "exported": true
     },
@@ -307,7 +350,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/github-pullrequests@0.0.23": {
+    "zencrepes.zindexer/github-pullrequests@0.0.24": {
         "files": [
             {
                 "relativePath": "src/components/githubPullrequests/esMapping.ts",

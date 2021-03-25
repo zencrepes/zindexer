@@ -6,6 +6,7 @@ import esClient from '../../utils/es/esClient';
 import ghClient from '../../utils/github/utils/ghClient';
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
 import FetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
+import FetchNodesByIdsWithParams from '../../utils/github/utils/fetchNodesByIdsWithParams';
 
 import chunkArray from '../../utils/misc/chunkArray';
 import pushConfig from '../../utils/zencrepes/pushConfig';
@@ -14,9 +15,10 @@ import {
   esMapping,
   esSettings,
   fetchNodesById,
+  fetchPoms,
   zConfig,
   ingestNodes,
-} from '../../components/githubRepos';
+} from '../../components/githubMavenPoms';
 
 import { checkEsIndex, pushEsNodes } from '../../components/esUtils/index';
 
@@ -27,7 +29,7 @@ const sleep = (ms: number) => {
 };
 
 export default class Repos extends Command {
-  static description = 'Github: Fetches repos data from configured sources';
+  static description = 'Github: Fetches maven data from repositories default branch';
 
   static flags = {
     help: flags.help({ char: 'h' }),
@@ -61,7 +63,7 @@ export default class Repos extends Command {
       eClient,
       userConfig,
       zConfig,
-      userConfig.elasticsearch.dataIndices.githubRepos,
+      userConfig.elasticsearch.dataIndices.githubMavenPoms,
       flags.reset,
     );
 
@@ -74,6 +76,8 @@ export default class Repos extends Command {
       sources,
       userConfig.github.fetch.maxNodes,
     );
+
+    // Begin by fetching all repors and getting their defaultBranchRef
     const fetchData = new FetchNodesByIds(
       this.log,
       userConfig.github.fetch.maxNodes,
@@ -86,7 +90,7 @@ export default class Repos extends Command {
       cli.action.start(
         'Loading  ' +
           githubChunk.length +
-          ' repos from GitHub (' +
+          ' repos (for maven analysis) from GitHub (' +
           (fetchedRepos.length + githubChunk.length) +
           ' / ' +
           sources.length +
@@ -99,9 +103,61 @@ export default class Repos extends Command {
       cli.action.stop(' done');
     }
 
-    fetchedRepos = ingestNodes(fetchedRepos, 'zindexer');
+    // Group repositories by default branch
+    const grouppedRepos = fetchedRepos.reduce((acc, repo) => {
+      // If default branch is null, default to master
+      const branchName = repo.defaultBranchRef === null ? 'master' : repo.defaultBranchRef.name
+      // Look for existing record in the accumulator
+      const existingBranch = acc.find((a: any) => a.branch === branchName)
+      if ( existingBranch === undefined) {
+        acc.push({branch: branchName, repos: [repo]})
+        return acc
+      } else {
+        // If the branch already exists, add to the accumulator
+        return [...acc.filter((r: any) => r.branch !== branchName), ...[{branch: branchName, repos: [...existingBranch.repos, ...[repo]]}]]
+      }
+    }, [])
 
-    const esIndex = userConfig.elasticsearch.dataIndices.githubRepos;
+
+    const fetchPomsData = new FetchNodesByIdsWithParams(
+      this.log,
+      userConfig.github.fetch.maxNodes,
+      cli,
+      fetchPoms,
+      gClient,
+    );
+    let fetchedPoms: Array<any> = [];
+    for (const branch of grouppedRepos) {
+      this.log(`Fetching pom.xml for branch: ${branch.branch}`)
+      const githubChunks = await chunkArray(
+        branch.repos,
+        userConfig.github.fetch.maxNodes,
+      );
+      for (const githubChunk of githubChunks) {
+        cli.action.start(
+          'Loading  ' +
+            githubChunk.length +
+            ' poms (for maven analysis) from GitHub',
+        );
+        const updatedData = await fetchPomsData.load({nodesArray: githubChunk.map((r) => r.id), branchName: branch.branch, expression: `${branch.branch}:pom.xml`});
+        fetchedPoms = [...fetchedPoms, ...updatedData];
+        //Wait for 1 second between all repos fetch
+        await sleep(1000);
+        cli.action.stop(' done');
+      }
+    }
+
+    // Concatenate the two arrays by repo id
+    const reposWithPom = fetchedRepos.map((repo) => {
+      return {
+        ...repo,
+        ...fetchedPoms.find((r) => r.id === repo.id)
+      }
+    })
+
+    fetchedRepos = ingestNodes(reposWithPom, 'zindexer');
+
+    const esIndex = userConfig.elasticsearch.dataIndices.githubMavenPoms;
     // Check if index exists, create it if it does not
     await checkEsIndex(eClient, esIndex, esMapping, esSettings, this.log);
     await pushEsNodes(eClient, esIndex, fetchedRepos, this.log);
