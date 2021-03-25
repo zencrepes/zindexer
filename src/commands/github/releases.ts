@@ -72,7 +72,7 @@ export default class Releases extends Command {
       eClient,
       userConfig,
       zConfig,
-      userConfig.elasticsearch.dataIndices.githubPullrequests,
+      userConfig.elasticsearch.dataIndices.githubReleases,
       flags.reset,
     );
 
