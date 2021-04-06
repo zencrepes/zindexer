@@ -62,9 +62,18 @@ const config = {
       name: 'Last Committer',
       nullValue: 'NONE',
       nullFilter:
-        '{"op":"in","content":{"field":"lastCommitMainBranch.author.email","value":["__missing__"]}}',
+        '{"op":"in","content":{"field":"lastCommitMainBranch.author.email.keyword","value":["__missing__"]}}',
       default: true,
     },
+    {
+      facetType: 'term',
+      field: 'lastCommitMainBranch.messageHeadline.keyword',
+      name: 'Last Commit msg',
+      nullValue: 'NONE',
+      nullFilter:
+        '{"op":"in","content":{"field":"lastCommitMainBranch.messageHeadline.keyword","value":["__missing__"]}}',
+      default: false,
+    },    
     {
       facetType: 'term',
       field: 'pom.parent.artifactId',
