@@ -59,6 +59,11 @@ bit build
 bit export zencrepes.zindexer
 ```
 
+Add new component:
+```bash
+bit add src/components/testingPerfs
+```
+
 # Usage
 
 <!-- usage -->
