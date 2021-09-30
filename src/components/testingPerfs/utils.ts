@@ -10,7 +10,10 @@ const prepString = (s: string) => {
 // The ID is simply a UUID genreated from the concatenation of all elements
 // Note that the dependencies are sorted and all string are cleaned (lower case and stripped from non alphanumerical characters)
 export const getId = (perfNode: PerfNode) => {
-  const idStr = prepString(perfNode.name) + prepString(perfNode.startedAt) + prepString(perfNode.platform.region)
+  const startedAt = perfNode.startedAt !== undefined ? prepString(perfNode.startedAt) : ''
+  const region = perfNode.platform !== undefined ? prepString(perfNode.platform.region) : ''
+  
+  const idStr = prepString(perfNode.name) + prepString(startedAt) + prepString(region)
   const UUID_NAMESPACE = 'c72d8f12-1818-4cb9-bead-44634c441c11'
   return uuidv5(idStr, UUID_NAMESPACE)
 }
