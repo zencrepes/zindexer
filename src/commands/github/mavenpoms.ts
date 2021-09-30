@@ -97,7 +97,9 @@ export default class Repos extends Command {
           ')',
       );
       const updatedData = await fetchData.load(githubChunk);
-      fetchedRepos = [...fetchedRepos, ...updatedData];
+      const repoNames = updatedData.filter((r: any) => r !== null).map((r: any) => r.nameWithOwner)
+      this.log(`Fetched repos: ${JSON.stringify(repoNames)}`)
+      fetchedRepos = [...fetchedRepos, ...updatedData.filter((r: any) => r !== null)];
       //Wait for 1 second between all repos fetch
       await sleep(1000);
       cli.action.stop(' done');
@@ -140,7 +142,9 @@ export default class Repos extends Command {
             ' poms (for maven analysis) from GitHub',
         );
         const updatedData = await fetchPomsData.load({nodesArray: githubChunk.map((r) => r.id), branchName: branch.branch, expression: `${branch.branch}:pom.xml`});
-        fetchedPoms = [...fetchedPoms, ...updatedData];
+        const repoNames = githubChunk.filter((r: any) => r !== null).map((r: any) => r.nameWithOwner)
+        this.log(`Fetched Maven data from repos: ${JSON.stringify(repoNames)}`)
+        fetchedPoms = [...fetchedPoms, ...updatedData.filter((r: any) => r !== null)];
         //Wait for 1 second between all repos fetch
         await sleep(1000);
         cli.action.stop(' done');
