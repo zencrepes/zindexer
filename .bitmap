@@ -39,7 +39,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/config@0.0.23": {
+    "zencrepes.zindexer/config@0.0.28": {
         "files": [
             {
                 "relativePath": "src/components/config/defaultConfig.ts",
@@ -95,7 +95,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/github-issues@0.0.27": {
+    "zencrepes.zindexer/github-issues@0.0.28": {
         "files": [
             {
                 "relativePath": "src/components/githubIssues/esMapping.ts",
@@ -350,7 +350,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/github-pullrequests@0.0.24": {
+    "zencrepes.zindexer/github-pullrequests@0.0.25": {
         "files": [
             {
                 "relativePath": "src/components/githubPullrequests/esMapping.ts",
@@ -650,6 +650,44 @@
         ],
         "mainFile": "src/components/githubWatchers/index.ts",
         "trackDir": "src/components/githubWatchers",
+        "origin": "AUTHORED",
+        "exported": true
+    },
+    "zencrepes.zindexer/testing-perfs@0.0.28": {
+        "files": [
+            {
+                "relativePath": "src/components/testingPerfs/esMapping.ts",
+                "test": false,
+                "name": "esMapping.ts"
+            },
+            {
+                "relativePath": "src/components/testingPerfs/esSettings.ts",
+                "test": false,
+                "name": "esSettings.ts"
+            },
+            {
+                "relativePath": "src/components/testingPerfs/index.ts",
+                "test": false,
+                "name": "index.ts"
+            },
+            {
+                "relativePath": "src/components/testingPerfs/node.type.ts",
+                "test": false,
+                "name": "node.type.ts"
+            },
+            {
+                "relativePath": "src/components/testingPerfs/utils.ts",
+                "test": false,
+                "name": "utils.ts"
+            },
+            {
+                "relativePath": "src/components/testingPerfs/zConfig.ts",
+                "test": false,
+                "name": "zConfig.ts"
+            }
+        ],
+        "mainFile": "src/components/testingPerfs/index.ts",
+        "trackDir": "src/components/testingPerfs",
         "origin": "AUTHORED",
         "exported": true
     },
