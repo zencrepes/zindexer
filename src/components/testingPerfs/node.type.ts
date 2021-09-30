@@ -19,6 +19,7 @@ export interface Platform {
 }
 
 export interface Resource {
+  id?: string;           // Unique ID of the resource
   name: string;         // Name/hostname of the resource (elasticsearch, mariaDB, unomi, ...)
   size: string;         // Size of the underlying host, could be instance type such as t2.large, or a string detailing the env (2 vCPU / 4GB RAM)
   image: string;        // Name of the container that was used
@@ -26,6 +27,7 @@ export interface Resource {
 }
 
 export interface Run {
+  id?: string;           // Unique ID of the run
   name: string;         // User-friendly name for the run (200 users - 60s RampUp)
   rampUp: number;       // Ramp-up time for the run
   userCount: number;    // Number of users submitted during that rampup
