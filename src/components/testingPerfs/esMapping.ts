@@ -37,6 +37,8 @@ properties:
     type: date
   duration:
     type: integer
+  rampUp:
+    type: integer    
   platform:
     properties:
       vendor:
@@ -44,7 +46,20 @@ properties:
       tenant:
         type: keyword
       region:
-        type: keyword       
+        type: keyword   
+  transactions:
+    properties:
+      totalCount:
+        type: integer    
+      edges:
+        type: nested
+        properties:
+          node:
+            properties:        
+              id:
+                type: keyword
+              name:
+                type: keyword            
   resources:
     properties:
       totalCount:
@@ -78,6 +93,7 @@ properties:
               userCount:
                 type: integer 
               statistics:
+                type: nested
                 properties:
                   transaction:
                     type: keyword
