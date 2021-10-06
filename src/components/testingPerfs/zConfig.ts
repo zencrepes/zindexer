@@ -43,13 +43,22 @@ const config = {
     },   
     {
       facetType: 'term',
+      field: 'resources.edges.node.name_size',
+      name: 'Resource name & size',
+      nullValue: 'NO ASSIGNEE',
+      nullFilter:
+        '{"op":"<=","content":{"field":"resources.totalCount","value":0}}',
+      default: true,
+    },    
+    {
+      facetType: 'term',
       field: 'resources.edges.node.name',
       name: 'Resource name',
       nullValue: 'NO ASSIGNEE',
       nullFilter:
         '{"op":"<=","content":{"field":"resources.totalCount","value":0}}',
       default: true,
-    },    
+    },     
     {
       facetType: 'term',
       field: 'resources.edges.node.size',

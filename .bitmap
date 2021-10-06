@@ -62,7 +62,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/es-utils@0.0.14": {
+    "zencrepes.zindexer/es-utils@0.0.31": {
         "files": [
             {
                 "relativePath": "src/components/esUtils/aliasEsIndex.ts",
@@ -73,6 +73,11 @@
                 "relativePath": "src/components/esUtils/checkEsIndex.ts",
                 "test": false,
                 "name": "checkEsIndex.ts"
+            },
+            {
+                "relativePath": "src/components/esUtils/deleteEsIndex.ts",
+                "test": false,
+                "name": "deleteEsIndex.ts"
             },
             {
                 "relativePath": "src/components/esUtils/getEsIndex.ts",
@@ -653,7 +658,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/testing-perfs@0.0.30": {
+    "zencrepes.zindexer/testing-perfs@0.0.31": {
         "files": [
             {
                 "relativePath": "src/components/testingPerfs/esMapping.ts",

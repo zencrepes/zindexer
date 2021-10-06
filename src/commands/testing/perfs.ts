@@ -10,6 +10,7 @@ import {
 } from '../../components/testingPerfs';
 
 import {
+  deleteEsIndex,
   checkEsIndex,
 } from '../../components/esUtils/index';
 
@@ -36,6 +37,11 @@ export default class Perfs extends Command {
       default: false,
       description: 'Reset ZenCrepes configuration to default',
     }),
+    delete: flags.boolean({
+      char: 'd',
+      default: false,
+      description: 'Delete the corresponding ES index and re-create (WARNING, DANGEROUS)',
+    }),    
   };
 
   async run() {
@@ -52,6 +58,10 @@ export default class Perfs extends Command {
       userConfig.elasticsearch.dataIndices.testingPerfs,
       flags.reset,
     );
+
+    if (flags.delete === true) {
+      await deleteEsIndex(eClient, userConfig.elasticsearch.dataIndices.testingPerfs, this.log);
+    }
 
     await checkEsIndex(eClient, userConfig.elasticsearch.dataIndices.testingPerfs, esMapping, esSettings, this.log);
 
