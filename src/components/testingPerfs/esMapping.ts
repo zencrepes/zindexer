@@ -73,10 +73,12 @@ properties:
                 type: keyword
               size:
                 type: keyword
+              name_size:
+                type: keyword
               image:
                 type: keyword 
               tfsettings:
-                type: keyword                                 
+                type: keyword
   runs:
     properties:
       totalCount:
