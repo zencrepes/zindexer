@@ -83,16 +83,16 @@ export default class Repos extends Command {
     );
     let fetchedRepos: Array<any> = [];
     for (const githubChunk of githubChunks) {
-      cli.action.start(
-        'Loading  ' +
-          githubChunk.length +
-          ' repos from GitHub (' +
-          (fetchedRepos.length + githubChunk.length) +
-          ' / ' +
-          sources.length +
-          ')',
-      );
-      const updatedData = await fetchData.load(githubChunk);
+      let retries = 0;
+      const maxRetries = 3;
+      let updatedData = [];
+      while (updatedData.length === 0 && retries < maxRetries) {
+        cli.action.start(
+          `Loading ${githubChunk.length} repos from GitHub ${fetchedRepos.length + githubChunk.length} / ${sources.length})${retries > 0 ? ' - API error, retry: ' + retries + '/' + maxRetries: '' }`,
+        );        
+        updatedData = await fetchData.load(githubChunk);
+        retries++;
+      }
       fetchedRepos = [...fetchedRepos, ...updatedData];
       //Wait for 1 second between all repos fetch
       await sleep(1000);

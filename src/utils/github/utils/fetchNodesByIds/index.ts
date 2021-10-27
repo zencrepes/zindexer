@@ -53,6 +53,10 @@ export default class FetchNodesByIds {
     const t1 = performance.now();
     const callDuration = t1 - t0;
 
+    if (data.data === undefined) {
+      return []
+    }
+
     if (data.data.nodes.length > 0) {
       const apiPerf = Math.round(
         data.data.nodes.length / (callDuration / 1000),

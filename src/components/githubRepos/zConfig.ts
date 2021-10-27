@@ -259,7 +259,17 @@ const config = {
         linkField: null,
         sortable: true,
         default: true,
-      },       
+      },
+      {
+        name: 'Protection',
+        field: 'branchProtectionRules.edges',
+        subfield: 'node.pattern',
+        fieldType: 'rowarray',        
+        sortField: 'branchProtectionRules.totalCount',
+        linkField: null,
+        sortable: false,
+        default: true,
+      },      
       {
         name: 'Default',
         field: 'defaultBranchRef.name',
@@ -268,7 +278,7 @@ const config = {
         linkField: null,
         sortable: true,
         default: true,
-      },     
+      },
       {
         name: 'Topics',
         field: 'repositoryTopics.edges',
