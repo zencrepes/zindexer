@@ -33,6 +33,7 @@ async function graphqlQuery(
   } catch (error) {
     console.log(JSON.stringify(query));
     console.log(variables);
+    console.log(data);
     console.log('THIS IS AN ERROR');
     log(error);
   }
@@ -46,7 +47,7 @@ async function graphqlQuery(
       log(error.message);
     });
   }
-  if (data.data.rateLimit !== undefined) {
+  if (data.data !== undefined && data.data.rateLimit !== undefined) {
     console.log(
       'GitHub Tokens - remaining: ' +
         data.data.rateLimit.remaining +

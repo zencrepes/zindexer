@@ -461,7 +461,7 @@
         "origin": "AUTHORED",
         "exported": true
     },
-    "zencrepes.zindexer/github-repos@0.0.17": {
+    "zencrepes.zindexer/github-repos@0.0.18": {
         "files": [
             {
                 "relativePath": "src/components/githubRepos/esMapping.ts",
