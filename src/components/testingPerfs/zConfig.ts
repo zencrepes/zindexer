@@ -19,14 +19,7 @@ const config = {
       name: 'Run Name',
       nullValue: 'EMPTY',
       default: true,
-    },
-    {
-      facetType: 'term',
-      field: 'rampUp',
-      name: 'Ramp-Up',
-      nullValue: 'EMPTY',
-      default: true,
-    },    
+    }, 
     {
       facetType: 'term',
       field: 'repository.name.keyword',
@@ -40,7 +33,16 @@ const config = {
       name: 'Organization',
       nullValue: 'EMPTY',
       default: true,
-    },   
+    },
+    {
+      facetType: 'term',
+      field: 'runs.edges.node.name',
+      name: 'Profiles',
+      nullValue: 'NO PROFILE',
+      nullFilter:
+        '{"op":"<=","content":{"field":"runs.totalCount","value":0}}',
+      default: true,
+    },
     {
       facetType: 'term',
       field: 'resources.edges.node.name_size',
