@@ -38,7 +38,39 @@ properties:
   duration:
     type: integer
   rampUp:
-    type: integer    
+    type: integer
+  verified:
+    type: boolean
+  verified_date:
+    type: date
+  verified_by:
+    type: keyword
+  disabled:
+    type: boolean
+  disabled_date:
+    type: date
+  disabled_by:
+    type: keyword
+  description:
+    type: text
+    fields:
+      keyword:
+        type: keyword
+        ignore_above: 256
+  description_date:
+    type: date
+  description_by:
+    type: keyword
+  analysis:
+    type: text
+    fields:
+      keyword:
+        type: keyword
+        ignore_above: 256
+  analysis_date:
+    type: date
+  analysis_by:
+    type: keyword
   platform:
     properties:
       vendor:
