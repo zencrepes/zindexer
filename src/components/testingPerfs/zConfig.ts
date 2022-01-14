@@ -14,6 +14,14 @@ const config = {
       default: true,
     },
     {
+      facetType: 'boolean',
+      field: 'verified',
+      name: 'Verified',
+      nullValue: 'EMPTY',
+      nullFilter: '',
+      default: true,
+    },    
+    {
       facetType: 'term',
       field: 'name.keyword',
       name: 'Run Name',
