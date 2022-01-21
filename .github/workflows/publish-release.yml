@@ -19,7 +19,6 @@ jobs:
       - run: npm --no-git-tag-version version ${{ github.event.release.tag_name }}
       - run: tsc -b
       - run: oclif-dev manifest
-      - run: oclif-dev readme
       - run: ls -lah ./
       - run: npm publish
 
