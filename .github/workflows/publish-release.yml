@@ -20,7 +20,7 @@ jobs:
       - run: tsc -b
       - run: oclif-dev manifest
       - run: ls -lah ./
-      - run: npm publish
+      - run: npm publish --access public
 
   npm_test:
     needs: [npm_publish]
