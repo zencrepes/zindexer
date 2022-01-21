@@ -53,6 +53,15 @@ const config = {
     },
     {
       facetType: 'term',
+      field: 'tags.edges.node.name',
+      name: 'Tags',
+      nullValue: 'NO TAGS',
+      nullFilter:
+        '{"op":"<=","content":{"field":"tags.totalCount","value":0}}',
+      default: true,
+    },    
+    {
+      facetType: 'term',
       field: 'resources.edges.node.name_size',
       name: 'Resource name & size',
       nullValue: 'NO ASSIGNEE',

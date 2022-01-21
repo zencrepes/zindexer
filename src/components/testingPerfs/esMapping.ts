@@ -91,7 +91,20 @@ properties:
               id:
                 type: keyword
               name:
-                type: keyword            
+                type: keyword
+  tags:
+    properties:
+      totalCount:
+        type: integer    
+      edges:
+        type: nested
+        properties:
+          node:
+            properties:        
+              id:
+                type: keyword
+              name:
+                type: keyword
   resources:
     properties:
       totalCount:

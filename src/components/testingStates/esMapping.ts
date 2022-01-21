@@ -51,9 +51,9 @@ properties:
                 fields:
                   keyword:
                     type: keyword
-                    ignore_above: 256                    
+                    ignore_above: 256
               url:
-                type: keyword                   
+                type: keyword
   createdAt:
     type: date
   state:
