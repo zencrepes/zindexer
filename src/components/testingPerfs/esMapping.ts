@@ -100,10 +100,14 @@ properties:
         type: nested
         properties:
           node:
-            properties:        
+            properties:
               id:
                 type: keyword
               name:
+                type: keyword
+              type:
+                type: keyword
+              description:
                 type: keyword
   resources:
     properties:
