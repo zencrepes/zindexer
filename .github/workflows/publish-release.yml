@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@master
       - run: yarn
       - run: npm -g install typescript@4.2.3
-      - run: npm -g install @oclif/dev-cli@latest
+      - run: npm -g install @oclif/dev-cli @oclif/help
       - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
       - run: npm --no-git-tag-version version ${{ github.event.release.tag_name }}
       - run: tsc -b
