@@ -136,7 +136,7 @@ properties:
         type: nested
         properties:
           node:
-            properties:        
+            properties:
               name:
                 type: keyword
               rampUp:
@@ -149,31 +149,31 @@ properties:
                   transaction:
                     type: keyword
                   sampleCount:
-                    type: float
+                    type: long
                   errorCount:
-                    type: float
+                    type: long
                   errorPct:
-                    type: float
+                    type: double
                   meanResTime:
-                    type: float
+                    type: double
                   medianResTime:
-                    type: float
+                    type: double
                   minResTime:
-                    type: float
+                    type: double
                   maxResTime:
-                    type: float
+                    type: double
                   pct1ResTime:
-                    type: float
+                    type: double
                   pct2ResTime:
-                    type: float
+                    type: double
                   pct3ResTime:
-                    type: float
+                    type: double
                   throughput:
-                    type: float
+                    type: double
                   receivedKBytesPerSec:
-                    type: float
+                    type: double
                   sentKBytesPerSec:
-                    type: float 
+                    type: double 
   url:
     type: keyword
 `;
