@@ -20,14 +20,21 @@ const config = {
       nullValue: 'EMPTY',
       nullFilter: '',
       default: true,
-    },    
+    },
     {
       facetType: 'term',
       field: 'name.keyword',
       name: 'Run Name',
       nullValue: 'EMPTY',
       default: true,
-    }, 
+    },
+    {
+      facetType: 'term',
+      field: 'group.keyword',
+      name: 'Group',
+      nullValue: 'EMPTY',
+      default: true,
+    },
     {
       facetType: 'term',
       field: 'repository.name.keyword',
@@ -47,8 +54,7 @@ const config = {
       field: 'runs.edges.node.name',
       name: 'Profiles',
       nullValue: 'NO PROFILE',
-      nullFilter:
-        '{"op":"<=","content":{"field":"runs.totalCount","value":0}}',
+      nullFilter: '{"op":"<=","content":{"field":"runs.totalCount","value":0}}',
       default: true,
     },
     {
@@ -56,10 +62,9 @@ const config = {
       field: 'tags.edges.node.name',
       name: 'Tags',
       nullValue: 'NO TAGS',
-      nullFilter:
-        '{"op":"<=","content":{"field":"tags.totalCount","value":0}}',
+      nullFilter: '{"op":"<=","content":{"field":"tags.totalCount","value":0}}',
       default: true,
-    },    
+    },
     {
       facetType: 'term',
       field: 'resources.edges.node.name_size',
@@ -68,7 +73,7 @@ const config = {
       nullFilter:
         '{"op":"<=","content":{"field":"resources.totalCount","value":0}}',
       default: true,
-    },    
+    },
     {
       facetType: 'term',
       field: 'resources.edges.node.name',
@@ -77,7 +82,7 @@ const config = {
       nullFilter:
         '{"op":"<=","content":{"field":"resources.totalCount","value":0}}',
       default: true,
-    },     
+    },
     {
       facetType: 'term',
       field: 'resources.edges.node.size',
@@ -86,7 +91,7 @@ const config = {
       nullFilter:
         '{"op":"<=","content":{"field":"resources.totalCount","value":0}}',
       default: true,
-    }, 
+    },
     {
       facetType: 'term',
       field: 'resources.edges.node.image',
@@ -95,7 +100,7 @@ const config = {
       nullFilter:
         '{"op":"<=","content":{"field":"resources.totalCount","value":0}}',
       default: true,
-    }         
+    },
   ],
   tableConfig: {
     itemsType: 'Testing Perfs',
@@ -117,7 +122,7 @@ const config = {
         linkField: 'url',
         sortable: true,
         default: true,
-      },  
+      },
       {
         name: 'Started At',
         field: 'startedAt',
@@ -125,7 +130,7 @@ const config = {
         sortField: 'startedAt',
         sortable: true,
         default: true,
-      },    
+      },
       {
         name: 'Duration (s)',
         field: 'duration',
@@ -158,7 +163,7 @@ const config = {
         sortField: 'disabled_by',
         sortable: true,
         default: true,
-      },      
+      },
     ],
   },
 };
