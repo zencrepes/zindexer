@@ -39,6 +39,20 @@ export default class Issues extends Command {
     }),
   };
 
+/*
+POST /sources/_doc/ae7b07d1-3373-58b9-a771-09b1e121e98c
+{
+  "uuid": "ae7b07d1-3373-58b9-a771-09b1e121e98c",
+  "id": "JAHIA_SUP",
+  "type": "JIRA",
+  "server": "JAHIA",
+  "project": "SUP",
+  "name": "JAHIA_SUP",
+  "active": true,
+  "remoteLinks": true
+}
+*/
+
   async run() {
     const { flags } = this.parse(Issues);
 

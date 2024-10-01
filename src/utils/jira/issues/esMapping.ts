@@ -14,7 +14,17 @@ properties:
   updatedAt:
     type: date
   endOfSupport:
-    type: keyword      
+    type: keyword
+  productArea:
+    properties:
+      id:
+        type: keyword
+      value:
+        type: keyword
+      self:
+        type: keyword
+      disabled:
+        type: keyword         
   assignee:
     properties:
       active:
@@ -200,6 +210,73 @@ properties:
                   timeZone:
                     type: keyword
               updateAuthor:
+                properties:
+                  active:
+                    type: boolean
+                  avatarUrls:
+                    properties:
+                      xsmall:
+                        type: keyword
+                      small:
+                        type: keyword
+                      medium:
+                        type: keyword
+                      large:
+                        type: keyword
+                  displayName:
+                    type: text
+                    fields:
+                      keyword:
+                        type: keyword
+                        ignore_above: 256
+                  emailAddress:
+                    type: text
+                    fields:
+                      keyword:
+                        type: keyword
+                        ignore_above: 256
+                  key:
+                    type: keyword
+                  name:
+                    type: text
+                    fields:
+                      keyword:
+                        type: keyword
+                        ignore_above: 256
+                  self:
+                    type: keyword
+                  timeZone:
+                    type: keyword
+      totalCount:
+        type: long
+  attachments:
+    properties:
+      edges:
+        type: nested
+        properties:
+          node:
+            properties:
+              id:
+                type: keyword
+              self:
+                type: keyword
+              filename:
+                type: keyword
+              safeFilename:
+                type: keyword
+              remoteBackupUrl:
+                type: keyword
+              urlPath:
+                type: keyword
+              created:
+                type: date
+              size:
+                type: keyword
+              mimeType:
+                type: keyword
+              content:
+                type: keyword  
+              author:
                 properties:
                   active:
                     type: boolean

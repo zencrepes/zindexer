@@ -2,7 +2,7 @@ import getSprint from '../jira/issues/getSprint';
 
 const getLabels = (issue: any) => {
   // By default we add a Jira label, just to indicate this issue is coming from jira
-  const labels: string[] = ['Jira:' + issue.project.name];
+  const labels: string[] = ['Jira:' + issue.project.key];
   // Push the issue type (except is task)
   if (issue.type.name !== 'Task') {
     labels.push(issue.type.name);
@@ -41,10 +41,14 @@ const getLabels = (issue: any) => {
     labels.push('priority:' + issue.priority.name);
   }
 
-  const sprint = getSprint(issue);
-  if (sprint !== null && sprint.number !== undefined) {
-    labels.push('sprint:' + sprint.number);
+  if (issue.productArea !== undefined && issue.productArea !== null) {
+    labels.push('Area:' + issue.productArea.value);
   }
+
+  // const sprint = getSprint(issue);
+  // if (sprint !== null && sprint.number !== undefined) {
+  //   labels.push('sprint:' + sprint.number);
+  // }
 
   if (issue.points !== undefined && issue.points !== null) {
     labels.push('SP:' + issue.points);

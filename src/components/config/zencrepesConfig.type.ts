@@ -110,6 +110,10 @@ export interface ConfigJira {
     fetch: {
       maxNodes: number;
     };
+    attachments: {
+      localPath: string;
+      remoteHost: string;
+    };    
   };
 }
 

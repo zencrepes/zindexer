@@ -161,11 +161,16 @@ const defaultConfig = {
             },
             { jfield: 'remoteLinks', zfield: 'remoteLinks' },
             { jfield: 'customfield_10850', zfield: 'endOfSupport' },
+            { jfield: 'customfield_11813', zfield: 'productArea' },
           ],
         },
         excludeDays: ['1900-01-01'],
         fetch: {
           maxNodes: 30,
+        },
+        attachments: {
+          localPath: '/tmp/jira-attachments',
+          remoteHost: 'https://my.remote.server/jira-attachments',
         },
       },
     },

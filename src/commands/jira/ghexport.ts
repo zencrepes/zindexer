@@ -17,12 +17,14 @@ import getComments from '../../utils/import/getComments';
 import getAssignee from '../../utils/import/getAssignee';
 import getReporter from '../../utils/import/getReporter';
 import getLabels from '../../utils/import/getLabels';
+import cleanJiraContent from '../../utils/import/cleanJiraContent';
+
 
 import { esMapping, esSettings } from '../../components/githubImport';
 
 import { checkEsIndex, pushEsNodes } from '../../components/esUtils/index';
 
-import { ImportConfig } from '../../utils/import/importConfig.type';
+import { ImportConfig, JiraUser } from '../../utils/import/importConfig.type';
 
 //https://gist.github.com/jonmagic/5282384165e0f86ef105
 export default class Issues extends Command {
@@ -65,37 +67,36 @@ export default class Issues extends Command {
       'Verifying that all users (creator, reporter, assignee) are present in import config',
     );
 
-    const userUniqueEmails: string[] = [];
+    const uniqueJiraUsers: JiraUser[] = [];
     for (const i of issues.filter(i => i.key !== undefined)) {
-      // Reporter
-      if (i.reporter !== undefined && i.reporter !== null) {
-        if (!userUniqueEmails.includes(i.reporter.emailAddress)) {
-          userUniqueEmails.push(i.reporter.emailAddress);
-        }
-      }
-      if (i.creator !== undefined && i.creator !== null) {
-        if (!userUniqueEmails.includes(i.creator.emailAddress)) {
-          userUniqueEmails.push(i.creator.emailAddress);
-        }
-      }
-      if (i.assignee !== undefined && i.assignee !== null) {
-        if (!userUniqueEmails.includes(i.assignee.emailAddress)) {
-          userUniqueEmails.push(i.assignee.emailAddress);
-        }
+      const issueObjs = ['creator', 'assignee', 'reporter'];
+      for (const issueObj of issueObjs) {
+        if (i[issueObj] !== undefined && i[issueObj] !== null) {
+          if (!uniqueJiraUsers.find(u => u.emailAddress === i[issueObj].emailAddress)) {
+            uniqueJiraUsers.push({
+              name: i[issueObj].name, 
+              key: i[issueObj].key, 
+              emailAddress: i[issueObj].emailAddress, 
+              displayName: i[issueObj].displayName
+            });
+          }
+        }        
       }
       if (i.comments !== undefined && i.comments.totalCount > 0) {
         for (const comment of i.comments.edges) {
-          if (
-            comment.node.author !== undefined &&
-            !userUniqueEmails.includes(comment.node.author.emailAddress)
-          ) {
-            userUniqueEmails.push(comment.node.author.emailAddress);
-          }
-          if (
-            comment.node.updateAuthor !== undefined &&
-            !userUniqueEmails.includes(comment.node.updateAuthor.emailAddress)
-          ) {
-            userUniqueEmails.push(comment.node.updateAuthor.emailAddress);
+          const issueObjs = ['author', 'updateAuthor'];
+          for (const issueObj of issueObjs) {
+            if (
+              comment.node[issueObj] !== undefined &&
+              !uniqueJiraUsers.find(u => u.emailAddress === comment.node[issueObj].emailAddress)
+            ) {
+              uniqueJiraUsers.push({
+                name: comment.node[issueObj].name, 
+                key: comment.node[issueObj].key, 
+                emailAddress: comment.node[issueObj].emailAddress, 
+                displayName: comment.node[issueObj].displayName
+              });
+            }
           }
         }
       }
@@ -110,15 +111,23 @@ export default class Issues extends Command {
         this.exit();
       }
     }
-    const missingEmails: string[] = userUniqueEmails.filter(
-      u => importConfig.users.find(us => us.jiraEmail === u) === undefined,
+    const missingUsers: JiraUser[] = uniqueJiraUsers.filter(
+      u => importConfig.users.find(us => us.jira.emailAddress === u.emailAddress) === undefined,
     );
-    if (missingEmails.length > 0) {
+
+    if (missingUsers.length > 0) {
       this.log('The following users are missing from import-config.yml:');
-      missingEmails.forEach(m => this.log(m));
+      missingUsers.forEach(m => this.log(JSON.stringify(m)));   
       const formatMissing = {
-        users: missingEmails.map((m: string) => {
-          return { jiraEmail: m, githubUsername: 'TOBEREPLACED' };
+        users: missingUsers.map((m: JiraUser) => {
+          return { 
+            jira: {
+              ...m
+            },
+            github: {
+              username: 'TOBEREPLACED'
+            }
+          };
         }),
       };
       fs.writeFileSync(
@@ -126,7 +135,7 @@ export default class Issues extends Command {
         jsYaml.safeDump(formatMissing),
       );
       this.log(
-        'A template was prepopulated at: ' +
+        '\n A template was prepopulated at: ' +
           path.join(this.config.configDir, 'import-config.template.yml'),
       );
       this.log(
@@ -169,6 +178,7 @@ export default class Issues extends Command {
     const preppedIssues: any[] = [];
     //.filter(i => i.key === 'FORM-1585')
     for (let i of issues.filter(i => i.key !== undefined)) {
+      console.log(i.key)
       const repoCfg: any = importConfig.repos.find(
         r => r.jiraProjectKey === i.project.key,
       );
@@ -191,13 +201,19 @@ export default class Issues extends Command {
       }
 
       const header = getHeader(i, importConfig.users);
+      console.log(1)
       const comments = getComments(i, importConfig.users);
+      console.log(2)
       const assignee = getAssignee(i, importConfig.users);
+      console.log(3)
       const reporter = getReporter(i, importConfig.users);
+      console.log(4)
       const labels = getLabels(i);
+      console.log(5)
+
       let body =
         i.description !== null
-          ? header + '\n\n\n' + jira2md.to_markdown(i.description)
+          ? header + '\n\n\n' + cleanJiraContent(i.description, importConfig.users, i)
           : header;
 
       const bodySize = new TextEncoder().encode(body).length;
@@ -217,6 +233,7 @@ export default class Issues extends Command {
         // eslint-disable-next-line @typescript-eslint/camelcase
         updated_at: new Date(i.updatedAt).toISOString(),
       };
+
       if (assignee !== null) {
         issuePayload = { ...issuePayload, assignee };
       } else if (reporter !== null) {
@@ -229,6 +246,7 @@ export default class Issues extends Command {
           closed_at: new Date(i.closedAt).toISOString(),
         };
       }
+
       if (labels.length > 0) {
         issuePayload = { ...issuePayload, labels };
       }

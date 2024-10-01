@@ -213,7 +213,7 @@ export default class Import extends Command {
 
         const failedLabels: string[] = [];
         for (const importStatus of response.data) {
-          const importIssue = issues.find(i => i.status.id === importStatus.id);
+          const importIssue = issues.filter(i => i.status !== undefined && i.status !== null).find(i => i.status.id === importStatus.id);
           if (importIssue !== undefined) {
             const updateIssue = {
               ...importIssue,
@@ -226,6 +226,7 @@ export default class Import extends Command {
             });
             if (importStatus.status === 'failed') {
               for (const error of importStatus.errors) {
+                this.log('Unable to import issue: ' + importIssue.source.key + ' Error: ' + JSON.stringify(error));
                 if (error.resource === 'Label') {
                   if (!failedLabels.includes(error.value)) {
                     failedLabels.push(error.value);
@@ -263,7 +264,7 @@ export default class Import extends Command {
       );
       this.log('Found: ' + missingIssues.length + ' issues missing');
       this.log(
-        'Fetching errors for first 10 missing issues (problems are often similar between issues',
+        'Fetching errors for first 10 missing issues (problems are often similar between issues)',
       );
       for (const mi of missingIssues.slice(0, 10)) {
         cli.action.start('Fetching status for missing issue: ' + mi.source.key);

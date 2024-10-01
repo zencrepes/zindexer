@@ -1,6 +1,17 @@
+export interface JiraUser {
+  name: string;
+  key: string;
+  emailAddress: string;
+  displayName: string;
+}
+
+export interface GitHubUser {
+  username: string;
+}
+
 export interface User {
-  jiraEmail: string;
-  githubUsername: string;
+  jira: JiraUser;
+  github: GitHubUser;
 }
 
 export interface Repo {

@@ -22,7 +22,7 @@ const fetchProjects = async (userConfig: Config, serverName: string) => {
         //        fields: 'summary',
       },
     });
-    console.log(response);
+    // console.log(response);
     if (response.data.length > 0) {
       return response.data;
     }

@@ -4,10 +4,13 @@ import * as _ from 'lodash';
 
 import cli from 'cli-ux';
 
+import { Downloader } from 'nodejs-file-downloader';
+
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import chunkArray from '../../utils/misc/chunkArray';
 import { getId } from '../../utils/misc/getId';
+import fetchAllIssues from '../../utils/import/fetchAllIssues';
 
 import {
   ESIndexSources,
@@ -26,10 +29,17 @@ import esCheckIndex from '../../utils/es/esCheckIndex';
 import fetchJqlPagination from '../../utils/jira/utils/fetchJql';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
+import { getSafeFilename } from '../../utils/misc/getSafeFilename';
 
 //https://medium.com/javascript-in-plain-english/javascript-check-if-a-variable-is-an-object-and-nothing-else-not-an-array-a-set-etc-a3987ea08fd7
 const isObject = (obj: any) => {
   return Object.prototype.toString.call(obj) === '[object Object]';
+};
+
+const sleep = (ms: number) => {
+  //https://github.com/Microsoft/tslint-microsoft-contrib/issues/355
+  // tslint:disable-next-line no-string-based-set-timeout
+  return new Promise(resolve => setTimeout(resolve, ms));
 };
 
 /* This functions cleans the object from any avatarUrl crap (numerical indices)*/
@@ -56,7 +66,7 @@ const cleanObject = (obj: any) => {
 };
 
 /* This reformat an issue, from Jira's data model to ZenCrepes data model*/
-const formatIssue = (issue: any, issueFields: any[]) => {
+const formatIssue = (issue: any, serverConfig: ConfigJira["config"]) => {
   const modifiedObj: any = {};
   if (issue.key !== undefined) {
     modifiedObj['key'] = issue.key;
@@ -64,7 +74,7 @@ const formatIssue = (issue: any, issueFields: any[]) => {
   if (issue.id !== undefined) {
     modifiedObj['id'] = issue.id;
   }
-  for (const field of issueFields) {
+  for (const field of serverConfig.fields.issues) {
     if (_.get(issue.fields, field.jfield) !== undefined) {
       const jValue = _.get(issue.fields, field.jfield);
       if (Array.isArray(jValue) === true) {
@@ -82,16 +92,26 @@ const formatIssue = (issue: any, issueFields: any[]) => {
               return {
                 node: getSprint(v),
               };
+            } else if (field.zfield === 'attachments') {
+              const safeFilename = getSafeFilename(v.filename);
+              return {
+                node: {
+                  ...v,
+                  safeFilename: safeFilename,
+                  urlPath: `${issue.fields.project.key}/${issue.key}`,
+                  remoteBackupUrl: `${serverConfig.attachments.remoteHost}/${issue.fields.project.key}/${issue.key}/${safeFilename}`,
+                },
+              };           
             } else if (v.outwardIssue !== null || v.inwardIssue !== null) {
               // We are going through an issue link, we need to clean the sub issue
               const outwardIssue =
                 v.outwardIssue === null || v.outwardIssue === undefined
                   ? null
-                  : formatIssue(v.outwardIssue, issueFields);
+                  : formatIssue(v.outwardIssue, serverConfig);
               const inwardIssue =
                 v.inwardIssue === null || v.inwardIssue === undefined
                   ? null
-                  : formatIssue(v.inwardIssue, issueFields);
+                  : formatIssue(v.inwardIssue, serverConfig);
               return {
                 node: {
                   ...v,
@@ -115,15 +135,15 @@ const formatIssue = (issue: any, issueFields: any[]) => {
             } else if (v.field !== undefined) {
               // We're going through a list of issues
               return {
-                node: formatIssue(v, issueFields),
+                node: formatIssue(v, serverConfig),
               };
-            }
+            } 
             return { node: v };
           }),
         };
       } else {
         if (field.jfield === 'parent') {
-          modifiedObj[field.zfield] = formatIssue(jValue, issueFields);
+          modifiedObj[field.zfield] = formatIssue(jValue, serverConfig);
         } else {
           modifiedObj[field.zfield] = jValue;
         }
@@ -266,7 +286,7 @@ export default class Issues extends Command {
           userConfig,
           source.server,
           'project = "' + source.project + '" ORDER BY updated DESC',
-          '*navigable,comment',
+          '*all,comment',
           recentIssue,
           0,
           jiraServer.config.fetch.maxNodes,
@@ -285,7 +305,7 @@ export default class Issues extends Command {
                   ...ji.fields,
                 },
               },
-              jiraServer.config.fields.issues,
+              jiraServer.config,
             );
             return {
               ...{
@@ -306,7 +326,40 @@ export default class Issues extends Command {
           })
           .map((ji: any) => cleanObject(ji));
 
+        // Download files associated with the issues
+        const attachmentsCount = updatedIssues.reduce((acc, i) => {
+          return acc + i.attachments.totalCount;
+        }, 0)        
+        this.log(`Downloading ${attachmentsCount} issues attachments`);
+        let cpt = 1;
+        for (const issue of updatedIssues) {
+          for (const attachment of issue.attachments.edges) {
+            const downloadPath = `${jiraServer.config.attachments.localPath}/${attachment.node.urlPath}`;
+            const downloader = new Downloader({
+              url: attachment.node.content,
+              directory: downloadPath,
+              fileName: attachment.node.safeFilename,
+              cloneFiles: false,
+              skipExistingFileName: true,         
+            });
+            cli.action.start(`Downloading locally (${cpt}/${attachmentsCount}): ${attachment.node.safeFilename}`);
+            try {
+              const dlFile = await downloader.download();
+              cpt++
+              if (dlFile.downloadStatus === 'ABORTED') {
+                cli.action.stop(` done (ALREADY EXISTS)`);
+              } else {
+                cli.action.stop(` done (${dlFile.downloadStatus})`);
+              }
+            } catch (error) {
+              console.log(error);
+            }   
+          }
+        }
+
         //Break down the issues response in multiple batches
+        this.log(`Submitting ${updatedIssues.length} issues to ElasticSearch`);
+        const submissionErrors = []
         const esPayloadChunked = await chunkArray(updatedIssues, 100);
         //Push the results back to Elastic Search
         for (const [idx, esPayloadChunk] of esPayloadChunked.entries()) {
@@ -333,12 +386,30 @@ export default class Issues extends Command {
               JSON.stringify(rec) +
               '\n';
           }
-          await eClient.bulk({
+          const resp = await eClient.bulk({
             index: issuesIndex,
             refresh: 'wait_for',
             body: formattedData,
           });
+          // Record errors during submission
+          for (const i of resp.body.items) {
+            if (i.index.error !== undefined) {
+              submissionErrors.push({
+                ...i
+              });
+            }
+          }
           cli.action.stop(' done');
+        }
+
+        if (submissionErrors.length > 0) {
+          this.log(`${submissionErrors.length} errors were encountered during the submission to ElasticSearch`);
+          for (const e of submissionErrors) {
+            const issue = updatedIssues.find(i => i.id === e.index._id.replace(source.id + '_', ""));
+            this.log(`Issue key: ${issue.key}`);
+            this.log(e);
+          }
+          this.log(`Please fix these errors, clean the index and submit the data again`);
         }
       }
       if (userConfig.elasticsearch.oneIndexPerSource === true) {
@@ -353,6 +424,6 @@ export default class Issues extends Command {
         });
         cli.action.stop(' done');
       }
-    }
+    }    
   }
 }

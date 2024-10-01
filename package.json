@@ -28,11 +28,12 @@
     "fs-extra": "^8.1.0",
     "graphql": "^14.5.8",
     "graphql-tag": "^2.10.1",
-    "jira2md": "^2.0.4",
+    "jira2md": "^3.0.1",
     "js-yaml": "^3.13.1",
     "load-yaml-file": "^0.2.0",
     "lodash": "^4.17.15",
     "node-fetch": "^2.6.0",
+    "nodejs-file-downloader": "^4.13.0",
     "p-map": "^4.0.0",
     "tslib": "^1.11.1",
     "uuid": "^8.3.1",
@@ -100,7 +101,7 @@
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "rm -rf lib && tsc -b && oclif-dev readme",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
-    "lint": "eslint . --ext .js,.ts --fix"  
+    "lint": "eslint . --ext .js,.ts --fix"
   },
   "types": "lib/index.d.ts",
   "bit": {

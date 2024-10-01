@@ -6,8 +6,18 @@ const getMarkdownJiraLink = (key: string, host: string, title: string) => {
   return '[' + key + ' - ' + title + '](' + host + '/browse/' + key + ')';
 };
 
+const formatFileSize = (size: number) => {
+  if (size === 0) {
+    return '0 Bytes';
+  }
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(size) / Math.log(k));
+  return parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
 const getIssueLink = (link: any, issue: any) => {
-  if (link.inwardIssue !== null) {
+  if (link.inwardIssue !== undefined && link.inwardIssue !== null) {
     const jiraLink = getMarkdownJiraLink(
       link.inwardIssue.key,
       issue.server.host,
@@ -16,11 +26,14 @@ const getIssueLink = (link: any, issue: any) => {
     return (
       link.type.inward +
       ': ' +
-      jiraLink +
-      ' (' +
-      link.inwardIssue.status.name +
-      ')'
+      jiraLink
     );
+  } else if (link.remoteLink !== undefined && link.remoteLink !== null) {
+    return (
+      link.remoteLink.relationship +
+      ': ' +
+      '[' + link.key + ' - ' + link.remoteLink.object.summary + '](' + link.remoteLink.object.url + ')'
+    );    
   } else {
     const jiraLink = getMarkdownJiraLink(
       link.outwardIssue.key,
@@ -75,7 +88,7 @@ const formatSprint = (sprint: any) => {
       ' started on ' +
       format(new Date(sprint.startDate), 'eee MMM d, yyyy');
   }
-  if (sprint.completedDate !== undefined) {
+  if (sprint.completedDate !== undefined && sprint.completedDate !== "<null>" && sprint.completedDate !== "" && sprint.completedDate !== null) {
     sprintPrint =
       sprintPrint +
       ' completed on ' +
@@ -86,6 +99,7 @@ const formatSprint = (sprint: any) => {
 
 // Build an issue markdown header based on the received issue
 const getHeader = (issue: any, users: any[]) => {
+
   let header =
     '\n> Imported from Jira, on ' +
     format(new Date(), 'eee MMM d, yyyy') +
@@ -95,6 +109,11 @@ const getHeader = (issue: any, users: any[]) => {
     issue.url +
     ') in project: ' +
     issue.project.name;
+
+  if (issue.priority !== null) {
+    header = header + '\n> Priority: ' + issue.priority.name + ' Type: ' + issue.type.name;
+  }
+
   if (issue.reporter !== null) {
     const reporter =
       issue.reporter !== undefined
@@ -138,6 +157,7 @@ const getHeader = (issue: any, users: any[]) => {
         ', closed: ' +
         format(new Date(issue.closedAt), 'eee MMM d, yyyy');
     }
+
     header = header + '\n> Status: ' + issue.status.name;
 
     if (issue.resolution !== null) {
@@ -145,11 +165,13 @@ const getHeader = (issue: any, users: any[]) => {
     }
   }
 
+
   if (
     issue.sprints !== undefined &&
     issue.sprints !== null &&
     issue.sprints.totalCount > 0
   ) {
+
     if (issue.sprints.totalCount === 1) {
       header =
         header + '\n> Sprint: ' + formatSprint(issue.sprints.edges[0].node);
@@ -161,7 +183,6 @@ const getHeader = (issue: any, users: any[]) => {
       }
       header = header + '\n>';
     }
-    // console.log(header);
   }
 
   if (issue.parent !== undefined && issue.parent !== null) {
@@ -170,17 +191,26 @@ const getHeader = (issue: any, users: any[]) => {
       header + '\n> **Parent ' + issue.parent.type.name + '**: ' + parentLink;
   }
 
-  if (issue.issuelinks.totalCount > 0) {
-    header = header + '\n> **Links**:';
-    for (const link of issue.issuelinks.edges) {
+  if (issue.links.totalCount > 0) {
+    header = header + '\n>\n> **Links**:';
+    for (const link of issue.links.edges) {
       const fLink = getIssueLink(link.node, issue);
       header = header + '\n> - ' + fLink;
     }
     header = header + '\n>';
   }
 
+  if (issue.remoteLinks !== undefined && issue.remoteLinks.totalCount > 0) {
+    header = header + '\n>\n> **Remote Links**:';
+    for (const link of issue.remoteLinks.edges) {
+      const fLink = getIssueLink(link.node, issue);
+      header = header + '\n> - ' + fLink;
+    }
+    header = header + '\n>';
+  }  
+
   if (issue.epicChildren !== undefined && issue.epicChildren.length > 0) {
-    header = header + '\n> **Issues in Epic**:';
+    header = header + '\n>\n> **Issues in Epic**:';
     for (const childIssue of issue.epicChildren) {
       const status =
         childIssue.status.statusCategory.name === 'Done' ? '[x]' : '[ ]';
@@ -194,7 +224,7 @@ const getHeader = (issue: any, users: any[]) => {
     issue.initiativeChildren !== undefined &&
     issue.initiativeChildren.length > 0
   ) {
-    header = header + '\n> **Issues in Initiative**:';
+    header = header + '\n>\n> **Issues in Initiative**:';
     for (const childIssue of issue.initiativeChildren) {
       const status =
         childIssue.status.statusCategory.name === 'Done' ? '[x]' : '[ ]';
@@ -205,7 +235,7 @@ const getHeader = (issue: any, users: any[]) => {
   }
 
   if (issue.subtasks.totalCount > 0) {
-    header = header + '\n> **Sub-Tasks**:';
+    header = header + '\n>\n> **Sub-Tasks**:';
     for (const subtask of issue.subtasks.edges) {
       const status =
         subtask.node.fields.status.statusCategory.name === 'Done'
@@ -216,6 +246,24 @@ const getHeader = (issue: any, users: any[]) => {
     }
     header = header + '\n>';
   }
+
+  if (issue.attachments.totalCount > 0) {
+    header = header + '\n>\n> **Attachments**:';
+    for (const attachment of issue.attachments.edges) {
+      const attachmentAuthor =
+      attachment.node.author !== undefined
+        ? '@' +
+          getUsername(attachment.node.author.emailAddress, users) +
+          ' (' +
+          attachment.node.author.displayName +
+          ')'
+        : 'Anonymous';      
+
+      header = header + `\n> - [${attachment.node.safeFilename}](${attachment.node.remoteBackupUrl}) _uploaded by: ${attachmentAuthor} (${formatFileSize(attachment.node.size)} - ${format(new Date(attachment.node.created), 'MMM d, yyyy')}_)`;
+    }
+    header = header + '\n>';
+  }  
+
   return header;
 };
 
