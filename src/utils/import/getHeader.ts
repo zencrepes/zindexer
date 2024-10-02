@@ -29,10 +29,17 @@ const getIssueLink = (link: any, issue: any) => {
       jiraLink
     );
   } else if (link.remoteLink !== undefined && link.remoteLink !== null) {
+    const issueKey = link.key
+    let issueTitle = link.key;
+    if (link.remoteLink.object.summary !== undefined) {
+      issueTitle = issueKey + ' - ' + link.remoteLink.object.summary;
+    } else if (link.remoteLink.object.title !== issueKey) {
+      issueTitle = issueKey + ' - ' + link.remoteLink.object.title;
+    }
     return (
       link.remoteLink.relationship +
       ': ' +
-      '[' + link.key + ' - ' + link.remoteLink.object.summary + '](' + link.remoteLink.object.url + ')'
+      '[' + issueTitle + '](' + link.remoteLink.object.url + ')'
     );    
   } else {
     const jiraLink = getMarkdownJiraLink(

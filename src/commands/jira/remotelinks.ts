@@ -29,9 +29,16 @@ export default class Issues extends Command {
       description:
         'User Configuration passed as an environment variable, takes precedence over config file',
     }),
+    enable: flags.boolean({
+      char: 'e',
+      required: false,
+      default: false,
+      description:
+        'Enable fetching remote links for all JIRA sources currently enabled',
+    }),    
     action: flags.string({
       char: 'a',
-      options: ['LOAD', 'SAVE', 'FETCH'],
+      options: ['ENABLE', 'LOAD', 'SAVE', 'FETCH'],
       required: false,
       default: 'FETCH',
       description:
@@ -74,8 +81,54 @@ POST /sources/_doc/ae7b07d1-3373-58b9-a771-09b1e121e98c
       },
     );
 
+
+    if (flags.enable === true) {
+      // Enable fetching remote links for all JIRA sources currently enabled
+      this.log('Enabling fetching remote links for all JIRA sources currently enabled');
+      dataSources.map(source => {
+        if (source.type === 'JIRA' && source.active === true) {
+          this.log('Enabling for JIRA project: ' + source.name);
+          source.remoteLinks = true;
+        } else if (source.type === 'JIRA' && source.active === false && source.remoteLinks === true) {
+          this.log('Disabling for JIRA project: ' + source.name);
+          source.remoteLinks = false;
+        }
+        return source;
+      })
+      const esPayloadChunked = await chunkArray(dataSources, 100);
+      for (const [idx, esPayloadChunk] of esPayloadChunked.entries()) {
+        cli.action.start(
+          'Submitting data to ElasticSearch (' +
+            (idx + 1) +
+            ' / ' +
+            esPayloadChunked.length +
+            ')',
+        );
+        let formattedData = '';
+        for (const rec of esPayloadChunk) {
+          formattedData =
+            formattedData +
+            JSON.stringify({
+              index: {
+                _index: userConfig.elasticsearch.sysIndices.sources,
+                _id: (rec as ESIndexSources).uuid,
+              },
+            }) +
+            '\n' +
+            JSON.stringify(rec) +
+            '\n';
+        }
+        await eClient.bulk({
+          index: userConfig.elasticsearch.sysIndices.sources,
+          refresh: 'wait_for',
+          body: formattedData,
+        });
+        cli.action.stop(' done');
+      }
+    }
+
     if (flags.action === 'SAVE') {
-      this.log('Filtering out any non-JIRA sources');
+        this.log('Filtering out any non-JIRA sources');
       const jiraDataSources = dataSources.filter(
         (s: ESIndexSources) => s.type === 'JIRA',
       );

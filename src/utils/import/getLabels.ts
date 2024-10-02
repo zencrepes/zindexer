@@ -1,5 +1,3 @@
-import getSprint from '../jira/issues/getSprint';
-
 const getLabels = (issue: any) => {
   // By default we add a Jira label, just to indicate this issue is coming from jira
   const labels: string[] = ['Jira:' + issue.project.key];
@@ -24,13 +22,21 @@ const getLabels = (issue: any) => {
 
   if (issue.fixVersions.totalCount > 0) {
     for (const fv of issue.fixVersions.edges) {
-      labels.push('fixVersion:' + fv.node.name);
+      let newLabel = 'fixVersion:' + fv.node.name;
+      if (newLabel.length >= 50) {
+        newLabel.replace('-SNAPSHOT', '-SN');
+      }
+      labels.push(newLabel);
     }
   }
 
   if (issue.versions.totalCount > 0) {
     for (const fv of issue.versions.edges) {
-      labels.push('affectVersion:' + fv.node.name);
+      let newLabel = 'affectVersion:' + fv.node.name;
+      if (newLabel.length >= 50) {
+        newLabel.replace('-SNAPSHOT', '-SN');
+      }
+      labels.push(newLabel);      
     }
   }
 

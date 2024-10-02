@@ -245,6 +245,9 @@ export default class Import extends Command {
           );
           this.log('For example, there can only be Bug OR bug');
           this.log(
+            'Labels must be less than 50 characters long',
+          );             
+          this.log(
             'Update the labels config in import-config.yml to automatically update labels before push',
           );
           for (const flabel of failedLabels) {

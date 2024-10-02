@@ -178,7 +178,6 @@ export default class Issues extends Command {
     const preppedIssues: any[] = [];
     //.filter(i => i.key === 'FORM-1585')
     for (let i of issues.filter(i => i.key !== undefined)) {
-      console.log(i.key)
       const repoCfg: any = importConfig.repos.find(
         r => r.jiraProjectKey === i.project.key,
       );
@@ -201,15 +200,10 @@ export default class Issues extends Command {
       }
 
       const header = getHeader(i, importConfig.users);
-      console.log(1)
       const comments = getComments(i, importConfig.users);
-      console.log(2)
       const assignee = getAssignee(i, importConfig.users);
-      console.log(3)
       const reporter = getReporter(i, importConfig.users);
-      console.log(4)
       const labels = getLabels(i);
-      console.log(5)
 
       let body =
         i.description !== null
