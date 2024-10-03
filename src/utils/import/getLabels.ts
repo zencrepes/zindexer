@@ -44,7 +44,7 @@ const getLabels = (issue: any) => {
     labels.push(issue.resolution.name);
   }
   if (issue.priority !== null) {
-    labels.push('priority:' + issue.priority.name);
+    labels.push('Priority:' + issue.priority.name);
   }
 
   if (issue.productArea !== undefined && issue.productArea !== null) {

@@ -6,6 +6,7 @@ import * as path from 'path';
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import ghClient from '../../utils/github/utils/ghClient';
+import sleep from '../../utils/misc/sleep';
 
 import fetchAllIssues from '../../utils/import/fetchAllIssues';
 import checkConfig from '../../utils/import/checkConfig';
@@ -13,12 +14,6 @@ import GQL_UPDATEISSUEBODY from '../../utils/import/updateIssueBody.graphql';
 import GQL_RATELIMIT from '../../utils/import/getRateLimit.graphql';
 
 import { ImportConfig } from '../../utils/import/importConfig.type';
-
-const sleep = (ms: number) => {
-  //https://github.com/Microsoft/tslint-microsoft-contrib/issues/355
-  // tslint:disable-next-line no-string-based-set-timeout
-  return new Promise(resolve => setTimeout(resolve, ms));
-};
 
 const checkRateLimit = async (rateLimit: any) => {
   const resetAt = rateLimit.resetAt;

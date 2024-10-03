@@ -36,12 +36,6 @@ const isObject = (obj: any) => {
   return Object.prototype.toString.call(obj) === '[object Object]';
 };
 
-const sleep = (ms: number) => {
-  //https://github.com/Microsoft/tslint-microsoft-contrib/issues/355
-  // tslint:disable-next-line no-string-based-set-timeout
-  return new Promise(resolve => setTimeout(resolve, ms));
-};
-
 /* This functions cleans the object from any avatarUrl crap (numerical indices)*/
 const cleanObject = (obj: any) => {
   const newObject: any = {};

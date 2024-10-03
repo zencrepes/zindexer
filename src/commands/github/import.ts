@@ -10,13 +10,9 @@ import esClient from '../../utils/es/esClient';
 import fetchAllIssues from '../../utils/import/fetchAllIssues';
 import checkConfig from '../../utils/import/checkConfig';
 
-import { ImportConfig } from '../../utils/import/importConfig.type';
+import sleep from '../../utils/misc/sleep';
 
-const sleep = (ms: number) => {
-  //https://github.com/Microsoft/tslint-microsoft-contrib/issues/355
-  // tslint:disable-next-line no-string-based-set-timeout
-  return new Promise(resolve => setTimeout(resolve, ms));
-};
+import { ImportConfig } from '../../utils/import/importConfig.type';
 
 const checkRateLimit = async (response: any) => {
   const resetAt = response.headers['x-ratelimit-reset'];

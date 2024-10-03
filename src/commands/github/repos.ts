@@ -6,6 +6,7 @@ import esClient from '../../utils/es/esClient';
 import ghClient from '../../utils/github/utils/ghClient';
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
 import FetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
+import sleep from '../../utils/misc/sleep';
 
 import chunkArray from '../../utils/misc/chunkArray';
 import pushConfig from '../../utils/zencrepes/pushConfig';
@@ -19,12 +20,6 @@ import {
 } from '../../components/githubRepos';
 
 import { checkEsIndex, pushEsNodes } from '../../components/esUtils/index';
-
-const sleep = (ms: number) => {
-  //https://github.com/Microsoft/tslint-microsoft-contrib/issues/355
-  // tslint:disable-next-line no-string-based-set-timeout
-  return new Promise(resolve => setTimeout(resolve, ms));
-};
 
 export default class Repos extends Command {
   static description = 'Github: Fetches repos data from configured sources';

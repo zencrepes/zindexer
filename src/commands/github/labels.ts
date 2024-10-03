@@ -6,6 +6,7 @@ import * as path from 'path';
 import Command from '../../base';
 import fetchNodesByQuery from '../../utils/github/utils/fetchNodesByQuery';
 import ghClient from '../../utils/github/utils/ghClient';
+import sleep from '../../utils/misc/sleep';
 
 import checkConfig from '../../utils/github/labels/checkConfig';
 import { LabelsConfig } from '../../utils/github/labels/labelsConfig.type';
@@ -16,12 +17,6 @@ import GQL_RATELIMIT from '../../utils/import/getRateLimit.graphql';
 
 import esClient from '../../utils/es/esClient';
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
-
-const sleep = (ms: number) => {
-  //https://github.com/Microsoft/tslint-microsoft-contrib/issues/355
-  // tslint:disable-next-line no-string-based-set-timeout
-  return new Promise(resolve => setTimeout(resolve, ms));
-};
 
 import {
   esMapping,
