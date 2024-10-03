@@ -10,31 +10,11 @@ import esClient from '../../utils/es/esClient';
 import fetchAllIssues from '../../utils/import/fetchAllIssues';
 import checkConfig from '../../utils/import/checkConfig';
 
+import checkRateLimit from '../../utils/github/utils/checkRateLimit';
+
 import sleep from '../../utils/misc/sleep';
 
 import { ImportConfig } from '../../utils/import/importConfig.type';
-
-const checkRateLimit = async (response: any) => {
-  const resetAt = response.headers['x-ratelimit-reset'];
-  const remainingTokens = response.headers['x-ratelimit-remaining'];
-  if (remainingTokens <= 5 && resetAt !== null) {
-    console.log(
-      new Date().toISOString() +
-        ': Exhausted all available tokens, will resuming querying after ' +
-        new Date(resetAt * 1000),
-    );
-    const sleepDuration =
-      new Date(resetAt * 1000).getTime() - new Date().getTime();
-    console.log(
-      new Date().toISOString() +
-        ': Will resume querying in: ' +
-        sleepDuration +
-        's',
-    );
-    await sleep(sleepDuration + 600000); // (Pausing for an extra 10mn after retry time)
-    console.log(new Date().toISOString() + ': Ready to resume querying');
-  }
-};
 
 // There might be a need to rename some labels due to some conflict with the data in GitHub
 const renameLabels = (labels: string[], importConfig: ImportConfig) => {
@@ -114,7 +94,7 @@ const importIssues = async (
       body: { doc: updatedIssue },
     });
     await sleep(250);
-    await checkRateLimit(response);
+    await checkRateLimit(response.headers['x-ratelimit-reset'], response.headers['x-ratelimit-remaining'], 5);
     cpt++;
   }
 };
@@ -233,7 +213,7 @@ export default class Import extends Command {
           }
         }
         await sleep(250);
-        await checkRateLimit(response);
+        await checkRateLimit(response.headers['x-ratelimit-reset'], response.headers['x-ratelimit-remaining'], 5);
         if (failedLabels.length > 0) {
           this.log('The following labels could not be pushed to GitHub');
           this.log(

@@ -7,6 +7,7 @@ import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import ghClient from '../../utils/github/utils/ghClient';
 import sleep from '../../utils/misc/sleep';
+import checkRateLimit from '../../utils/github/utils/checkRateLimit';
 
 import fetchAllIssues from '../../utils/import/fetchAllIssues';
 import checkConfig from '../../utils/import/checkConfig';
@@ -14,22 +15,6 @@ import GQL_UPDATEISSUEBODY from '../../utils/import/updateIssueBody.graphql';
 import GQL_RATELIMIT from '../../utils/import/getRateLimit.graphql';
 
 import { ImportConfig } from '../../utils/import/importConfig.type';
-
-const checkRateLimit = async (rateLimit: any) => {
-  const resetAt = rateLimit.resetAt;
-  const remainingTokens = rateLimit.remaining;
-  if (remainingTokens <= 105 && resetAt !== null) {
-    console.log(
-      'Exhausted all available tokens, will resuming querying after ' +
-        new Date(resetAt * 1000),
-    );
-    const sleepDuration =
-      new Date(resetAt * 1000).getTime() - new Date().getTime();
-    console.log('Will resume querying in: ' + sleepDuration + 's');
-    await sleep(sleepDuration + 10000);
-    console.log('Ready to resume querying');
-  }
-};
 
 export default class UpdateLinks extends Command {
   static description =
@@ -149,7 +134,7 @@ export default class UpdateLinks extends Command {
                 data.data.rateLimit.resetAt +
                 ')',
             );
-            await checkRateLimit(data.data.rateLimit);
+            await checkRateLimit(data.data.rateLimit.resetAt, data.data.rateLimit.remaining, 105);
           } else {
             this.exit();
           }

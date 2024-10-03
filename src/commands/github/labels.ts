@@ -11,6 +11,8 @@ import sleep from '../../utils/misc/sleep';
 import checkConfig from '../../utils/github/labels/checkConfig';
 import { LabelsConfig } from '../../utils/github/labels/labelsConfig.type';
 import fetchAllLabels from '../../utils/github/labels/fetchAllLabels';
+import checkRateLimit from '../../utils/github/utils/checkRateLimit';
+import mutateGithubNodes from '../../utils/github/mutateGithubNodes';
 
 import GQL_UPDATELABEL from '../../utils/github/labels/updateLabel.graphql';
 import GQL_RATELIMIT from '../../utils/import/getRateLimit.graphql';
@@ -45,22 +47,6 @@ const findLabelConfig = (labelsConfig: LabelsConfig, label: any) => {
     return false;
   });
   return configFound;
-};
-
-const checkRateLimit = async (rateLimit: any) => {
-  const resetAt = rateLimit.resetAt;
-  const remainingTokens = rateLimit.remaining;
-  if (remainingTokens <= 105 && resetAt !== null) {
-    console.log(
-      'Exhausted all available tokens, will resuming querying after ' +
-        new Date(resetAt * 1000),
-    );
-    const sleepDuration =
-      new Date(resetAt * 1000).getTime() - new Date().getTime();
-    console.log('Will resume querying in: ' + sleepDuration + 's');
-    await sleep(sleepDuration + 10000);
-    console.log('Ready to resume querying');
-  }
 };
 
 export default class Labels extends Command {
@@ -155,70 +141,25 @@ export default class Labels extends Command {
       // Loop in existing labels to identify if they need to be updated
       this.log(`Found ${labelsToUpdate.length} labels to update`);
 
-      let cpt = 0;
-      for (const label of labelsToUpdate) {
-        cpt++;
-        // Checking rate limit every 100 requests
-        if (cpt === 100) {
-          try {
-            data = await gClient.query({
-              query: GQL_RATELIMIT,
-              fetchPolicy: 'no-cache',
-              errorPolicy: 'ignore',
-            });
-          } catch (error) {
-            console.log(JSON.stringify(GQL_RATELIMIT));
-            console.log('THIS IS AN ERROR');
-            this.log(error);
-          }
-          if (data.data.rateLimit !== undefined) {
-            this.log(
-              'GitHub Tokens - remaining: ' +
-                data.data.rateLimit.remaining +
-                ' query cost: ' +
-                data.data.rateLimit.cost +
-                ' (token will reset at: ' +
-                data.data.rateLimit.resetAt +
-                ')',
-            );
-            await checkRateLimit(data.data.rateLimit);
-          } else {
-            this.exit();
-          }
-          cpt = 0;
-        }
-
-        cli.action.start(`${cpt}/${labelsToUpdate.length} - Repository: ${label.repository.url} - Label: ${label.name}`);
-        try {
-          data = await gClient.query({
-            query: GQL_UPDATELABEL,
-            variables: { labelId: label.id, color: label.color, description: label.description },
-            fetchPolicy: 'no-cache',
-            errorPolicy: 'ignore',
-          });
-        } catch (error) {
-          console.log(JSON.stringify(GQL_UPDATELABEL));
-          console.log('THIS IS AN ERROR');
-          this.log(error);
-        }
-        await sleep(250);
-
-        if (
-          data.data !== undefined &&
-          data.data.errors !== undefined &&
-          data.data.errors.length > 0
-        ) {
-          data.data.errors.forEach((error: { message: string }) => {
-            this.log(error.message);
-          });
-        } else {
-          // If there was no errors, the label is pushed back to Elasticsearch
-          // This makes it possible to keep track of the labels that have been updated
-          // And allow for resuming where the process was interrupted (if interrupted)
-          await pushEsNodes(eClient, labelsIndex, [label], this.log, true);
-        }
-        cli.action.stop('done');
+      // Function to display logs while data is being submitted by mutateGithubNodes
+      const getProgressData = (node: any) => {
+        return ` - Repository: ${node.repository.url} - Label: ${node.name} ...updated`
       }
+
+      const getMutationVariables = (node: any) => {
+        return { labelId: node.id, color: node.color, description: node.description }
+      }
+
+      // Function executed after the mutation of each node
+      // If there was no errors, the label is pushed back to Elasticsearch
+      // This makes it possible to keep track of the labels that have been updated
+      // And allow for resuming where the process was interrupted (if interrupted)         
+      const postMutation = async (node: any) => {
+        await pushEsNodes(eClient, labelsIndex, [node], this.log, true)
+      }
+
+      await mutateGithubNodes(gClient, labelsToUpdate, GQL_UPDATELABEL, getMutationVariables, getProgressData, postMutation, {});
+
       return;
     }
 
