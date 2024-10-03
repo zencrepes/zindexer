@@ -6,16 +6,13 @@ import * as path from 'path';
 import Command from '../../base';
 import fetchNodesByQuery from '../../utils/github/utils/fetchNodesByQuery';
 import ghClient from '../../utils/github/utils/ghClient';
-import sleep from '../../utils/misc/sleep';
 
 import checkConfig from '../../utils/github/labels/checkConfig';
 import { LabelsConfig } from '../../utils/github/labels/labelsConfig.type';
 import fetchAllLabels from '../../utils/github/labels/fetchAllLabels';
-import checkRateLimit from '../../utils/github/utils/checkRateLimit';
 import mutateGithubNodes from '../../utils/github/mutateGithubNodes';
 
 import GQL_UPDATELABEL from '../../utils/github/labels/updateLabel.graphql';
-import GQL_RATELIMIT from '../../utils/import/getRateLimit.graphql';
 
 import esClient from '../../utils/es/esClient';
 import esGetActiveSources from '../../utils/es/esGetActiveSources';
