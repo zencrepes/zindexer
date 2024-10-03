@@ -18,17 +18,20 @@ const pushEsNodes = async (
   nodesIndex: string,
   fetchedNodes: Array<object>,
   logger: Function,
+  silent: boolean = false,
 ) => {
   const esPayloadChunked = await chunkArray(fetchedNodes, 100);
   // Push the data back to elasticsearch
   for (const [idx, esPayloadChunk] of esPayloadChunked.entries()) {
-    logger(
-      'Submitting data to ElasticSearch (' +
-        (idx + 1) +
-        ' / ' +
-        esPayloadChunked.length +
-        ')',
-    );
+    if (!silent) {
+      logger(
+        'Submitting data to ElasticSearch (' +
+          (idx + 1) +
+          ' / ' +
+          esPayloadChunked.length +
+          ')',
+      );
+    }
     let formattedData = '';
     for (const rec of esPayloadChunk) {
       formattedData =

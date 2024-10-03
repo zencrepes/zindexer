@@ -73,10 +73,14 @@ export default class UpdateLinks extends Command {
         src: string;
         srcName: string;
         dst: string;
-      }[] = [];
+      }[] = [];      
       const findLinks = /\[(.+)\]\((https?:\/\/[^\s]+)(?: "(.+)")?\)|(https?:\/\/[^\s]+)/gi;
 
       const found = i.body.match(findLinks);
+      if (i.title.includes('SUP-417')) {
+        console.log(i.title);
+        console.log(found);
+      }
       if (found !== null) {
         for (const mkLink of found) {
           const urlEx = /\(([^)]+)\)/g;
