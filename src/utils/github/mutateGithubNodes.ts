@@ -13,7 +13,7 @@ interface options {
 export const mutateGithubNodes = async (ghClient: any, nodes: any[], mutationQuery: any, getMutationVariables: any, progressData: any, postMutationFunction: any, options: Partial<options> = {}) => {
   let data: any = {}; // eslint-disable-line
   let cpt = 0;
-
+  let totalCpt = 0;
   const {
     rateLimitCheck = 100
   } = options;
@@ -55,9 +55,10 @@ export const mutateGithubNodes = async (ghClient: any, nodes: any[], mutationQue
       cpt = 0;
     }
     cpt++;
+    totalCpt++;
 
     // Updating nodes one by one
-    console.log(`${cpt}/${nodes.length} ${progressData(node)}`);
+    console.log(`${totalCpt}/${nodes.length} ${progressData(node)}`);
     try {
       data = await ghClient.query({
         query: mutationQuery,

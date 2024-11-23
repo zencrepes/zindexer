@@ -82,7 +82,7 @@ const importIssues = async (
         response.data.status +
         ' (id: ' +
         response.data.id +
-        ')',
+        ', resetAt: ' + response.headers['x-ratelimit-reset'] + ')',
     );
     const updatedIssue = {
       ...issue,
@@ -145,9 +145,15 @@ export default class Import extends Command {
     if (action === 'submit' || action === 'resubmit') {
       let submitIssues = issues.filter(i => i.status === null);
       if (action === 'resubmit') {
+        const githubIssues: any[] = await fetchAllIssues(eClient, issuesIndex);
+        cli.action.stop('... done (' + githubIssues.length + ' issues)');
+  
         submitIssues = issues.filter(
-          i => i.status !== null && i.status.status === 'failed',
+          i =>
+            githubIssues.find(gi => gi.title.includes(i.source.key + ' - ')) ===
+            undefined,
         );
+        this.log('Found: ' + submitIssues.length + ' issues to be re-submitted');
       }
       await importIssues(
         eClient,
@@ -176,7 +182,7 @@ export default class Import extends Command {
         try {
           response = await axios({
             method: 'get',
-            url: repo + '/import/issues?since=2015-03-15',
+            url: repo + '/import/issues?since=2024-09-28',
             headers: {
               Authorization: 'token ' + userConfig.github.token,
               Accept: 'application/vnd.github.golden-comet-preview+json',
@@ -243,9 +249,9 @@ export default class Import extends Command {
       );
       this.log('Found: ' + missingIssues.length + ' issues missing');
       this.log(
-        'Fetching errors for first 10 missing issues (problems are often similar between issues)',
+        'Fetching errors for first 20 missing issues (problems are often similar between issues)',
       );
-      for (const mi of missingIssues.slice(0, 10)) {
+      for (const mi of missingIssues.slice(0, 20)) {
         cli.action.start('Fetching status for missing issue: ' + mi.source.key);
         let response: any = {};
         try {
@@ -262,7 +268,21 @@ export default class Import extends Command {
         }
         cli.action.stop('... done');
         this.log(response.data.errors);
+        this.log(response.data);
+
+        const updatedIssue = {
+          ...mi,
+          status: response.data,
+        };
+        await eClient.update({
+          id: updatedIssue.id,
+          index: importIndex,
+          body: { doc: updatedIssue },
+        });        
       }
+
+      // Update the import index with status of issues that were iomported properly (not to check them again next time)
+   
       // await importIssues(
       //   eClient,
       //   importIndex,

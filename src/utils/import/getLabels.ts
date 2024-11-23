@@ -1,17 +1,16 @@
 const getLabels = (issue: any) => {
   // By default we add a Jira label, just to indicate this issue is coming from jira
   const labels: string[] = ['Jira:' + issue.project.key];
-  // Push the issue type (except is task)
-  if (issue.type.name !== 'Task') {
-    labels.push(issue.type.name);
-  }
+
+  // Push the issue type
+  labels.push(issue.type.name);
 
   // If the issue is in a state of progress, the corresponding status is added
   if (
     issue.status.statusCategory.key !== 'new' &&
     issue.status.statusCategory.key !== 'done'
   ) {
-    labels.push(issue.status.name);
+    labels.push('Status:' + issue.status.name);
   }
 
   if (issue.labels !== undefined && issue.labels.edges.length > 0) {
@@ -41,7 +40,7 @@ const getLabels = (issue: any) => {
   }
 
   if (issue.resolution !== null && issue.resolution.name !== 'Done') {
-    labels.push(issue.resolution.name);
+    labels.push('Resolution:' + issue.resolution.name);
   }
   if (issue.priority !== null) {
     labels.push('Priority:' + issue.priority.name);
@@ -60,9 +59,17 @@ const getLabels = (issue: any) => {
     labels.push('SP:' + issue.points);
   }
 
-  // Need to add points handling
-  // console.log(labels);
-  return labels;
+  // If a label is longer than 50 characters, we truncate it (in the middle)
+  const cleanLabels = labels.map((label) => {
+    if (label.length >= 50) {
+      const truncLabel = `${label.slice(20)}...${label.slice(-20)}`
+      console.log(`Label: ${label} is over 50 characters, truncating it to: ${truncLabel}`);
+      return truncLabel;
+    }
+    return label;
+  });
+  
+  return cleanLabels;
 };
 
 export default getLabels;

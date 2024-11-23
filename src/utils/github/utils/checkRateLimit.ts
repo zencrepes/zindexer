@@ -12,7 +12,7 @@ export const checkRateLimit = async (resetAt: number, remainingTokens: number, s
     console.log(
       new Date().toISOString() +
         ': Exhausted all available tokens, will resuming querying after ' +
-        new Date(resetAt * 1000),
+        new Date(resetAt * 1000) +  '(resetAt: ' + resetAt + ')',
     );
     const sleepDuration =
       new Date(resetAt * 1000).getTime() - new Date().getTime();
