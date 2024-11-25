@@ -4,7 +4,7 @@
 
 import sleep from "../../misc/sleep";
 
-export const checkRateLimit = async (resetAt: number, remainingTokens: number, submissionBuffer: number = 5) => {
+export const checkRateLimit = async (resetAt: number, remainingTokens: number, submissionBuffer = 5) => {
   // Submission buffer is necessary when performing queries/mutations in batches,
   // It corresponds to the number of tokens that are expected to be consumed before the next time
   // the code goes through checkRateLimit

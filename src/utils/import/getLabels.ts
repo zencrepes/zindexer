@@ -23,7 +23,7 @@ const getLabels = (issue: any) => {
     for (const fv of issue.fixVersions.edges) {
       let newLabel = 'fixVersion:' + fv.node.name;
       if (newLabel.length >= 50) {
-        newLabel.replace('-SNAPSHOT', '-SN');
+        newLabel = newLabel.replace('-SNAPSHOT', '-SN');
       }
       labels.push(newLabel);
     }
@@ -33,7 +33,7 @@ const getLabels = (issue: any) => {
     for (const fv of issue.versions.edges) {
       let newLabel = 'affectVersion:' + fv.node.name;
       if (newLabel.length >= 50) {
-        newLabel.replace('-SNAPSHOT', '-SN');
+        newLabel = newLabel.replace('-SNAPSHOT', '-SN');
       }
       labels.push(newLabel);      
     }
