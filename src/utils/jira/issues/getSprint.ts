@@ -5,7 +5,8 @@ const getSprint = (sprintField: string) => {
     const sprintValues = sprintString[1].split(",");
     sprint = {}
     for (const sprintValue of sprintValues) {
-      let [key, value] = sprintValue.split("=");
+      let key = sprintValue.split("=")[0]
+      const value = sprintValue.split("=")[1]
       if (key === "completeDate") {
         key = "completedDate";
       } 

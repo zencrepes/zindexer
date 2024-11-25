@@ -6,11 +6,11 @@ import GQL_RATELIMIT from './graphql/getRateLimit.graphql';
 import checkRateLimit from './utils/checkRateLimit';
 import sleep from '../../utils/misc/sleep';
 
-interface options {
+interface Options {
   rateLimitCheck: number; // Every X mutations, perform a GraphQL call to check the rate limits
 }
 
-export const mutateGithubNodes = async (ghClient: any, nodes: any[], mutationQuery: any, getMutationVariables: any, progressData: any, postMutationFunction: any, options: Partial<options> = {}) => {
+export const mutateGithubNodes = async (ghClient: any, nodes: any[], mutationQuery: any, getMutationVariables: any, progressData: any, postMutationFunction: any, options: Partial<Options> = {}) => {
   let data: any = {}; // eslint-disable-line
   let cpt = 0;
   let totalCpt = 0;
