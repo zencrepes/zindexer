@@ -10,7 +10,6 @@ import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 import chunkArray from '../../utils/misc/chunkArray';
 import { getId } from '../../utils/misc/getId';
-import fetchAllIssues from '../../utils/import/fetchAllIssues';
 
 import {
   ESIndexSources,

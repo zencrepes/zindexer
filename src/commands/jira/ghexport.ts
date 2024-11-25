@@ -8,8 +8,6 @@ import * as jsYaml from 'js-yaml';
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
 
-import jira2md from 'jira2md';
-
 import fetchAllIssues from '../../utils/import/fetchAllIssues';
 import checkConfig from '../../utils/import/checkConfig';
 import getHeader from '../../utils/import/getHeader';
