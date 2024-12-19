@@ -35,6 +35,7 @@
     "node-fetch": "^2.6.0",
     "nodejs-file-downloader": "^4.13.0",
     "p-map": "^4.0.0",
+    "sqlite3": "^5.1.7",
     "tslib": "^1.11.1",
     "uuid": "^8.3.1",
     "uuid-by-string": "^3.0.2",

@@ -18,7 +18,7 @@ const pushEsNodes = async (
   nodesIndex: string,
   fetchedNodes: Array<object>,
   logger: Function,
-  silent: boolean = false,
+  silent = false,
 ) => {
   const esPayloadChunked = await chunkArray(fetchedNodes, 100);
   // Push the data back to elasticsearch

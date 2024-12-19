@@ -3,6 +3,8 @@ import cli from 'cli-ux';
 import loadYamlFile from 'load-yaml-file';
 import * as path from 'path';
 import axios from 'axios';
+import sqlite3 from 'sqlite3';
+import fs from 'fs';
 
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
@@ -114,7 +116,7 @@ export default class Import extends Command {
 
     action: flags.string({
       char: 'a',
-      options: ['submit', 'check', 'resubmit', 'crosscheck'],
+      options: ['submit', 'check', 'resubmit', 'crosscheck', 'build-linkdb'],
       required: false,
       default: 'submit',
       description: 'Import action to be performed',
@@ -290,8 +292,46 @@ export default class Import extends Command {
       //   userConfig,
       //   importConfig,
       // );
-    }
+    } else if (action === 'build-linkdb') {
+      // This action builds a sqlite db containing the source key and corresponding GitHub issue URL
+      // It can later be used to build a mechanism to generate a redirection from Jira URLs to GitHub URLs
+      const githubIssues: any[] = await fetchAllIssues(eClient, issuesIndex);
+      cli.action.stop('... done (' + githubIssues.length + ' issues)');
 
+      const databaseFilepath = path.join(this.config.configDir, 'jira-export.db');
+      if (fs.existsSync(databaseFilepath)) {
+        fs.unlinkSync(databaseFilepath);
+        this.log(`Deleted existing database file: ${databaseFilepath}`);
+      } 
+
+      // Create empty database
+      const db = new sqlite3.Database(databaseFilepath, (err) => {
+        if (err) {
+            console.log("Getting error " + err);
+            this.exit(1);
+        }
+      });
+
+      await db.exec(`
+        CREATE TABLE IF NOT EXISTS issues (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          jira_key TEXT,
+          jira_url TEXT,
+          github_id TEXT,
+          github_url TEXT
+        )
+      `);
+
+      // Loop through all issues 
+      for (const i of issues) {        
+        const matchGitHubIssue = githubIssues.find(gi => gi.title.includes(i.source.key + ' - '))
+        if (matchGitHubIssue !== undefined) {
+          await db.run('INSERT INTO issues (jira_key, jira_url, github_id, github_url) VALUES (?, ?, ?, ?)', [i.source.key, i.source.url, matchGitHubIssue.id, matchGitHubIssue.url]);
+        } 
+      }
+      this.log(`Finished populating the database: ${databaseFilepath}`);
+
+    }
     // Need to add some logic to retry until all issues have the status updated
   }
 }
