@@ -145,6 +145,7 @@ const defaultConfig = {
             { jfield: 'environment', zfield: 'environment' },
             { jfield: 'duedate', zfield: 'dueAt' },
             { jfield: 'labels', zfield: 'labels' },
+            { jfield: 'components', zfield: 'components' },
             { jfield: 'customfield_10313', zfield: 'sprints' },
             { jfield: 'customfield_10114', zfield: 'points' },
             { jfield: 'comment.comments', zfield: 'comments' },

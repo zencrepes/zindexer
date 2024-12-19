@@ -39,6 +39,13 @@ const getLabels = (issue: any) => {
     }
   }
 
+  if (issue.components.totalCount > 0) {
+    for (const co of issue.components.edges) {
+      let newLabel = 'Component:' + co.node.name;
+      labels.push(newLabel);      
+    }
+  }
+
   if (issue.resolution !== null && issue.resolution.name !== 'Done') {
     labels.push('Resolution:' + issue.resolution.name);
   }

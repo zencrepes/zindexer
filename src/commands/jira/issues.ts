@@ -81,6 +81,13 @@ const formatIssue = (issue: any, serverConfig: ConfigJira["config"]) => {
                   name: v,
                 },
               };
+            } else if (field.zfield === 'components') {
+              return {
+                node: {
+                  id: v.id,
+                  name: v.name,
+                },
+              };              
             } else if (field.zfield === 'sprints') {
               return {
                 node: getSprint(v),
