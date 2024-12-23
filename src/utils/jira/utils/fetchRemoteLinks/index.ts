@@ -3,6 +3,7 @@ import cli from 'cli-ux';
 import { ApiResponse, Client } from '@elastic/elasticsearch';
 
 import { Config, ESSearchResponse, ESIndexSources } from '../../../../global';
+import sleep from '../../../../utils/misc/sleep';
 
 const fetchRemoteLinks = async (
   userConfig: Config,
@@ -14,22 +15,37 @@ const fetchRemoteLinks = async (
   const jiraServer = userConfig.jira.find(j => j.name === serverName);
   if (jiraServer !== undefined) {
     cli.action.start('Fetching remote link for issue ' + issueKey);
-    const response = await axios({
-      method: 'get',
-      url:
-        jiraServer.config.host +
-        '/rest/api/latest/issue/' +
-        issueKey +
-        '/remotelink',
-      auth: {
-        username: jiraServer.config.username,
-        password: jiraServer.config.password,
-      },
-      validateStatus: function(status) {
-        return status >= 200 && status < 500; // default
-      },
-    });
-    if (response.data !== undefined) {
+    let response = null
+    let errorCpt = 0;
+    while (response === null && errorCpt < 5) {
+      try {
+        response = await axios({
+          method: 'get',
+          url:
+            jiraServer.config.host +
+            '/rest/api/latest/issue/' +
+            issueKey +
+            '/remotelink',
+          auth: {
+            username: jiraServer.config.username,
+            password: jiraServer.config.password,
+          },
+          validateStatus: function(status) {
+            return status >= 200 && status < 500; // default
+          },
+        });        
+      } catch (error) {
+        console.log(error);
+      }
+      if (response === null || response.status !== 200) {
+        console.log(`Error fetching remote links, from ${issueKey} retrying in 1s`);
+        errorCpt++
+        sleep(1000);
+      }
+    }
+
+    if (response !== null && response.data !== undefined) {
+      errorCpt = 0;
       cli.action.stop(' - ' + response.data.length + ' links found');
       if (response.data.length > 0) {
         // We then add metadata about the linked issue

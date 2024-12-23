@@ -11,6 +11,7 @@ const fetchAllIssues = async (esClient: Client, esIndex: string) => {
         // eslint-disable-next-line @typescript-eslint/camelcase
         match_all: {},
       },
+      sort: [{id: 'asc'}],
     },
   });
   cli.action.start('Fetching all issues from: ' + esIndex);

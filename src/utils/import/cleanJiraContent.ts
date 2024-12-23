@@ -4,6 +4,10 @@ const prepString = (url: string) => {
   return url.replace(/_/g, 'xxyyzzUxxyyzz');
 }
 
+const escapeRegExp = (string: string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
 // Before using jira2md, cleans the text content to replace users with their GitHub credentials and deal with attachments
 const cleanrJiraContent = (content: string, users: any[], i: any) => {
   let textContent = content
@@ -15,18 +19,22 @@ const cleanrJiraContent = (content: string, users: any[], i: any) => {
     textContent = textContent.replace(`[~${user.jira.key}]`, `@${prepString(user.github.username)} (${prepString(user.jira.displayName)})`)
   }
   
+
   // Replace image and attachments with the new link, using a placeholder for []() to avoid breaking the markdown conversion
   if (i !== undefined && i.attachments !== undefined && i.attachments.totalCount > 0) {
     for (const attachment of i.attachments.edges) {
-      // No support for filenames containing [] as it will conflict with the regexp
-      if (!attachment.node.filename.includes('[') && !attachment.node.filename.includes(']')) {
+      // No support for filenames containing [] and ) as it will conflict with the regexp
+      if (!attachment.node.filename.includes('[') && !attachment.node.filename.includes(']') && !attachment.node.filename.includes(')')) {
+        const escapedFilename = escapeRegExp(attachment.node.filename);
+        const escapedSafeFilename = escapeRegExp(attachment.node.safeFilename);
+
         // Find and replace all file attachments
-        const regexFiles = new RegExp(`\\[\\^${attachment.node.filename}\\]`, 'g');
-        textContent = textContent.replace(regexFiles, `xxyyzzLBxxyyzz${prepString(attachment.node.safeFilename)}xxyyzzRBxxyyzzxxyyzzLPxxyyzz${prepString(attachment.node.remoteBackupUrl)}xxyyzzRPxxyyzz`);
+        const regexFiles = new RegExp(`\\[\\^${escapedFilename}\\]`, 'g');
+        textContent = textContent.replace(regexFiles, `xxyyzzLBxxyyzz${prepString(escapedSafeFilename)}xxyyzzRBxxyyzzxxyyzzLPxxyyzz${prepString(attachment.node.remoteBackupUrl)}xxyyzzRPxxyyzz`);
 
         // Find and replace all image attachments (!file.png|thumbnail!)
         const regex = new RegExp(`!${attachment.node.filename}\\|.*?!`, 'g');
-        textContent = textContent.replace(regex, `xxyyzzLBxxyyzz${prepString(attachment.node.safeFilename)}xxyyzzRBxxyyzzxxyyzzLPxxyyzz${prepString(attachment.node.remoteBackupUrl)}xxyyzzRPxxyyzz`);    
+        textContent = textContent.replace(regex, `xxyyzzLBxxyyzz${prepString(escapedSafeFilename)}xxyyzzRBxxyyzzxxyyzzLPxxyyzz${prepString(attachment.node.remoteBackupUrl)}xxyyzzRPxxyyzz`);    
       }
     }
   }

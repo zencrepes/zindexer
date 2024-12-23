@@ -1,3 +1,12 @@
+const truncateLabel = (label: string, maxLength = 50) => {
+  const ellipsis = '...';
+  const charsToShow = maxLength - ellipsis.length;
+  const frontChars = Math.ceil(charsToShow / 2);
+  const backChars = Math.floor(charsToShow / 2);
+
+  return label.substring(0, frontChars) + ellipsis + label.substring(label.length - backChars);
+}
+
 const getLabels = (issue: any) => {
   // By default we add a Jira label, just to indicate this issue is coming from jira
   const labels: string[] = ['Jira:' + issue.project.key];
@@ -57,10 +66,11 @@ const getLabels = (issue: any) => {
     labels.push('Area:' + issue.productArea.value);
   }
 
-  // const sprint = getSprint(issue);
-  // if (sprint !== null && sprint.number !== undefined) {
-  //   labels.push('sprint:' + sprint.number);
-  // }
+  if (issue.sprints !== undefined && issue.sprints !== null && issue.sprints.totalCount > 0) {
+    for (const sprint of issue.sprints.edges) {
+      labels.push('Sprint:' + sprint.node.name);
+    }
+  }
 
   if (issue.points !== undefined && issue.points !== null) {
     labels.push('SP:' + issue.points);
@@ -69,9 +79,9 @@ const getLabels = (issue: any) => {
   // If a label is longer than 50 characters, we truncate it (in the middle)
   const cleanLabels = labels.map((label) => {
     if (label.length >= 50) {
-      const truncLabel = `${label.slice(20)}...${label.slice(-20)}`
-      console.log(`Label: ${label} is over 50 characters, truncating it to: ${truncLabel}`);
-      return truncLabel;
+      const truncatedLabel = truncateLabel(label);
+      console.log(`Label: ${label} is over 50 characters, truncating it to: ${truncatedLabel}`);
+      return truncatedLabel;
     }
     return label;
   });

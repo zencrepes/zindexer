@@ -53,21 +53,31 @@ const importIssues = async (
     };
   });
   let cpt = 0;
+  let retryCpt = 0;
   for (const issue of submitIssues) {
     let response: any = {};
-    try {
-      response = await axios({
-        method: 'post',
-        url: 'https://api.github.com/repos/' + issue.repo + '/import/issues',
-        headers: {
-          Authorization: 'token ' + userConfig.github.token,
-          Accept: 'application/vnd.github.golden-comet-preview+json',
-        },
-        data: issue.payload,
-      });
-    } catch (error) {
-      console.log(error);
-      console.log('Error pushing issue: ' + issue.source.key);
+    while ((response === undefined || response.data === undefined) && retryCpt < 5) {
+      try {
+        response = await axios({
+          method: 'post',
+          url: 'https://api.github.com/repos/' + issue.repo + '/import/issues',
+          headers: {
+            Authorization: 'token ' + userConfig.github.token,
+            Accept: 'application/vnd.github.golden-comet-preview+json',
+          },
+          data: issue.payload,
+        });
+      } catch (error) {
+        console.log(error);
+        console.log('Error pushing issue: ' + issue.source.key);
+      }
+      if (response.data !== undefined) {
+        retryCpt = 0;
+      } else {
+        console.log('Error while pushing data to GitHub, retrying in 2s');
+        await sleep(2000);        
+        retryCpt++;
+      }
     }
     const remainingTokens = response.headers['x-ratelimit-remaining'];
 
@@ -140,7 +150,7 @@ export default class Import extends Command {
     const issuesIndex = userConfig.elasticsearch.dataIndices.githubIssues;
     const issues: any[] = await fetchAllIssues(eClient, importIndex);
     this.log(
-      'Loading issues to be submitted to GitHubinto memory: ' + issues.length,
+      'Loading issues to be submitted to GitHub into memory: ' + issues.length,
     );
 
     // Step 2: Submitting the payload to GitHub, but only for issues with an empty status
@@ -165,80 +175,149 @@ export default class Import extends Command {
         importConfig,
       );
     } else if (action === 'check') {
-      // Checking issues in GitHub that don't have
-      const checkIssues = issues.filter(
+      // Checking issues that have been submitted to GitHub
+      // These are the issues that have a status different from null
+      // and that are not present in github already
+      this.log('Make sure to grab all issues from github before performing the check. You can do so using the github:issues command');
+      const githubIssues: any[] = await fetchAllIssues(eClient, issuesIndex);
+      this.log(`Total number of issues to be imported: ${issues.length}`);
+      this.log(`Total number of issues in GitHub: ${githubIssues.length}`);
+      const absentIssues = issues.filter(
+        i =>
+          githubIssues.find(gi => gi.title.includes(i.source.key + ' - ')) ===
+          undefined,
+      );
+      this.log(`Total number of issues absent from GitHub: ${absentIssues.length}`);
+
+      const issuesSubmitted = issues.filter(i => i.status !== null);
+      this.log(`Total number of issues submitted to GitHub: ${issuesSubmitted.length}`);
+
+      const issuesNotSubmitted = issues.filter(i => i.status === null);
+      this.log(`Total number of issues still to be submitted to GitHub (never submitted): ${issuesNotSubmitted.length}`);
+
+      const issuesSubmittedButMissing = absentIssues.filter(
         i =>
           i.status !== null &&
           i.status.status !== undefined &&
           i.status.status !== 'imported',
       );
-      const repos: string[] = [];
-      for (const issue of checkIssues) {
-        if (!repos.includes(issue.status.repository_url)) {
-          repos.push(issue.status.repository_url);
-        }
-      }
-      for (const repo of repos) {
+      this.log(`Total number of issues submitted but missing from GitHub (likely with an error): ${issuesSubmittedButMissing.length}`);
+
+      this.log('Going through the list of missing issues and checking their status from github');
+      for (const i of issuesSubmittedButMissing) {
+        cli.action.start('Checking issue: ' + i.source.key);
         let response: any = {};
-        cli.action.start('Grabbing import status for repo: ' + repo);
         try {
           response = await axios({
             method: 'get',
-            url: repo + '/import/issues?since=2024-09-28',
+            url: i.status.url,
             headers: {
               Authorization: 'token ' + userConfig.github.token,
               Accept: 'application/vnd.github.golden-comet-preview+json',
             },
           });
         } catch (error) {
-          this.log(error);
+          console.log(error)
         }
-        cli.action.stop(' done (grabbed: ' + response.data.length + ')');
-
-        const failedLabels: string[] = [];
-        for (const importStatus of response.data) {
-          const importIssue = issues.filter(i => i.status !== undefined && i.status !== null).find(i => i.status.id === importStatus.id);
-          if (importIssue !== undefined) {
-            const updateIssue = {
-              ...importIssue,
-              status: importStatus,
-            };
-            await eClient.update({
-              id: updateIssue.id,
-              index: importIndex,
-              body: { doc: updateIssue },
-            });
-            if (importStatus.status === 'failed') {
-              for (const error of importStatus.errors) {
-                this.log('Unable to import issue: ' + importIssue.source.key + ' Error: ' + JSON.stringify(error));
-                if (error.resource === 'Label') {
-                  if (!failedLabels.includes(error.value)) {
-                    failedLabels.push(error.value);
-                  }
-                }
-              }
-            }
-          }
+        if (response.data.status === 'failed') {
+          cli.action.stop('failed to import');          
+          console.log(response.data.errors);
+        } else if (response.data.status === 'imported') {
+          cli.action.stop('was imported, updating import index');
+          const updateIssue = {
+            ...i,
+            status: response.data,
+          };
+          await eClient.update({
+            id: updateIssue.id,
+            index: importIndex,
+            body: { doc: updateIssue },
+          });          
+        } else {
+          console.log(response.data)
         }
         await sleep(250);
         await checkRateLimit(response.headers['x-ratelimit-reset'], response.headers['x-ratelimit-remaining'], 5);
-        if (failedLabels.length > 0) {
-          this.log('The following labels could not be pushed to GitHub');
-          this.log(
-            'Remember that labels must be unique per repository, no matter the case',
-          );
-          this.log('For example, there can only be Bug OR bug');
-          this.log(
-            'Labels must be less than 50 characters long',
-          );             
-          this.log(
-            'Update the labels config in import-config.yml to automatically update labels before push',
-          );
-          for (const flabel of failedLabels) {
-            this.log('Label: ' + flabel);
-          }
-        }
       }
+
+      this.log(
+        'Remember that labels must be unique per repository, no matter the case',
+      );
+      this.log('For example, there can only be Bug OR bug');
+      this.log(
+        'Labels must be less than 50 characters long',
+      );             
+      this.log(
+        'Update the labels config in import-config.yml to automatically update labels before push',
+      );
+
+      // const repos: string[] = [];
+      // for (const issue of checkIssues) {
+      //   if (!repos.includes(issue.status.repository_url)) {
+      //     repos.push(issue.status.repository_url);
+      //   }
+      // }
+      // for (const repo of repos) {
+      //   let response: any = {};
+      //   cli.action.start('Grabbing import status for repo: ' + repo);
+      //   try {
+      //     response = await axios({
+      //       method: 'get',
+      //       url: repo + '/import/issues?since=2024-09-28',
+      //       headers: {
+      //         Authorization: 'token ' + userConfig.github.token,
+      //         Accept: 'application/vnd.github.golden-comet-preview+json',
+      //       },
+      //     });
+      //   } catch (error) {
+      //     this.log(error);
+      //   }
+      //   cli.action.stop(' done (grabbed: ' + response.data.length + ')');
+
+      //   const failedLabels: string[] = [];
+      //   for (const importStatus of response.data) {
+      //     const importIssue = issues.filter(i => i.status !== undefined && i.status !== null).find(i => i.status.id === importStatus.id);
+      //     if (importIssue !== undefined) {
+      //       const updateIssue = {
+      //         ...importIssue,
+      //         status: importStatus,
+      //       };
+      //       await eClient.update({
+      //         id: updateIssue.id,
+      //         index: importIndex,
+      //         body: { doc: updateIssue },
+      //       });
+      //       if (importStatus.status === 'failed') {
+      //         for (const error of importStatus.errors) {
+      //           this.log('Unable to import issue: ' + importIssue.source.key + ' Error: ' + JSON.stringify(error));
+      //           if (error.resource === 'Label') {
+      //             if (!failedLabels.includes(error.value)) {
+      //               failedLabels.push(error.value);
+      //             }
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }
+      //   await sleep(250);
+      //   await checkRateLimit(response.headers['x-ratelimit-reset'], response.headers['x-ratelimit-remaining'], 5);
+      //   if (failedLabels.length > 0) {
+      //     this.log('The following labels could not be pushed to GitHub');
+      //     this.log(
+      //       'Remember that labels must be unique per repository, no matter the case',
+      //     );
+      //     this.log('For example, there can only be Bug OR bug');
+      //     this.log(
+      //       'Labels must be less than 50 characters long',
+      //     );             
+      //     this.log(
+      //       'Update the labels config in import-config.yml to automatically update labels before push',
+      //     );
+      //     for (const flabel of failedLabels) {
+      //       this.log('Label: ' + flabel);
+      //     }
+      //   }
+      // }
     } else if (action === 'crosscheck') {
       // Compares issues in the github index to issues in the import index to find which ones are missing
       const githubIssues: any[] = await fetchAllIssues(eClient, issuesIndex);

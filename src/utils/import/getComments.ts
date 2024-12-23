@@ -25,7 +25,6 @@ const getComments = (issue: any, users: any[]) => {
     if (c.node.created !== c.node.updates) {
       header = header + ' _edited_';
     }
-
     return {
       // eslint-disable-next-line @typescript-eslint/camelcase
       created_at: new Date(c.node.created).toISOString(),

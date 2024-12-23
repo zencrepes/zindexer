@@ -196,7 +196,6 @@ export default class Issues extends Command {
           initiativeChildren: issues.filter(c => c.parentInitiative === i.key),
         };
       }
-
       const header = getHeader(i, importConfig.users);
       const comments = getComments(i, importConfig.users);
       const assignee = getAssignee(i, importConfig.users);
