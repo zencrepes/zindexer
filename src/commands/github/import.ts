@@ -126,7 +126,7 @@ export default class Import extends Command {
 
     action: flags.string({
       char: 'a',
-      options: ['submit', 'check', 'resubmit', 'crosscheck', 'build-linkdb'],
+      options: ['submit', 'check', 'resubmit', 'crosscheck', 'build-linkdb', 'compare'],
       required: false,
       default: 'submit',
       description: 'Import action to be performed',
@@ -158,15 +158,15 @@ export default class Import extends Command {
       let submitIssues = issues.filter(i => i.status === null);
       if (action === 'resubmit') {
         const githubIssues: any[] = await fetchAllIssues(eClient, issuesIndex);
-        cli.action.stop('... done (' + githubIssues.length + ' issues)');
-  
+        cli.action.stop('... done (' + githubIssues.length + ' issues currently in GitHub)');        
         submitIssues = issues.filter(
           i =>
             githubIssues.find(gi => gi.title.includes(i.source.key + ' - ')) ===
             undefined,
         );
-        this.log('Found: ' + submitIssues.length + ' issues to be re-submitted');
       }
+      this.log('Found: ' + submitIssues.length + ' issues to be (re)submitted');
+
       await importIssues(
         eClient,
         importIndex,
@@ -174,12 +174,37 @@ export default class Import extends Command {
         userConfig,
         importConfig,
       );
+    } else if (action === 'compare') {
+      // Compare GitHub issues to Jira issues
+      // Goal is to identify which issues are missing from GitHub
+      const githubIssues: any[] = await fetchAllIssues(eClient, issuesIndex);
+      this.log(`Total number of issues in GitHub: ${githubIssues.length}`);
+
+      const jiraIssuesIndex = userConfig.elasticsearch.dataIndices.jiraIssues;
+      const jiraIssues: any[] = await fetchAllIssues(eClient, jiraIssuesIndex);
+      this.log(`Total number of issues in Jira: ${jiraIssues.length}`);
+
+      const jiraIssuesAbsentFromImportIndex = jiraIssues.filter(
+        i =>
+          issues.find(gi => gi.id === i.key) ===
+          undefined,
+      );
+      this.log(`The following issues are present in Jira but absent from the import index: ${JSON.stringify(jiraIssuesAbsentFromImportIndex.map((i: any) => i.key))}`);
+
+      const jiraIssuesAbsentFromGitHub = jiraIssues.filter(
+        i =>
+          githubIssues.find(gi => gi.title.includes(i.key + ' - ')) ===
+          undefined,
+      );
+      this.log(`The following issues are present in Jira but absent from GitHub: ${JSON.stringify(jiraIssuesAbsentFromGitHub.map((i: any) => i.key))}`);
+
     } else if (action === 'check') {
       // Checking issues that have been submitted to GitHub
       // These are the issues that have a status different from null
       // and that are not present in github already
       this.log('Make sure to grab all issues from github before performing the check. You can do so using the github:issues command');
       const githubIssues: any[] = await fetchAllIssues(eClient, issuesIndex);
+
       this.log(`Total number of issues to be imported: ${issues.length}`);
       this.log(`Total number of issues in GitHub: ${githubIssues.length}`);
       const absentIssues = issues.filter(
