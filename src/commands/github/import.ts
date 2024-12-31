@@ -4,7 +4,7 @@ import loadYamlFile from 'load-yaml-file';
 import * as path from 'path';
 import axios from 'axios';
 import sqlite3 from 'sqlite3';
-import fs from 'fs';
+import fs, { createWriteStream } from 'fs';
 
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
@@ -408,6 +408,13 @@ export default class Import extends Command {
         this.log(`Deleted existing database file: ${databaseFilepath}`);
       } 
 
+      const rewritemapFilepath = path.join(this.config.configDir, 'jira-export-rewritemap.txt');
+      if (fs.existsSync(rewritemapFilepath)) {
+        fs.unlinkSync(rewritemapFilepath);
+        this.log(`Deleted existing rewrite map file: ${rewritemapFilepath}`);
+      } 
+
+      const rewritemapStream = createWriteStream(rewritemapFilepath,{ flags: 'a' });
       // Create empty database
       const db = new sqlite3.Database(databaseFilepath, (err) => {
         if (err) {
@@ -431,9 +438,16 @@ export default class Import extends Command {
         const matchGitHubIssue = githubIssues.find(gi => gi.title.includes(i.source.key + ' - '))
         if (matchGitHubIssue !== undefined) {
           await db.run('INSERT INTO issues (jira_key, jira_url, github_id, github_url) VALUES (?, ?, ?, ?)', [i.source.key, i.source.url, matchGitHubIssue.id, matchGitHubIssue.url]);
+
+          rewritemapStream.write(`${i.source.key} ${matchGitHubIssue.url} \n`);
         } 
       }
       this.log(`Finished populating the database: ${databaseFilepath}`);
+
+      rewritemapStream.end();
+      this.log(`Finished populating the rewritemap: ${rewritemapFilepath}`);
+
+
 
     }
     // Need to add some logic to retry until all issues have the status updated
