@@ -338,6 +338,9 @@ export default class Issues extends Command {
             const downloader = new Downloader({
               url: attachment.node.content,
               directory: downloadPath,
+              headers: {
+                "cookie": "REPLACE_WITH_COOKIE_ID",
+              },
               fileName: attachment.node.safeFilename,
               cloneFiles: false,
               skipExistingFileName: true,         
