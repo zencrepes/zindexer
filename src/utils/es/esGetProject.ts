@@ -13,17 +13,12 @@ const esGetProject = async (
       index: esIndex,
       id: id
     });
-  } catch (error: any) {
-    console.log(error.meta.body.error)
-    if (error.meta.statusCode === 404) {
-      console.log(`Project with ID: ${id} not found. It was likely deleted`);
-      return {
-        id: id,
-        title: 'Project not found',
-        number: 0,
-      }
-    } else {
-      throw error;
+  } catch (error) {
+    console.log(`Project with ID: ${id} not found. It was likely deleted`);
+    return {
+      id: id,
+      title: 'Project not found',
+      number: 0,
     }
   }
 
