@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions/setup-node@v2
         with:
-          node-version: 'lts/20'
+          node-version: '20'
       - run: yarn
       - run: npm -g install typescript@4.2.3
       - run: npm -g install @oclif/dev-cli @oclif/help
