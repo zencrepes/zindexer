@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions/setup-node@v2
         with:
-          node-version: 'lts/*'
+          node-version: 'lts/20'
       - run: yarn
       - run: npm -g install typescript@4.2.3
       - run: npm -g install @oclif/dev-cli @oclif/help
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: node:lts-alpine
+      image: node:20-alpine
 
     steps:
       - run: npm -g install zindexer@${{ github.event.release.tag_name }}
