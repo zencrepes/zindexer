@@ -103,6 +103,9 @@ const defaultConfig = {
         excludeGithubEvents: [''],
       },
     },
+    cardEvents: {
+      localPath: '/tmp/card-events',
+    },    
   },
   circleci: {
     enabled: true,

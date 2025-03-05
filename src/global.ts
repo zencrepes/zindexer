@@ -21,6 +21,11 @@ interface Label {
   color: string;
 }
 
+interface TimelineProject {
+  title: string; 
+  id: string
+}
+
 // This interface aims at abstracting an issue at a level compatible across all ticketing systems
 export interface Issue {
   createdAt: Date;

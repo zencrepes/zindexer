@@ -21,6 +21,7 @@
     "apollo-client": "^2.6.8",
     "apollo-link": "^1.2.13",
     "apollo-link-http": "^1.5.16",
+    "asciitable.js": "^2.0.1",
     "axios": "^0.19.0",
     "cli-ux": "^5.4.5",
     "crypto-random-string": "^3.2.0",
