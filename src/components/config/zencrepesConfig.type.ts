@@ -78,6 +78,9 @@ export interface ConfigGithub {
       excludeGithubEvents: string[];
     };
   };
+  cardEvents: {
+    localPath: string;
+  }
 }
 
 export interface ConfigTesting {
