@@ -21,7 +21,7 @@ interface Label {
   color: string;
 }
 
-interface TimelineProject {
+export interface TimelineProject {
   title: string; 
   id: string
 }
