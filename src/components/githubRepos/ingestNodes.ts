@@ -3,6 +3,7 @@
 interface GitHubNode {
   id: string;
   recentCommitsMaster: any;
+  projectsV2: any;
 }
 
 const ingestNodes = (nodes: GitHubNode[], zsource: string) => {
@@ -25,6 +26,7 @@ const ingestNodes = (nodes: GitHubNode[], zsource: string) => {
         ...item,
         zsource,
         currentYearMasterCommits,
+        projects: item.projectsV2 !== undefined ? item.projectsV2 : { totalCount: 0 }
       };
     });
   return updatedNodes;

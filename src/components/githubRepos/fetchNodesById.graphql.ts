@@ -97,7 +97,7 @@ const GQL_QUERY = gql`
           login
           url
         }
-        projects(first: 1) {
+        projectsV2(first: 1) {
           totalCount
         }
         primaryLanguage {
