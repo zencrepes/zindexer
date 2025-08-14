@@ -32,6 +32,7 @@ const defaultConfig = {
       githubReleases: 'gh_releases_',
       githubImport: 'gh_import_',
       githubMavenPoms: 'gh_maven_',
+      githubCopilotmetrics: 'gh_copilotmetrics_',
       jiraIssues: 'j_issues_',
       jiraProjects: 'j_projects_',
       circleciPipelines: 'cci_pipelines_',
@@ -105,7 +106,11 @@ const defaultConfig = {
     },
     cardEvents: {
       localPath: '/tmp/card-events',
-    },    
+    },
+    copilotApi: {
+      fetchMonths: 2, // Number of months of data to fetch
+      fetchWindow: 25, // Number of days to fetch per API call
+    },
   },
   circleci: {
     enabled: true,
@@ -195,12 +200,12 @@ const defaultConfig = {
         },
       },
     },
-  ],  
+  ],
   testing: {
     webhook: {
       secret: 'PLEASE_CHANGE_ME',
-    }
-  }
+    },
+  },
 };
 
 export default defaultConfig;
