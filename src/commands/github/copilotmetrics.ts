@@ -111,6 +111,7 @@ export default class Copilotmetrics extends Command {
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
 
+    // eslint-disable-next-line
     const getUuid = require('uuid-by-string');
 
     await checkEsIndex(
