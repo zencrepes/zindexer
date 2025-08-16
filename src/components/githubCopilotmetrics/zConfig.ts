@@ -13,14 +13,35 @@ const config = {
       nullValue: 'EMPTY',
       default: true,
     },
+    {
+      facetType: 'term',
+      field: 'org',
+      name: 'Organization',
+      nullValue: 'EMPTY',
+      default: true,
+    },
   ],
   tableConfig: {
-    itemsType: 'Github Milestones',
-    defaultSortField: 'title.keyword',
+    itemsType: 'Github Copilot Metrics',
+    defaultSortField: 'date',
     columns: [
       {
         name: 'id',
         field: 'id',
+        sortField: 'id',
+        sortable: false,
+        default: false,
+      },
+      {
+        name: 'org',
+        field: 'org',
+        sortField: 'id',
+        sortable: false,
+        default: false,
+      },
+      {
+        name: 'date',
+        field: 'date',
         sortField: 'id',
         sortable: false,
         default: false,

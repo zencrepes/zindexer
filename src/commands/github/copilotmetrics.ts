@@ -1,37 +1,20 @@
 import { flags } from '@oclif/command';
-import cli from 'cli-ux';
 import axios from 'axios';
 
 import Command from '../../base';
 import esClient from '../../utils/es/esClient';
-import esGithubLatest from '../../utils/es/esGithubLatest';
-import esGithubClear from '../../utils/es/esGithubClear';
-import chunkArray from '../../utils/misc/chunkArray';
-import fetchNodesUpdated from '../../utils/github/utils/fetchNodesUpdated';
-import fetchNodesByIds from '../../utils/github/utils/fetchNodesByIds';
-import ghClient from '../../utils/github/utils/ghClient';
 import sleep from '../../utils/misc/sleep';
 import checkRateLimit from '../../utils/github/utils/checkRateLimit';
 
-import esGetActiveSources from '../../utils/es/esGetActiveSources';
 import esGetGithubCopilotmetrics from '../../utils/es/esGetGithubCopilotmetrics';
-import { GithubNode } from '../../global';
 
 import {
   esMapping,
   esSettings,
-  fetchNodes,
   zConfig,
-  ingestNodes,
-  fetchReposWithData,
 } from '../../components/githubCopilotmetrics';
 
-import {
-  getEsIndex,
-  checkEsIndex,
-  pushEsNodes,
-  aliasEsIndex,
-} from '../../components/esUtils/index';
+import { checkEsIndex } from '../../components/esUtils/index';
 
 import pushConfig from '../../utils/zencrepes/pushConfig';
 
@@ -185,6 +168,7 @@ export default class Copilotmetrics extends Command {
             params: {
               since: currentDataRange.since.toISOString(),
               until: currentDataRange.until.toISOString(),
+              // eslint-disable-next-line @typescript-eslint/camelcase
               per_page: userConfig.github.copilotApi.fetchWindow,
             },
           });
@@ -227,7 +211,9 @@ export default class Copilotmetrics extends Command {
       eClient,
       copilotmetricsIndex,
     );
-    const collectedDays = esExistingDays.map((d: any) => d._source.doc.date);
+    const collectedDays = esExistingDays
+      .filter((d: any) => d._source.doc.org === flags.copilotOrg)
+      .map((d: any) => d._source.doc.date);
 
     for (const copilotMetric of sortedData) {
       if (!collectedDays.includes(copilotMetric.date)) {
@@ -235,7 +221,7 @@ export default class Copilotmetrics extends Command {
         await eClient.create({
           id: copilotMetric.date,
           index: copilotmetricsIndex,
-          body: { doc: copilotMetric },
+          body: { doc: { ...copilotMetric, org: flags.copilotOrg } },
         });
       } else {
         console.log(
