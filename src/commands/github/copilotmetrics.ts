@@ -111,6 +111,8 @@ export default class Copilotmetrics extends Command {
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
 
+    const getUuid = require('uuid-by-string');
+
     await checkEsIndex(
       eClient,
       copilotmetricsIndex,
@@ -219,7 +221,7 @@ export default class Copilotmetrics extends Command {
       if (!collectedDays.includes(copilotMetric.date)) {
         console.log(`Saving copilot metrics for date: ${copilotMetric.date}`);
         await eClient.create({
-          id: copilotMetric.date,
+          id: getUuid(copilotMetric.date + flags.copilotOrg, 5),
           index: copilotmetricsIndex,
           body: { doc: { ...copilotMetric, org: flags.copilotOrg } },
         });
