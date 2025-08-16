@@ -23,6 +23,7 @@ export interface ConfigElasticsearch {
     githubReleases: string;
     githubImport: string;
     githubMavenPoms: string;
+    githubCopilotmetrics: string;
     jiraIssues: string;
     jiraProjects: string;
     circleciPipelines: string;
@@ -80,7 +81,11 @@ export interface ConfigGithub {
   };
   cardEvents: {
     localPath: string;
-  }
+  };
+  copilotApi: {
+    fetchMonths: number;
+    fetchWindow: number;
+  };
 }
 
 export interface ConfigTesting {
@@ -117,7 +122,7 @@ export interface ConfigJira {
     attachments: {
       localPath: string;
       remoteHost: string;
-    };    
+    };
   };
 }
 
@@ -134,7 +139,6 @@ export interface ConfigBamboo {
     };
   };
 }
-
 
 export interface ConfigAuthDomainCheck {
   enabled: boolean;
