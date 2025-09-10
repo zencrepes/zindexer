@@ -63,10 +63,8 @@ const ingestNodes = (
         }),
       },
       projectCards: {
-        ...item.projectCards,
-        edges: item.projectCards.edges.map((p: any) => {
-          return { ...p, points: issuePoints };
-        }),
+        totalCount: 0,
+        edges: [],
       },
       zsource,
       zindexerSourceId: sourceId,

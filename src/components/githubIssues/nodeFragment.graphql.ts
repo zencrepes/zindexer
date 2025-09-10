@@ -124,24 +124,6 @@ export const NODE_FRAGMENT = gql`
     participants(first: 1) {
       totalCount
     }
-    projectCards(first: 5) {
-      totalCount
-      edges {
-        node {
-          id
-          project {
-            id
-            url
-            name
-            body
-          }
-          column {
-            id
-            name
-          }
-        }
-      }
-    }
   }
 `;
 
