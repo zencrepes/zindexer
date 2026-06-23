@@ -1,7 +1,11 @@
 name: Lint and test
-# This workflow is triggered on pushes to the repository.
+# This workflow runs on pushes to any branch and on every pull request,
+# so tests are executed automatically when a PR is opened or updated.
 on:
   push:
+    branches:
+      - '**'
+  pull_request:
     branches:
       - '**'
 
@@ -18,8 +22,20 @@ jobs:
       - run: yarn
       - run: yarn run lint --max-warnings 1
 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    container:
+      image: node:20-alpine
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: yarn run test
+
   build:
-    needs: [lint]
+    needs: [lint, test]
     name: Build
     runs-on: ubuntu-latest
     # if: github.event_name == 'push' && github.ref == 'refs/heads/master'
