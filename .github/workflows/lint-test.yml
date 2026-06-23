@@ -19,7 +19,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      # sqlite3 is a runtime dependency with no prebuilt binary for the
+      # Node 24 musl (alpine) ABI; its native build is not needed to lint,
+      # test or type-check, so skip install scripts here.
+      - run: yarn --ignore-scripts
       - run: yarn run lint --max-warnings 1
 
   test:
@@ -31,7 +34,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      # sqlite3 is a runtime dependency with no prebuilt binary for the
+      # Node 24 musl (alpine) ABI; its native build is not needed to lint,
+      # test or type-check, so skip install scripts here.
+      - run: yarn --ignore-scripts
       - run: yarn run test
 
   build:
@@ -45,5 +51,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - run: yarn
+      # sqlite3 is a runtime dependency with no prebuilt binary for the
+      # Node 24 musl (alpine) ABI; its native build is not needed to lint,
+      # test or type-check, so skip install scripts here.
+      - run: yarn --ignore-scripts
       - run: yarn run build

@@ -30,6 +30,8 @@ jobs:
       image: node:24-alpine
 
     steps:
+      # Build toolchain so sqlite3's native addon can compile on alpine/Node 24
+      - run: apk add --no-cache python3 make g++
       - run: npm -g install zindexer@${{ github.event.release.tag_name }}
       - run: zindexer --help
       - run: zindexer startup
