@@ -1,5 +1,5 @@
 # Imported from: https://github.com/oclif/docker/blob/master/Dockerfile
-FROM node:alpine
+FROM node:24-alpine
 
 MAINTAINER Francois Gerthoffert
 

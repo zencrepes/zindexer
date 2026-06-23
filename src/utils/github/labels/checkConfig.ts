@@ -16,7 +16,7 @@ const checkConfig = async (config: any, log: any) => {
   if (!fs.existsSync(path.join(config.configDir, 'labels-config.yml'))) {
     fs.writeFileSync(
       path.join(config.configDir, 'labels-config.yml'),
-      jsYaml.safeDump(labelsConfig),
+      jsYaml.dump(labelsConfig),
     );
     log(
       'Initialized configuration file with defaults in: ' +

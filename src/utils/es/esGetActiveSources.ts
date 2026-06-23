@@ -48,7 +48,7 @@ const esGetActiveSources = async (
         bool: {
           filter: [
             {
-              // eslint-disable-next-line
+               
               match_phrase: {
                 type: {
                   query: type,
@@ -56,7 +56,7 @@ const esGetActiveSources = async (
               },
             },
             {
-              // eslint-disable-next-line
+               
               match_phrase: {
                 active: {
                   query: true,

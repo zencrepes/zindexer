@@ -128,6 +128,10 @@ export default class Projects extends Command {
     //1- Get list of organizations
     const uniqueOrgs: any[] = [];
     for (const repo of reposData) {
+      // NOTE: pre-existing always-false condition (flagged by eslint's
+      // no-constant-binary-expression). Behavior intentionally left unchanged
+      // in this dependency-upgrade PR; see PR description for a follow-up.
+      // eslint-disable-next-line no-constant-binary-expression
       if (!uniqueOrgs.find(o => o.id === repo.owner.id) === undefined) {
         uniqueOrgs.push(repo.owner);
       }

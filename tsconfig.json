@@ -8,11 +8,9 @@
     "strict": true,
     "target": "es2017",
     "composite": true,
-    "baseUrl": "./",
-    "paths": {
-      "*": ["types/*"]
-    },
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "useUnknownInCatchVariables": false
   },
   "ts-node": {
     "transpileOnly": true

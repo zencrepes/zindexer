@@ -76,7 +76,7 @@ POST /sources/_doc/ae7b07d1-3373-58b9-a771-09b1e121e98c
         from: 0,
         size: 10000,
         query: {
-          match_all: {}, // eslint-disable-line
+          match_all: {},  
         },
       },
     );
@@ -140,7 +140,7 @@ POST /sources/_doc/ae7b07d1-3373-58b9-a771-09b1e121e98c
       });
       fs.writeFileSync(
         path.join(this.config.configDir, 'jira-remote-links.yml'),
-        jsYaml.safeDump(configArray),
+        jsYaml.dump(configArray),
       );
       cli.action.stop(' done');
       this.log(

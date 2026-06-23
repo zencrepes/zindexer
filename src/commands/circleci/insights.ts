@@ -18,7 +18,7 @@ import esPushNodes from '../../utils/es/esPushNodes';
 
 import fetchData from '../../utils/circleci/utils/fetchData';
 
-// eslint-disable-next-line
+ 
 const generateNodeId = (items: any) => {
   const updatedItems = items.map((item: { id?: string; nodeId?: string }) => {
     return item;
@@ -86,7 +86,7 @@ export default class Insights extends Command {
 
       // Before pushing nodes to ES, we replace id by nodeId
       let workflows = generateNodeId(fetchedWorkflows);
-      // eslint-disable-next-line
+       
       workflows = workflows.map((item: any) => {
         return {
           ...item,
@@ -96,7 +96,7 @@ export default class Insights extends Command {
 
       // 2- Fetch all runs for a particular workflow
       let workflowRuns: Array<object> = [];
-      // eslint-disable-next-line
+       
       let workflowJobsSummary: Array<any> = [];
       let workflowJobsRuns: Array<object> = [];
       for (const workflow of workflows) {
@@ -107,7 +107,7 @@ export default class Insights extends Command {
           [],
         );
         wfRuns = generateNodeId(wfRuns);
-        // eslint-disable-next-line
+         
         wfRuns = wfRuns.map((wf: any) => {
           return { ...wf, workflow };
         });
@@ -125,7 +125,7 @@ export default class Insights extends Command {
           [],
         );
 
-        // eslint-disable-next-line
+         
         wfJobsSummary = wfJobsSummary.map((wf: any) => {
           return {
             ...wf,
@@ -153,7 +153,7 @@ export default class Insights extends Command {
             userConfig.circleci.token,
             [],
           );
-          // eslint-disable-next-line
+           
           wfJobsRuns = wfJobsRuns.map((wf: any) => {
             return {
               ...wf,

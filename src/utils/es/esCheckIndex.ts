@@ -23,8 +23,8 @@ const esCheckIndex = async (
     cli.action.start(
       'Elasticsearch Index ' + index + ' does not exist, creating',
     );
-    const mappings = await jsYaml.safeLoad(YmlMapping);
-    const settings = await jsYaml.safeLoad(YmlSettings);
+    const mappings = await jsYaml.load(YmlMapping);
+    const settings = await jsYaml.load(YmlSettings);
     await client.indices.create({
       index: index,
       body: { settings, mappings },

@@ -109,7 +109,7 @@ export default class UpdateLinks extends Command {
         }
       }
       if (filteredLinks.length > 0) {
-        let data: any = {}; // eslint-disable-line
+        let data: any = {};  
 
         cpt++;
         if (cpt === 100) {

@@ -15,6 +15,9 @@ describe('utils/misc/chunkArray', () => {
   });
 
   it('produces evenly sized chunks when the length is a multiple of the chunk size', () => {
-    expect(chunkArray([1, 2, 3, 4], 2)).to.deep.equal([[1, 2], [3, 4]]);
+    expect(chunkArray([1, 2, 3, 4], 2)).to.deep.equal([
+      [1, 2],
+      [3, 4],
+    ]);
   });
 });

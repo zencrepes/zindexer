@@ -8,7 +8,6 @@ const fetchAllLabels = async (esClient: Client, esIndex: string) => {
     index: esIndex,
     body: {
       query: {
-        // eslint-disable-next-line @typescript-eslint/camelcase
         match_all: {},
       },
     },

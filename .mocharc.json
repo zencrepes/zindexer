@@ -1,8 +1,5 @@
 {
-  "require": "ts-node/register",
-  "extension": ["ts"],
-  "spec": "test/**/*.test.ts",
-  "recursive": true,
+  "spec": ".test-dist/test/**/*.test.js",
   "reporter": "spec",
   "timeout": 10000
 }

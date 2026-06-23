@@ -18,13 +18,13 @@ export default class FetchNodesByQuery {
   graphQLQuery: string;
   configDir: string;
   maxQueryIncrement: number;
-  log: any; // eslint-disable-line
+  log: any;  
   cli: object;
-  fetchedNodes: Array<any>; // eslint-disable-line
-  error: any; // eslint-disable-line
+  fetchedNodes: Array<any>;  
+  error: any;  
   errorRetry: number;
   totalReposCount: number;
-  orgReposCount: any; // eslint-disable-line
+  orgReposCount: any;  
   getOrgs: any;
   getRepos: any;
   getUserRepos: any;
@@ -34,7 +34,7 @@ export default class FetchNodesByQuery {
     remaining: number;
     resetAt: string | null;
   };
-  cacheStream: any; // eslint-disable-line
+  cacheStream: any;  
 
   constructor(
     gClient: object,
@@ -95,7 +95,7 @@ export default class FetchNodesByQuery {
     queryParams: object,
   ) {
     if (this.errorRetry <= 3) {
-      let data: any = {}; // eslint-disable-line
+      let data: any = {};  
       await this.sleep(1000); // Wait 1s between requests to avoid hitting GitHub API rate limit => https://developer.github.com/v3/guides/best-practices-for-integrators/
       const t0 = performance.now();
       try {
@@ -168,7 +168,7 @@ export default class FetchNodesByQuery {
   }
 
   private async loadNodes(
-    ghData: any, // eslint-disable-line
+    ghData: any,  
     callDuration: number,
   ) {
     const parentData = JSON.parse(JSON.stringify(ghData)); //TODO - Replace this with something better to copy object ?

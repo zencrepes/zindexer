@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: node:20-alpine
+      image: node:24-alpine
 
     steps:
       - uses: actions/checkout@v2
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: node:20-alpine
+      image: node:24-alpine
 
     steps:
       - uses: actions/checkout@v2
@@ -41,10 +41,9 @@ jobs:
     # if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
     container:
-      image: node:20-alpine
+      image: node:24-alpine
 
     steps:
       - uses: actions/checkout@v2
       - run: yarn
-      - run: npm install -g typescript@4.2.3
-      - run: tsc -b
+      - run: yarn run build

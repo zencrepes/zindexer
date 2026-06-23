@@ -19,8 +19,8 @@ const checkEsIndex = async (
   const testIndex: any = await client.indices.exists({ index: index });
   if (testIndex.body === false) {
     logger('Elasticsearch Index ' + index + ' does not exist, creating');
-    const mappings = await jsYaml.safeLoad(YmlMapping);
-    const settings = await jsYaml.safeLoad(YmlSettings);
+    const mappings = await jsYaml.load(YmlMapping);
+    const settings = await jsYaml.load(YmlSettings);
     await client.indices.create({
       index: index,
       body: { settings, mappings },

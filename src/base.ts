@@ -26,7 +26,7 @@ export default abstract class extends Command {
     if (!fs.existsSync(path.join(this.config.configDir, 'config.yml'))) {
       fs.writeFileSync(
         path.join(this.config.configDir, 'config.yml'),
-        jsYaml.safeDump(this.userConfig),
+        jsYaml.dump(this.userConfig),
       );
       this.log(
         'Initialized configuration file with defaults in: ' +

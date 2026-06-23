@@ -204,7 +204,7 @@ export default class Projects extends Command {
         let formattedData = '';
         for (const rec of esPayloadChunk) {
           // Trick to replace id with nodeId
-          // eslint-disable-next-line
+           
           const updatedRec: any = { ...rec };
 
           // Jira uses a numerical object key not compatible with arranger, simply removing it

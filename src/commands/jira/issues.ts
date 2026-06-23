@@ -260,7 +260,6 @@ export default class Issues extends Command {
             body: {
               query: {
                 match: {
-                  // eslint-disable-next-line @typescript-eslint/camelcase
                   zindexerSourceId: {
                     query: source.id,
                   },
@@ -312,7 +311,6 @@ export default class Issues extends Command {
                 id: ji.id,
                 key: ji.key,
                 //                source: ji,
-                // eslint-disable-next-line @typescript-eslint/camelcase
                 zindexerSourceId: source.id,
                 updatedAt: ji.fields.updated,
                 server: {

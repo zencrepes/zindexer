@@ -51,18 +51,15 @@ const fetchRemoteLinks = async (
         // We then add metadata about the linked issue
         const esQuery = {
           bool: {
-            // eslint-disable-next-line @typescript-eslint/camelcase
             must: [{ match_all: {} }],
             filter: [
               {
                 bool: {
-                  // eslint-disable-next-line @typescript-eslint/camelcase
                   minimum_should_match: 1,
                   should: response.data
                     .filter((l: any) => !l.object.title.includes('//'))
                     .map((l: any) => {
                       return {
-                        // eslint-disable-next-line @typescript-eslint/camelcase
                         match_phrase: {
                           key: l.object.title,
                         },
@@ -72,7 +69,6 @@ const fetchRemoteLinks = async (
               },
             ],
             should: [],
-            // eslint-disable-next-line @typescript-eslint/camelcase
             must_not: [],
           },
         };
@@ -86,7 +82,6 @@ const fetchRemoteLinks = async (
             query: esQuery,
           },
         });
-        // eslint-disable-next-line @typescript-eslint/camelcase
         const foundLinks = esIssues.body.hits.hits.map((i: any) => i._source);
         return {
           key: issueKey,

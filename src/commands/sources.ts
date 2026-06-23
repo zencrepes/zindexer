@@ -95,7 +95,7 @@ export default class Sources extends Command {
     const eClient = await esClient(userConfig.elasticsearch);
     const gClient = await ghClient(userConfig.github);
 
-    // eslint-disable-next-line
+     
     const getUuid = require('uuid-by-string');
 
     let dataSources: Array<ESIndexSources> = [];
@@ -109,7 +109,7 @@ export default class Sources extends Command {
           from: 0,
           size: 10000,
           query: {
-            match_all: {}, // eslint-disable-line
+            match_all: {},  
           },
         },
       );
@@ -141,11 +141,11 @@ export default class Sources extends Command {
         const cfgSource = _.find(
           sourcesConfig,
           (o: object) =>
-            // eslint-disable-next-line
+             
             (o as any)['JIRA/' + source.name] !== undefined ||
-            // eslint-disable-next-line
+             
             (o as any)['GITHUB/' + source.name] !== undefined ||
-            // eslint-disable-next-line
+             
             (o as any)['BAMBOO/' + source.name] !== undefined,
         );
         if (cfgSource !== undefined) {
@@ -216,7 +216,7 @@ export default class Sources extends Command {
           cli.action.stop(' done');
         }
       } else {
-        let fetchedRepos: Array<any> = []; // eslint-disable-line
+        let fetchedRepos: Array<any> = [];  
         if (ggrab === 'affiliated') {
           // Fetch repositories directly attached to the user
           const userResponse = await graphqlQuery(
@@ -282,7 +282,7 @@ export default class Sources extends Command {
           const orgResponse = await graphqlQuery(
             gClient,
             getOrgByName,
-            { orgName: gorg }, // eslint-disable-line
+            { orgName: gorg },  
             {
               limit: 5000,
               cost: 1,
@@ -320,7 +320,7 @@ export default class Sources extends Command {
           const repoResponse = await graphqlQuery(
             gClient,
             getRepoByName,
-            { orgName: gorg, repoName: grepo }, // eslint-disable-line
+            { orgName: gorg, repoName: grepo },  
             {
               limit: 5000,
               cost: 1,
@@ -377,7 +377,7 @@ export default class Sources extends Command {
           from: 0,
           size: 10000,
           query: {
-            match_all: {}, // eslint-disable-line
+            match_all: {},  
           },
         },
       });
@@ -452,7 +452,7 @@ export default class Sources extends Command {
         from: 0,
         size: 10000,
         query: {
-          match_all: {}, // eslint-disable-line
+          match_all: {},  
         },
       },
     });
@@ -490,7 +490,7 @@ export default class Sources extends Command {
     });
     fs.writeFileSync(
       path.join(this.config.configDir, 'sources.yml'),
-      jsYaml.safeDump(configArray),
+      jsYaml.dump(configArray),
     );
     cli.action.stop(' done');
     this.log(

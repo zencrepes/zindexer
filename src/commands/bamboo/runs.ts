@@ -124,7 +124,6 @@ export default class States extends Command {
               _source: 'number',
               query: {
                 match: {
-                  // eslint-disable-next-line @typescript-eslint/camelcase
                   zindexerSourceId: {
                     query: source.id,
                   },

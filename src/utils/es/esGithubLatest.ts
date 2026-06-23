@@ -35,7 +35,6 @@ const esGithubLatest = async (
     body: {
       query: {
         match: {
-          // eslint-disable-next-line @typescript-eslint/camelcase
           zindexerSourceId: {
             query: sourceId,
           },

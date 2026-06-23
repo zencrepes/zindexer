@@ -3,7 +3,7 @@ import { performance } from 'perf_hooks';
 
 export default class FetchNodesByIdsWithParams {
   maxQueryIncrement: number;
-  log: any; // eslint-disable-line
+  log: any;  
   cli: object;
   errorRetry: number;
   graphqlQuery: any;
@@ -19,8 +19,8 @@ export default class FetchNodesByIdsWithParams {
     log: object,
     ghIncrement: number,
     cli: object,
-    graphqlQuery: any, // eslint-disable-line
-    ghClient: any, // eslint-disable-line
+    graphqlQuery: any,  
+    ghClient: any,  
   ) {
     this.ghClient = ghClient;
     this.maxQueryIncrement = ghIncrement;
@@ -38,7 +38,7 @@ export default class FetchNodesByIdsWithParams {
       resetAt: null,
     };
   }
-  // eslint-disable-next-line
+   
   public async load(variables: any) {
     const t0 = performance.now();
 

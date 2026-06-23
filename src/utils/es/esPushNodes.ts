@@ -7,7 +7,7 @@ import chunkArray from '../../utils/misc/chunkArray';
 const esPushNodes = async (
   fetchedNodes: Array<object>,
   nodesIndex: string,
-  esClient: any, // eslint-disable-line
+  esClient: any,  
 ) => {
   const esPayloadChunked = await chunkArray(fetchedNodes, 100);
   // Push the data back to elasticsearch
