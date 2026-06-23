@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 
+// @oclif/config (v1) registers ts-node with hardcoded compiler options and
+// skipProject:true, so it can't pick these up from tsconfig.json. TypeScript 6
+// errors (TS5107) on the implicit moduleResolution=node10 unless silenced, which
+// otherwise breaks dev-time command discovery. Only affects the ts-node path.
+if (!process.env.TS_NODE_COMPILER_OPTIONS) {
+  process.env.TS_NODE_COMPILER_OPTIONS = '{"ignoreDeprecations":"6.0"}'
+}
+
 require('@oclif/command').run()
 .then(require('@oclif/command/flush'))
 .catch(require('@oclif/errors/handle'))
