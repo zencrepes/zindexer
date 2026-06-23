@@ -53,7 +53,7 @@ export default class Sources extends Command {
 
     if (save === true) {
       cli.action.start('Saving Zencrepes configuration file');
-      fs.writeFileSync(zencrepesConfigFile, jsYaml.safeDump(currentConfig));
+      fs.writeFileSync(zencrepesConfigFile, jsYaml.dump(currentConfig));
       cli.action.stop(' done');
     } else if (load === true) {
       cli.action.start(

@@ -14,7 +14,7 @@ interface GithubNode {
 }
 
 const pushEsNodes = async (
-  esClient: any, // eslint-disable-line
+  esClient: any,  
   nodesIndex: string,
   fetchedNodes: Array<object>,
   logger: Function,

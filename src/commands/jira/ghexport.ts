@@ -130,7 +130,7 @@ export default class Issues extends Command {
       };
       fs.writeFileSync(
         path.join(this.config.configDir, 'import-config.template.yml'),
-        jsYaml.safeDump(formatMissing),
+        jsYaml.dump(formatMissing),
       );
       this.log(
         '\n A template was prepopulated at: ' +
@@ -219,9 +219,7 @@ export default class Issues extends Command {
         title: i.key + ' - ' + i.summary,
         body,
         closed: i.status.statusCategory.key !== 'done' ? false : true,
-        // eslint-disable-next-line @typescript-eslint/camelcase
         created_at: new Date(i.createdAt).toISOString(),
-        // eslint-disable-next-line @typescript-eslint/camelcase
         updated_at: new Date(i.updatedAt).toISOString(),
       };
 
@@ -233,7 +231,6 @@ export default class Issues extends Command {
       if (i.closedAt !== null) {
         issuePayload = {
           ...issuePayload,
-          // eslint-disable-next-line @typescript-eslint/camelcase
           closed_at: new Date(i.closedAt).toISOString(),
         };
       }

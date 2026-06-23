@@ -17,7 +17,7 @@ const checkConfig = async (config: any, log: any) => {
   if (!fs.existsSync(path.join(config.configDir, 'import-config.yml'))) {
     fs.writeFileSync(
       path.join(config.configDir, 'import-config.yml'),
-      jsYaml.safeDump(importConfig),
+      jsYaml.dump(importConfig),
     );
     log(
       'Initialized configuration file with defaults in: ' +

@@ -41,7 +41,7 @@ export interface Issue {
   labels: Array<Label>;
   source: {
     type: 'JIRA' | 'GITHUB';
-    data: any; // eslint-disable-line
+    data: any;  
   };
 }
 
@@ -95,13 +95,13 @@ export interface ESIndexSources {
 // Object containing all of Jira data related to a project
 export interface JiraProject {
   id: string;
-  properties: any; // eslint-disable-line
-  roles: any; // eslint-disable-line
-  issueScheme: any; // eslint-disable-line
-  notificationsScheme: any; // eslint-disable-line
-  permissionsScheme: any; // eslint-disable-line
-  priorityScheme: any; // eslint-disable-line
-  securityLevel: any; // eslint-disable-line
+  properties: any;  
+  roles: any;  
+  issueScheme: any;  
+  notificationsScheme: any;  
+  permissionsScheme: any;  
+  priorityScheme: any;  
+  securityLevel: any;  
 }
 
 export interface JiraIssue {

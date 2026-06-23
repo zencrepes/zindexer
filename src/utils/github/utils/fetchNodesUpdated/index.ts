@@ -13,7 +13,7 @@ export default class FetchNodeUpdated {
   gClient: object;
   maxQueryIncrement: number;
   configDir: string;
-  log: any; // eslint-disable-line
+  log: any;  
   cli: object;
   fetchedNodes: Array<any>;
   errorRetry: number;
@@ -24,7 +24,7 @@ export default class FetchNodeUpdated {
     remaining: number;
     resetAt: string | null;
   };
-  cacheStream: any; // eslint-disable-line
+  cacheStream: any;  
 
   constructor(
     gClient: object,
@@ -77,7 +77,7 @@ export default class FetchNodeUpdated {
     recentNode: GithubNode | null,
   ) {
     if (this.errorRetry <= 3) {
-      let data: any = {}; // eslint-disable-line
+      let data: any = {};  
       await this.sleep(1000); // Wait 1s between requests to avoid hitting GitHub API rate limit => https://developer.github.com/v3/guides/best-practices-for-integrators/
       const t0 = performance.now();
       try {
@@ -144,7 +144,7 @@ export default class FetchNodeUpdated {
   }
 
   private async loadNodes(
-    data: any, // eslint-disable-line
+    data: any,  
     callDuration: number,
     recentNode: GithubNode | null,
   ) {

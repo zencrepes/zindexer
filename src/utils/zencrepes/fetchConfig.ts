@@ -9,7 +9,7 @@ const fetchConfig = async (eClient: any, userConfig: Config) => {
       from: 0,
       size: 10000,
       query: {
-        match_all: {}, // eslint-disable-line
+        match_all: {},  
       },
     },
   );

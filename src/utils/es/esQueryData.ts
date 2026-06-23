@@ -6,7 +6,7 @@ import { ESSearchResponse, ESIndexSources } from '../../global';
 const esQueryData = async (
   client: Client,
   esIndex: string,
-  esQuery: any, // eslint-disable-line
+  esQuery: any,  
 ) => {
   // Ensure index exists in Elasticsearch
   cli.action.start('Checking if index: ' + esIndex + ' exists');

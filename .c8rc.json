@@ -1,0 +1,11 @@
+{
+  "reporter": ["text", "lcov"],
+  "exclude": [
+    "**/*.d.ts",
+    "test/**",
+    ".test-dist/**/test/**",
+    "**/*.graphql.ts",
+    "**/*.type.ts"
+  ],
+  "all": false
+}

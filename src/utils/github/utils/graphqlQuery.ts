@@ -4,11 +4,11 @@ async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 async function graphqlQuery(
-  client: any, // eslint-disable-line
-  query: any, // eslint-disable-line
-  variables: any, // eslint-disable-line
-  rateLimit: any, // eslint-disable-line
-  log: any, // eslint-disable-line
+  client: any,  
+  query: any,  
+  variables: any,  
+  rateLimit: any,  
+  log: any,  
 ) {
   //  log('Remaining GitHub tokens: ' + rateLimit.remaining);
   // Logic to pause if remaining ratelimit is lower than 50
@@ -22,7 +22,7 @@ async function graphqlQuery(
     await sleep(sleepDuration + 10000);
     log('Ready to resume querying');
   }
-  let data: any = {}; // eslint-disable-line
+  let data: any = {};  
   try {
     data = await client.query({
       query,

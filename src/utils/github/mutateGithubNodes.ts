@@ -11,7 +11,7 @@ interface Options {
 }
 
 export const mutateGithubNodes = async (ghClient: any, nodes: any[], mutationQuery: any, getMutationVariables: any, progressData: any, postMutationFunction: any, options: Partial<Options> = {}) => {
-  let data: any = {}; // eslint-disable-line
+  let data: any = {};  
   let cpt = 0;
   let totalCpt = 0;
   const {

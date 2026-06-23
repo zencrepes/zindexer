@@ -106,7 +106,7 @@ export default class Labels extends Command {
       const labels: any[] = await fetchAllLabels(eClient, labelsIndex);
 
       // Loop in existing labels to identify if they need to be updated
-      let data: any = {}; // eslint-disable-line
+      let data: any = {};  
       const labelsToUpdate = labels.reduce((acc, label) => {
         const configFound = findLabelConfig(labelsConfig, label);
         if (configFound !== undefined) {

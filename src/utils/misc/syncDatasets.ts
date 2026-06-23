@@ -5,7 +5,7 @@ import fetchConfig from '../zencrepes/fetchConfig';
 
 // Synchronize data types between config file and Elasticsearch
 // For now it doesn't handle removal of outdated index types
-// eslint-disable-next-line
+ 
 const syncDataDatasets = async (eClient: any, userConfig: Config) => {
   //  Check if index exists, create if it does not
   await esCheckIndex(
@@ -18,7 +18,7 @@ const syncDataDatasets = async (eClient: any, userConfig: Config) => {
   const currentConfig = await fetchConfig(eClient, userConfig);
 
   // There can only be one key, so we give this key the value
-  const esPayload: Array<any> = []; // eslint-disable-line
+  const esPayload: Array<any> = [];  
   for (const [key, esIndex] of Object.entries(
     userConfig.elasticsearch.sysIndices,
   )) {
@@ -60,7 +60,7 @@ const syncDataDatasets = async (eClient: any, userConfig: Config) => {
       JSON.stringify({
         index: {
           _index: userConfig.elasticsearch.sysIndices.config,
-          _id: (rec as any).key, // eslint-disable-line
+          _id: (rec as any).key,  
         },
       }) +
       '\n' +

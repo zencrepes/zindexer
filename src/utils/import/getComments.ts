@@ -26,7 +26,6 @@ const getComments = (issue: any, users: any[]) => {
       header = header + ' _edited_';
     }
     return {
-      // eslint-disable-next-line @typescript-eslint/camelcase
       created_at: new Date(c.node.created).toISOString(),
       body: header + '\n\n\n' + cleanJiraContent(c.node.body, users, issue),
     };

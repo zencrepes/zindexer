@@ -47,7 +47,7 @@ export default class Envvars extends Command {
     const userConfig = this.userConfig;
     const eClient = await esClient(userConfig.elasticsearch);
 
-    // eslint-disable-next-line
+     
     const cryptoRandomString = require('crypto-random-string');
 
     // Push Zencrepes configuration only if there was no previous configuration available
@@ -89,7 +89,7 @@ export default class Envvars extends Command {
       );
 
       // Before pushing nodes to ES
-      // eslint-disable-next-line
+       
       const items = fetchedItems.map((item: any) => {
         let randomValue = cryptoRandomString({ length: 10 });
         const existObfuscated = obfuscatedPass.find(

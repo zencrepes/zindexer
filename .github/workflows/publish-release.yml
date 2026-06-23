@@ -11,13 +11,12 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions/setup-node@v2
         with:
-          node-version: 20
+          node-version: 24
       - run: yarn
-      - run: npm -g install typescript@4.2.3
       - run: npm -g install @oclif/dev-cli @oclif/help
       - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
       - run: npm --no-git-tag-version version ${{ github.event.release.tag_name }}
-      - run: tsc -b
+      - run: yarn run build
       - run: oclif-dev manifest
       - run: ls -lah ./
       - run: npm publish --access public
@@ -28,9 +27,11 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: node:20-alpine
+      image: node:24-alpine
 
     steps:
+      # Build toolchain so sqlite3's native addon can compile on alpine/Node 24
+      - run: apk add --no-cache python3 make g++
       - run: npm -g install zindexer@${{ github.event.release.tag_name }}
       - run: zindexer --help
       - run: zindexer startup

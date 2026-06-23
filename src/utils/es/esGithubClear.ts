@@ -37,7 +37,6 @@ const esGithubClear = async (
         },
       },
     },
-    // eslint-disable-next-line @typescript-eslint/camelcase
     wait_for_completion: true,
   });
   cli.action.stop(' done');

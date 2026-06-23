@@ -91,7 +91,7 @@ export default class Pipelines extends Command {
         await esCheckIndex(eClient, userConfig, pipelinesIndex, esMapping);
 
         // Before pushing nodes to ES, we replace id by nodeId
-        // eslint-disable-next-line
+         
         const pipelines = fetchedPipelines.map((pipeline: any) => {
           return {
             ...pipeline,

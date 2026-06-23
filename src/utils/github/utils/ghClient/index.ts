@@ -9,13 +9,13 @@ import { ConfigGithub } from '../../../../global';
 const ghClient = async (githubConfig: ConfigGithub) => {
   const httpLink = new HttpLink({
     uri: 'https://api.github.com/graphql',
-    fetch: fetch as any, // eslint-disable-line
+    fetch: fetch as any,  
   });
   const cache = new InMemoryCache({
     addTypename: false,
   });
   //const cache = new InMemoryCache().restore(window.__APOLLO_STATE__)
-  // eslint-disable-next-line
+   
   const authMiddleware = new ApolloLink((operation: any, forward: any) => {
     // add the authorization to the headers
     operation.setContext({
