@@ -17,7 +17,12 @@ jobs:
       - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
       - run: npm --no-git-tag-version version ${{ github.event.release.tag_name }}
       - run: yarn run build
+      # @oclif/config v1 registers ts-node with hardcoded compiler options and
+      # never reads tsconfig.json; TypeScript 6 errors (TS5107) on the implicit
+      # moduleResolution=node10 unless silenced. Mirrors the default in bin/run.
       - run: oclif-dev manifest
+        env:
+          TS_NODE_COMPILER_OPTIONS: '{"ignoreDeprecations":"6.0"}'
       - run: ls -lah ./
       - run: npm publish --access public
 
