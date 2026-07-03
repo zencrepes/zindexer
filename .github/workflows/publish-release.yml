@@ -7,24 +7,50 @@ jobs:
   npm_publish:
     runs-on: ubuntu-latest
 
+    # id-token is required to generate build provenance attestations
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
+          registry-url: https://registry.npmjs.org
       - run: yarn
       - run: npm -g install @oclif/dev-cli @oclif/help
-      - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
       - run: npm --no-git-tag-version version ${{ github.event.release.tag_name }}
       - run: yarn run build
+      - run: yarn run build:components
+      # Install the packed components package in a scratch project and require
+      # every exported subpath, so a broken exports map fails before publishing
+      - name: Smoke test components package
+        run: |
+          npm pack --pack-destination /tmp ./dist/components
+          mkdir /tmp/components-smoke
+          cd /tmp/components-smoke
+          npm init -y
+          npm install /tmp/zencrepes-zindexer-components-*.tgz
+          node -e '
+            const pkg = require("@zencrepes/zindexer-components/package.json");
+            const subpaths = Object.keys(pkg.exports).filter((p) => p !== "./package.json");
+            for (const p of subpaths) require("@zencrepes/zindexer-components/" + p.slice(2));
+            console.log("Loaded " + subpaths.length + " component subpaths");
+          '
       # @oclif/config v1 registers ts-node with hardcoded compiler options and
       # never reads tsconfig.json; TypeScript 6 errors (TS5107) on the implicit
       # moduleResolution=node10 unless silenced. Mirrors the default in bin/run.
       - run: oclif-dev manifest
         env:
           TS_NODE_COMPILER_OPTIONS: '{"ignoreDeprecations":"6.0"}'
-      - run: ls -lah ./
-      - run: npm publish --access public
+      - run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --provenance
+        working-directory: dist/components
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   npm_test:
     needs: [npm_publish]
@@ -40,6 +66,13 @@ jobs:
       - run: npm -g install zindexer@${{ github.event.release.tag_name }}
       - run: zindexer --help
       - run: zindexer startup
+      # Verify the components package is consumable from the registry
+      - run: |
+          mkdir /tmp/components-consumer
+          cd /tmp/components-consumer
+          npm init -y
+          npm install @zencrepes/zindexer-components@${{ github.event.release.tag_name }}
+          node -e 'require("@zencrepes/zindexer-components/config"); require("@zencrepes/zindexer-components/es-utils")'
 
   docker:
     needs: [npm_test]

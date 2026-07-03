@@ -43,26 +43,28 @@ You can find ZenCrepes documentation on [docs.zencrepes.io](https://docs.zencrep
 
 This readme only contains developer-focused details.
 
-# About Bit
+# Shared components
 
-Bit components are exported from Zindexer, those are used to share logic between the various ZenCrepes services.
+The directories under `src/components/` are shared with the other ZenCrepes services (zqueue, zapi). They are published to npmjs as a single package, `@zencrepes/zindexer-components`, with one subpath export per component (kebab-case, e.g. `src/components/esUtils` -> `@zencrepes/zindexer-components/es-utils`).
 
-- https://bit.dev/
-- https://docs.bit.dev/docs/quick-start
-- https://medium.com/javascript-in-plain-english/how-i-share-react-components-between-projects-3896d853cbee
+Within zindexer, components are used through plain relative imports — no release or publish step is needed during development. The package is assembled from the compiled output and published automatically alongside zindexer (same version) by the release workflow.
+
+To build the package locally:
 
 ```bash
-bit login
-bit status
-bit tag config 0.0.11 / bit tag --all 0.0.11
-bit build
-bit export zencrepes.zindexer
+yarn build
+yarn build:components
+# publishable package is written to dist/components/
 ```
 
-Add new component:
-```bash
-bit add src/components/testingPerfs
+Consumers import individual components:
+
+```ts
+import { zencrepesConfig } from '@zencrepes/zindexer-components/config';
+import { checkEsIndex, pushEsNodes } from '@zencrepes/zindexer-components/es-utils';
 ```
+
+Adding a component only requires creating a new directory with an `index.ts` under `src/components/`; it is picked up automatically at packaging time. Third-party packages used by components must be regular dependencies of zindexer (the packaging script derives the package's dependency list from them and fails otherwise).
 
 # Usage
 

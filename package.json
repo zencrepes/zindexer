@@ -100,39 +100,11 @@
   "repository": "zencrepes/zindexer",
   "scripts": {
     "build": "tsc -b",
+    "build:components": "node scripts/build-components-package.js",
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "rm -rf lib && tsc -b && oclif-dev readme",
     "test": "tsc -p tsconfig.test.json && c8 mocha --forbid-only",
     "lint": "eslint . --fix"
   },
-  "types": "lib/index.d.ts",
-  "bit": {
-    "env": {
-      "compiler": {
-        "bit.envs/compilers/typescript@3.1.47": {
-          "rawConfig": {
-            "tsconfig": {
-              "compilerOptions": {
-                "declaration": true,
-                "importHelpers": true,
-                "esModuleInterop": true,
-                "module": "commonjs",
-                "strict": true,
-                "target": "es2017",
-                "composite": true,
-                "sourceMap": true,
-                "noImplicitAny": true,
-                "skipLibCheck": true,
-                "lib": [
-                  "esnext"
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    "componentsDefaultDirectory": "components/{name}",
-    "packageManager": "yarn"
-  }
+  "types": "lib/index.d.ts"
 }
