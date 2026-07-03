@@ -10,8 +10,7 @@
     "composite": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "useUnknownInCatchVariables": false,
-    "ignoreDeprecations": "6.0"
+    "useUnknownInCatchVariables": false
   },
   "ts-node": {
     "transpileOnly": true
