@@ -44,14 +44,30 @@ jobs:
       - run: oclif-dev manifest
         env:
           TS_NODE_COMPILER_OPTIONS: '{"ignoreDeprecations":"6.0"}'
+      # Publish steps skip versions already on the registry, so the workflow
+      # can be re-run after a partial failure without "cannot publish over".
       # zindexer publishes via npm trusted publishing (OIDC) — no token. The
       # components package still needs the token until it exists on npmjs and
       # can get its own trusted publisher configuration.
-      - run: npm publish --access public --provenance
-      - run: npm publish --access public --provenance
+      - name: Publish zindexer
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "zindexer@$VERSION" version >/dev/null 2>&1; then
+            echo "zindexer@$VERSION already published, skipping"
+          else
+            npm publish --access public --provenance
+          fi
+      - name: Publish components package
         working-directory: dist/components
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "@zencrepes/zindexer-components@$VERSION" version >/dev/null 2>&1; then
+            echo "@zencrepes/zindexer-components@$VERSION already published, skipping"
+          else
+            npm publish --access public --provenance
+          fi
 
   npm_test:
     needs: [npm_publish]
