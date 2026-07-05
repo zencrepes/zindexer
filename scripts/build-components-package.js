@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Assembles the publishable @zencrepes/zindexer-components package from the
+// Assembles the publishable @zencrepes/components package from the
 // tsc output in lib/components. Run after `yarn build`; the package is
 // written to dist/components/ and published in lockstep with zindexer (same
 // version) by .github/workflows/publish-release.yml.
@@ -9,7 +9,7 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'lib', 'components');
 const OUT = path.join(ROOT, 'dist', 'components');
-const PACKAGE_NAME = '@zencrepes/zindexer-components';
+const PACKAGE_NAME = '@zencrepes/components';
 
 // Directory names are camelCase in src/components; published subpaths use
 // kebab-case, matching the names of the legacy @bit/zencrepes.zindexer.*

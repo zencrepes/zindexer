@@ -31,11 +31,11 @@ jobs:
           mkdir /tmp/components-smoke
           cd /tmp/components-smoke
           npm init -y
-          npm install /tmp/zencrepes-zindexer-components-*.tgz
+          npm install /tmp/zencrepes-components-*.tgz
           node -e '
-            const pkg = require("@zencrepes/zindexer-components/package.json");
+            const pkg = require("@zencrepes/components/package.json");
             const subpaths = Object.keys(pkg.exports).filter((p) => p !== "./package.json");
-            for (const p of subpaths) require("@zencrepes/zindexer-components/" + p.slice(2));
+            for (const p of subpaths) require("@zencrepes/components/" + p.slice(2));
             console.log("Loaded " + subpaths.length + " component subpaths");
           '
       # @oclif/config v1 registers ts-node with hardcoded compiler options and
@@ -63,8 +63,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          if npm view "@zencrepes/zindexer-components@$VERSION" version >/dev/null 2>&1; then
-            echo "@zencrepes/zindexer-components@$VERSION already published, skipping"
+          if npm view "@zencrepes/components@$VERSION" version >/dev/null 2>&1; then
+            echo "@zencrepes/components@$VERSION already published, skipping"
           else
             npm publish --access public --provenance
           fi
@@ -88,8 +88,8 @@ jobs:
           mkdir /tmp/components-consumer
           cd /tmp/components-consumer
           npm init -y
-          npm install @zencrepes/zindexer-components@${{ github.event.release.tag_name }}
-          node -e 'require("@zencrepes/zindexer-components/config"); require("@zencrepes/zindexer-components/es-utils")'
+          npm install @zencrepes/components@${{ github.event.release.tag_name }}
+          node -e 'require("@zencrepes/components/config"); require("@zencrepes/components/es-utils")'
 
   docker:
     needs: [npm_test]

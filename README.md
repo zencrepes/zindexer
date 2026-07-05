@@ -45,7 +45,7 @@ This readme only contains developer-focused details.
 
 # Shared components
 
-The directories under `src/components/` are shared with the other ZenCrepes services (zqueue, zapi). They are published to npmjs as a single package, `@zencrepes/zindexer-components`, with one subpath export per component (kebab-case, e.g. `src/components/esUtils` -> `@zencrepes/zindexer-components/es-utils`).
+The directories under `src/components/` are shared with the other ZenCrepes services (zqueue, zapi). They are published to npmjs as a single package, `@zencrepes/components`, with one subpath export per component (kebab-case, e.g. `src/components/esUtils` -> `@zencrepes/components/es-utils`).
 
 Within zindexer, components are used through plain relative imports — no release or publish step is needed during development. The package is assembled from the compiled output and published automatically alongside zindexer (same version) by the release workflow.
 
@@ -60,8 +60,8 @@ yarn build:components
 Consumers import individual components:
 
 ```ts
-import { zencrepesConfig } from '@zencrepes/zindexer-components/config';
-import { checkEsIndex, pushEsNodes } from '@zencrepes/zindexer-components/es-utils';
+import { zencrepesConfig } from '@zencrepes/components/config';
+import { checkEsIndex, pushEsNodes } from '@zencrepes/components/es-utils';
 ```
 
 Adding a component only requires creating a new directory with an `index.ts` under `src/components/`; it is picked up automatically at packaging time. Third-party packages used by components must be regular dependencies of zindexer (the packaging script derives the package's dependency list from them and fails otherwise).
