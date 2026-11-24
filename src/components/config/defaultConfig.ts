@@ -1,4 +1,6 @@
-const defaultConfig = {
+import Config from './zencrepesConfig.type';
+
+const defaultConfig: Config = {
   auth: {
     domainCheck: {
       enabled: false,
@@ -8,8 +10,12 @@ const defaultConfig = {
     },
   },
   elasticsearch: {
+    // elasticsearch or opensearch (opensearch is supported by zqueue)
+    engine: 'elasticsearch',
     host: 'http://127.0.0.1:9200',
     sslCa: '',
+    // Set to false to accept a self-signed certificate
+    sslVerify: true,
     cloudId: '',
     username: '',
     password: '',
@@ -69,6 +75,12 @@ const defaultConfig = {
     // The webhook configuration is used by zqueue to determine next course of action
     webhook: {
       secret: 'PLEASE_CHANGE_ME',
+      // zqueue v2 records every received event into one index per event type.
+      // Exclude wins over include, and '*' is a wildcard.
+      includeGithubEvents: ['*'],
+      excludeGithubEvents: [],
+      esIndexPrefix: 'gh_events_',
+      // The keys below are used by zqueue v1 and utils:github-project-cards
       // The Array of events matches and event name with an entity type as processed by ZenCrepes
       // You shouldn't need to change these values
       events: [

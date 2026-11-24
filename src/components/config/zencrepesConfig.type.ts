@@ -1,6 +1,11 @@
 export interface ConfigElasticsearch {
+  // The search engine behind the config: elasticsearch (default) or
+  // opensearch. zqueue v2 supports both; zindexer talks to Elasticsearch.
+  engine?: 'elasticsearch' | 'opensearch';
   host: string;
   sslCa: string;
+  // Set to false to accept a self-signed certificate.
+  sslVerify?: boolean;
   cloudId: string;
   username: string;
   password: string;
@@ -63,6 +68,11 @@ export interface ConfigGithub {
   storyPointsLabels: ConfigGithubPointsLabels[];
   webhook: {
     secret: string;
+    // zqueue v2: filter and target of the event recording
+    includeGithubEvents?: string[];
+    excludeGithubEvents?: string[];
+    esIndexPrefix?: string;
+    // zqueue v1 keys, still read by utils:github-project-cards
     events: GithubWebhookEvents[];
     timelinePayload: {
       includeGithubEvents: string[];
